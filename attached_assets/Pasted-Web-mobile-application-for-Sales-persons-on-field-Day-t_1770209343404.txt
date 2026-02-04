@@ -1,0 +1,186 @@
+Web/mobile application for Sales persons on field
+Day to day reporting
+In each day 4 to 6 visits for Sales Executive
+1st Executive Login with pw – Example: 1001 / 123abc
+Day wise visit reporting
+New Visit  		Re-visit
+Fields
+Select Date:
+Visit type: 1st Visit
+School Name: ABC SCHOOL
+School type: Pre school
+Address: # 278, Road no:5, Dilskhnagar, 
+Place: hyderabad
+Location Pin: Map
+Upload photo: GPS photo 
+Pin (numeric):500060
+Sch ph Numer: 91*******06
+Contact person : ABC NAME
+Mobile: (numeric only 10 digits): 91*******06
+Demo given: Yes
+MOM:100 WORDS ABOUT MEETING
+RemarKs: 100 WORDS ABOUT SCHOOL
+Sample Submission- Drop down Yes/No
+Books submitted – Drop down show 5 products
+Upload Form: photo/gallery                                     
+Submit
+Sales Field Reporting Web / Mobile Application
+1. Background & Business Context
+The company is a curriculum publication and distribution business focused on Kindergarten and Pre-Primary education, handling:
+	Book design & printing
+	Curriculum structuring 
+	Distribution to schools
+	Sales, collections, and relationship management
+	Sales Executives operate across multiple states, visiting schoolS to:
+	Introduce books & curriculum
+	Conduct demos
+	Submit samples
+	Follow up with schools
+	Convert inquiries into business
+	Currently, reporting is manual / informal.
+The goal is to digitize and centralize field sales reporting using a Web & Mobile application.
+2. Objective of the Application
+	To create a simple, reliable, tech-enabled system where:
+	Sales Executives can log daily school visits
+	Management can track activity, performance, and coverage
+	Every visit has location + photo proof
+	All data is stored centrally and securely
+	This system should:
+	Reduce manual reporting
+	Increase accountability
+	Improve decision-making
+	Help scale operations across states
+3. Target Users
+3.1 Sales Executives (Field Users)
+	Visit 4–6 schools per day
+	Submit visit details immediately after each visit
+	Use mobile phone primarily
+3.2 Admin / Management (Office Users)
+	View reports
+	Track executive activity
+	Monitor school coverage
+	Download reports
+4. Platforms Required
+	Mobile Application (Android – Priority)
+	Web Application (Admin Panel)
+	Optional future scope:
+	iOS App
+	Offline data sync
+5. Login & Authentication
+	Sales Executive Login
+	Login ID (Example: 1001)
+	Password (Example: 123abc)
+	Each executive has a unique ID
+	Secure login mandatory
+6. Sales Executive – Dashboard
+	After login, the Sales Executive sees:
+	Today’s Date (auto)
+	Number of visits completed today (e.g., 3 / 6)
+	Button: ➕ New Visit
+	List of submitted visits (today)
+	Logout option
+7. Visit Reporting – Workflow
+Step 1: Create New Visit
+Sales Executive clicks New Visit
+Step 2: Select Visit Type
+Visit Type:
+First Visit (New School)
+Re-Visit (Follow-up school)
+8. Visit Reporting Form – Detailed Fields
+A. Visit Basic Information
+Visit Date:
+Auto-filled with current date
+Visit Type: First Visit / Re-Visit
+School Name: Text input
+School Type: Dropdown
+Pre-School
+Kindergarten
+Primary School
+B. Address & Location Details
+Full Address: Text Area
+Place / City: Text (Example: Hyderabad)
+Pin Code: Numeric only (6 digits)
+Location Pin:
+Button: 📍 Capture Current GPS Location (Google Maps)
+C. Photo Proof (Mandatory)
+ Upload Photo:
+Camera or Gallery
+GPS-enabled photo mandatory
+Timestamp & location auto captured
+Purpose: Proof that executive physically visited the school.
+D. School Contact Details
+School Phone Number: Numeric only
+Contact Person Name: Text
+Mobile Number: Numeric only (10 digits)
+E. Meeting & Discussion Details
+Demo Given: Dropdown
+Yes
+No
+
+
+MOM (Minutes of Meeting):
+	Text Area
+	Minimum: 100 words
+	Example: Curriculum explained
+	Interest level
+	Decision timeline
+Remarks About School:
+	Text Area
+	Minimum 100 words
+	Existing books
+	Management attitude
+F. Sample / Book Submission Details
+Sample Submitted: Dropdown
+Yes
+No
+Books Submitted:
+Multi-select dropdown
+Shows list of 5 predefined book products
+Upload Form:
+Photo upload of sample acknowledgment / form (if any)
+9. Submission Rules
+	Mandatory fields must be filled
+	Submit button enabled only after validation
+	On submission:
+	Visit is saved with timestamp & GPS
+	Editing is not allowed
+	Internet required during submission
+10. Validation Rules
+	Mobile Number: 10 digits, numeric only
+	Pin Code: 6 digits, numeric only
+	GPS photo mandatory
+	Word limit strictly enforced
+11. Admin / Management Panel (Web)
+Admin should be able to:
+	View all visits
+	Filter by:
+	Date
+	Sales Executive
+	State / City
+	School name
+	Track:
+	Visits per executive
+	Demo conversion
+	Sample submissions
+	Export reports:
+	Excel
+	PDF
+12. Reports Required
+	Daily Visit Report
+	Executive-wise Activity Report
+	School-wise Visit History
+	Date-range performance summary
+13. Technical Expectations (Suggested)
+	Secure backend & database
+	Google Maps API integration
+	Cloud storage for photos
+	Role-based access (Executive / Admin)
+	Scalable architecture (multi-state usage)
+14. Future Enhancements 
+	Order booking module
+	Payment / collection tracking
+	Lead follow-up reminders
+	Offline mode with sync
+	School master database
+Final Goal: To bring a professional, tech-enabled system into the publication business that supports growth, transparency, and efficiency — without making things complicated for field staff.
+
