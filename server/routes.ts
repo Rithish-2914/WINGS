@@ -69,7 +69,11 @@ export async function registerRoutes(
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
-    cookie: { secure: process.env.NODE_ENV === "production" }
+    proxy: true,
+    cookie: { 
+      secure: true,
+      sameSite: "none"
+    }
   }));
 
   app.use(passport.initialize());
