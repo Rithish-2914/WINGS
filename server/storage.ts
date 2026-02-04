@@ -5,7 +5,7 @@ import {
   users, visits, 
   type User, type InsertUser, 
   type Visit, type InsertVisit 
-} from "@shared/schema.js";
+} from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";

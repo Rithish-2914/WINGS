@@ -2,8 +2,8 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
-import { api } from "@shared/routes.js";
-import { insertVisitSchema } from "@shared/schema.js";
+import { api } from "../shared/routes.js";
+import { insertVisitSchema } from "../shared/schema.js";
 import { z } from "zod";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
