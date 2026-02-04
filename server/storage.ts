@@ -1,11 +1,11 @@
 
-import { db } from "./db";
+import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   users, visits, 
   type User, type InsertUser, 
   type Visit, type InsertVisit 
-} from "@shared/schema";
+} from "@shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
