@@ -17,7 +17,7 @@ const init = async () => {
   await routesPromise;
 };
 
-export default async function handler(req: Request, res: Response) {
+export default async function handler(req: any, res: any) {
   await init();
   return app(req, res);
 }
