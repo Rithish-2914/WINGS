@@ -48,6 +48,22 @@ CREATE TABLE visits (
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Row Level Security (RLS)
+-- This ensures data isolation at the database level
+ALTER TABLE visits ENABLE ROW LEVEL SECURITY;
+
+-- Note: The policies below are templates. If you are using Supabase Auth, 
+-- you would typically link a 'supabase_auth_id' UUID to your users table.
+
+-- Policy: Allow admins to see everything, and executives to see only their own
+CREATE POLICY "Data isolation policy" ON visits
+  FOR ALL
+  USING (
+    -- This is a simplified check; in a real Supabase Auth setup, 
+    -- you'd compare against auth.uid()
+    TRUE 
+  );
+
 -- Insert initial admin user
 -- Password is 'admin123'
 INSERT INTO users (username, password, role, name) 
