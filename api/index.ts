@@ -1,3 +1,5 @@
+export const runtime = "nodejs"; // 👈 ADD THIS LINE (VERY TOP)
+
 import express, { type Request, Response, NextFunction } from "express";
 import { registerRoutes } from "../server/routes.js";
 import { createServer } from "http";
