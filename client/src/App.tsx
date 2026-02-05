@@ -10,6 +10,7 @@ import { Navigation } from "@/components/Navigation";
 import LoginPage from "@/pages/LoginPage";
 import ExecutiveDashboard from "@/pages/executive/Dashboard";
 import VisitForm from "@/pages/executive/VisitForm";
+import History from "@/pages/executive/History";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import NotFound from "@/pages/not-found";
 
@@ -30,6 +31,11 @@ function Router() {
           <ProtectedRoute 
             path="/visits/new" 
             component={VisitForm} 
+            roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/visits/history" 
+            component={History} 
             roles={['executive', 'admin']} 
           />
           
