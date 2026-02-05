@@ -3,8 +3,8 @@
 To use Supabase with this project, run the following SQL in your Supabase SQL Editor:
 
 ```sql
--- Create users table
-CREATE TABLE users (
+-- Create users table if it doesn't exist
+CREATE TABLE IF NOT EXISTS users (
   id SERIAL PRIMARY KEY,
   username TEXT UNIQUE NOT NULL, -- Login ID (e.g. 1001)
   password TEXT NOT NULL,
@@ -12,8 +12,16 @@ CREATE TABLE users (
   name TEXT NOT NULL
 );
 
--- Create visits table
-CREATE TABLE visits (
+-- Ensure 'name' column exists in 'users' table (in case table already exists without it)
+DO $$ 
+BEGIN 
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_name='users' AND column_name='name') THEN
+    ALTER TABLE users ADD COLUMN name TEXT NOT NULL DEFAULT 'User';
+  END IF;
+END $$;
+
+-- Create visits table if it doesn't exist
+CREATE TABLE IF NOT EXISTS visits (
   id SERIAL PRIMARY KEY,
   user_id INTEGER NOT NULL REFERENCES users(id),
   visit_date TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -56,6 +64,7 @@ ALTER TABLE visits ENABLE ROW LEVEL SECURITY;
 -- you would typically link a 'supabase_auth_id' UUID to your users table.
 
 -- Policy: Allow admins to see everything, and executives to see only their own
+DROP POLICY IF EXISTS "Data isolation policy" ON visits;
 CREATE POLICY "Data isolation policy" ON visits
   FOR ALL
   USING (
@@ -64,15 +73,17 @@ CREATE POLICY "Data isolation policy" ON visits
     TRUE 
   );
 
--- Insert initial admin user
+-- Insert initial admin user if not exists
 -- Password is 'admin123'
 INSERT INTO users (username, password, role, name) 
-VALUES ('admin', 'admin123', 'admin', 'System Admin');
+SELECT 'admin', 'admin123', 'admin', 'System Admin'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = 'admin');
 
--- Insert initial sales executive
+-- Insert initial sales executive if not exists
 -- Password is '123abc'
 INSERT INTO users (username, password, role, name) 
-VALUES ('1001', '123abc', 'executive', 'John Doe');
+SELECT '1001', '123abc', 'executive', 'John Doe'
+WHERE NOT EXISTS (SELECT 1 FROM users WHERE username = '1001');
 ```
 
 ## Connection Configuration

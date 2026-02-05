@@ -13,21 +13,49 @@ import path from "path";
 import fs from "fs";
 import express from "express";
 
-// Ensure uploads directory exists (safely for serverless environments)
+// Ensure uploads directory exists (safely for different environments)
 const uploadDir = path.join(process.cwd(), "uploads");
 try {
+  // Use a fallback to /tmp/uploads if the local directory is read-only (common in serverless/production)
   if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+    try {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    } catch (mkdirErr) {
+      console.warn("Could not create local uploads directory, falling back to /tmp/uploads:", mkdirErr);
+      const tmpUploadDir = "/tmp/uploads";
+      if (!fs.existsSync(tmpUploadDir)) {
+        fs.mkdirSync(tmpUploadDir, { recursive: true });
+      }
+      // Update uploadDir to point to tmp
+      // Note: We'll keep using the constant name but point it elsewhere
+    }
   }
 } catch (err) {
-  console.warn("Could not create uploads directory, likely a read-only filesystem:", err);
+  console.error("Critical error setting up uploads directory:", err);
 }
+
+// Final check/fallback for the actual directory path used by multer
+const finalUploadDir = (function() {
+  try {
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+      return uploadDir;
+    }
+    return uploadDir;
+  } catch (e) {
+    const tmpPath = "/tmp/uploads";
+    if (!fs.existsSync(tmpPath)) {
+      fs.mkdirSync(tmpPath, { recursive: true });
+    }
+    return tmpPath;
+  }
+})();
 
 // Multer setup for file uploads
 const upload = multer({
   storage: multer.diskStorage({
     destination: (req, file, cb) => {
-      cb(null, uploadDir);
+      cb(null, finalUploadDir);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
@@ -43,7 +71,7 @@ export async function registerRoutes(
 ): Promise<Server> {
   
   // Serve uploaded files statically
-  app.use("/uploads", express.static(uploadDir));
+  app.use("/uploads", express.static(finalUploadDir));
 
   // --- Auth Setup ---
   passport.use(new LocalStrategy(async (username, password, done) => {
