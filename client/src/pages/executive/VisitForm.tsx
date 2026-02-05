@@ -363,14 +363,35 @@ export default function VisitForm() {
               <div className="md:col-span-2">
                 <FormField
                   control={form.control}
+                  name="mom"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Minutes of Meeting (MOM)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          placeholder="Detailed discussion points..." 
+                          className="min-h-[120px]"
+                          {...field} 
+                          value={field.value || ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <FormField
+                  control={form.control}
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Remarks / Feedback</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Summary of discussion..." 
-                          className="min-h-[100px]"
+                          placeholder="Quick summary or next steps..." 
+                          className="min-h-[80px]"
                           {...field} 
                           value={field.value || ""}
                         />

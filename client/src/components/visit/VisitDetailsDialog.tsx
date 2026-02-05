@@ -47,6 +47,17 @@ export function VisitDetailsDialog({ visit, open, onOpenChange }: VisitDetailsDi
                   src={visit.photoUrl} 
                   alt="Visit" 
                   className="object-cover w-full h-full"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      const fallback = document.createElement('div');
+                      fallback.className = 'flex items-center justify-center w-full h-full text-muted-foreground bg-muted';
+                      fallback.innerHTML = '<span>Image could not be loaded</span>';
+                      parent.appendChild(fallback);
+                    }
+                  }}
                 />
               </div>
             )}
