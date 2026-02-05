@@ -69,11 +69,17 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (filter?.startDate) {
-      conditions.push(gte(visits.visitDate, filter.startDate));
+      // Set to start of day
+      const start = new Date(filter.startDate);
+      start.setHours(0, 0, 0, 0);
+      conditions.push(gte(visits.visitDate, start));
     }
     
     if (filter?.endDate) {
-      conditions.push(lte(visits.visitDate, filter.endDate));
+      // Set to end of day
+      const end = new Date(filter.endDate);
+      end.setHours(23, 59, 59, 999);
+      conditions.push(lte(visits.visitDate, end));
     }
 
     return await db.select()

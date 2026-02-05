@@ -59,7 +59,6 @@ export function useCreateVisit() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [api.visits.list.path] });
-      queryClient.invalidateQueries({ queryKey: ["/api/dashboard-stats"] }); // Ensure stats refresh
       toast({
         title: "Visit Logged Successfully",
         description: "Your field visit has been recorded.",
