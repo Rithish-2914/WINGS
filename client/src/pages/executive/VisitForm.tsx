@@ -51,7 +51,7 @@ export default function VisitForm() {
       pincode: "",
       contactPerson: "",
       contactMobile: "",
-      visitDate: new Date().toISOString(), // Default to now
+      visitDate: new Date(), // Fixed: Should be Date object, not string
       demoGiven: false,
       sampleSubmitted: false,
       booksSubmitted: [],

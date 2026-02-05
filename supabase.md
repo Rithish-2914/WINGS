@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS visits (
   
   -- School Details
   school_name TEXT NOT NULL,
-  school_type TEXT, -- Pre school, Kindergarten, Primary
+  school_type TEXT, -- Pre school, Kindergarten, Primary, High School
   address TEXT NOT NULL,
   city TEXT NOT NULL,
   pincode TEXT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE IF NOT EXISTS visits (
   
   -- Samples
   sample_submitted BOOLEAN DEFAULT FALSE,
-  books_submitted JSONB, -- Array of book names
+  books_submitted JSONB DEFAULT '[]'::jsonb, -- Array of book names
   
   created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

@@ -48,7 +48,10 @@ export const visits = pgTable("visits", {
 
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
-export const insertVisitSchema = createInsertSchema(visits).omit({ 
+export const insertVisitSchema = createInsertSchema(visits, {
+  visitDate: z.coerce.date(),
+  books_submitted: z.array(z.string()).optional(),
+}).omit({ 
   id: true, 
   createdAt: true,
   userId: true // Set by backend from session
