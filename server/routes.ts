@@ -13,10 +13,14 @@ import path from "path";
 import fs from "fs";
 import express from "express";
 
-// Ensure uploads directory exists
+// Ensure uploads directory exists (safely for serverless environments)
 const uploadDir = path.join(process.cwd(), "uploads");
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir);
+try {
+  if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir, { recursive: true });
+  }
+} catch (err) {
+  console.warn("Could not create uploads directory, likely a read-only filesystem:", err);
 }
 
 // Multer setup for file uploads
