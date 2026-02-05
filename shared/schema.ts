@@ -46,6 +46,15 @@ export const visits = pgTable("visits", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const targets = pgTable("targets", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull(),
+  executiveId: integer("executive_id").notNull(),
+  targetVisits: integer("target_visits").notNull(),
+  targetDate: timestamp("target_date").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {
@@ -57,11 +66,21 @@ export const insertVisitSchema = createInsertSchema(visits, {
   userId: true // Set by backend from session
 });
 
+export const insertTargetSchema = createInsertSchema(targets, {
+  targetDate: z.coerce.date(),
+}).omit({
+  id: true,
+  createdAt: true,
+  adminId: true
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type Visit = typeof visits.$inferSelect;
 export type InsertVisit = z.infer<typeof insertVisitSchema>;
+export type Target = typeof targets.$inferSelect;
+export type InsertTarget = z.infer<typeof insertTargetSchema>;
 
 // API Types
 export type LoginRequest = {

@@ -8,7 +8,9 @@ import {
   Calendar, 
   CheckCircle2, 
   Clock,
-  Briefcase
+  Briefcase,
+  Eye,
+  Target as TargetIcon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
@@ -16,11 +18,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useState } from "react";
+import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
+import { useQuery } from "@tanstack/react-query";
+import type { Visit, Target } from "@shared/schema";
 
 export default function ExecutiveDashboard() {
   const { user } = useAuth();
   const today = new Date();
   const dateStr = format(today, "yyyy-MM-dd");
+  const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   // Fetch today's visits
   const { data: visits, isLoading } = useVisits({ 
@@ -28,6 +36,23 @@ export default function ExecutiveDashboard() {
     startDate: dateStr, 
     endDate: dateStr 
   });
+
+  // Fetch today's targets
+  const { data: targets } = useQuery<Target[]>({
+    queryKey: ["/api/targets", { executiveId: user?.id, date: dateStr }],
+    queryFn: async () => {
+      const res = await fetch(`/api/targets?executiveId=${user?.id}&date=${dateStr}`);
+      if (!res.ok) throw new Error("Failed to fetch targets");
+      return res.json();
+    }
+  });
+
+  const dailyTarget = targets && targets.length > 0 ? targets[0].targetVisits : 0;
+
+  const handleViewVisit = (visit: Visit) => {
+    setSelectedVisit(visit);
+    setIsDetailsOpen(true);
+  };
 
   // Sort visits by date descending for the timeline
   const sortedVisits = visits ? [...visits].sort((a, b) => 
@@ -47,12 +72,20 @@ export default function ExecutiveDashboard() {
             {format(today, "EEEE, MMMM do, yyyy")}
           </p>
         </div>
-        <Link href="/visits/new">
-          <Button size="lg" className="shadow-lg shadow-primary/20">
-            <Plus className="mr-2 h-5 w-5" />
-            New Visit Entry
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+          {dailyTarget > 0 && (
+            <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold border border-primary/20">
+              <TargetIcon className="h-5 w-5" />
+              Target: {totalVisits}/{dailyTarget}
+            </div>
+          )}
+          <Link href="/visits/new">
+            <Button size="lg" className="shadow-lg shadow-primary/20">
+              <Plus className="mr-2 h-5 w-5" />
+              New Visit Entry
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
@@ -111,6 +144,7 @@ export default function ExecutiveDashboard() {
                     <div 
                       key={visit.id} 
                       className="flex gap-4 p-4 rounded-xl border bg-card hover:bg-accent/5 transition-colors group relative overflow-hidden"
+                      onClick={() => handleViewVisit(visit)}
                     >
                       <div className="flex-none">
                         <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
@@ -126,9 +160,12 @@ export default function ExecutiveDashboard() {
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center justify-between">
                           <h4 className="font-semibold text-base">{visit.schoolName}</h4>
-                          <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full font-medium">
-                            {format(new Date(visit.visitDate), "h:mm a")}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded-full font-medium">
+                              {format(new Date(visit.visitDate), "h:mm a")}
+                            </span>
+                            <Eye className="h-4 w-4 opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
                         </div>
                         <p className="text-sm text-muted-foreground flex items-center gap-1">
                           <MapPin className="h-3 w-3" />
@@ -148,6 +185,12 @@ export default function ExecutiveDashboard() {
           </CardContent>
         </Card>
       </div>
+
+      <VisitDetailsDialog 
+        visit={selectedVisit} 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+      />
     </div>
   );
 }

@@ -2,9 +2,10 @@
 import { db, pool } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
-  users, visits, 
+  users, visits, targets,
   type User, type InsertUser, 
-  type Visit, type InsertVisit 
+  type Visit, type InsertVisit,
+  type Target, type InsertTarget
 } from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -22,6 +23,10 @@ export interface IStorage {
   getVisit(id: number): Promise<Visit | undefined>;
   listVisits(filter?: { userId?: number, startDate?: Date, endDate?: Date }): Promise<Visit[]>;
   
+  // Targets
+  createTarget(target: InsertTarget & { adminId: number }): Promise<Target>;
+  listTargets(filter?: { executiveId?: number, date?: Date }): Promise<Target[]>;
+
   // Session Store
   sessionStore: session.Store;
 }
@@ -86,6 +91,29 @@ export class DatabaseStorage implements IStorage {
       .from(visits)
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(visits.visitDate));
+  }
+
+  async createTarget(target: InsertTarget & { adminId: number }): Promise<Target> {
+    const [newTarget] = await db.insert(targets).values(target).returning();
+    return newTarget;
+  }
+
+  async listTargets(filter?: { executiveId?: number, date?: Date }): Promise<Target[]> {
+    let conditions = [];
+    if (filter?.executiveId) {
+      conditions.push(eq(targets.executiveId, filter.executiveId));
+    }
+    if (filter?.date) {
+      const start = new Date(filter.date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(filter.date);
+      end.setHours(23, 59, 59, 999);
+      conditions.push(and(gte(targets.targetDate, start), lte(targets.targetDate, end)));
+    }
+    return await db.select()
+      .from(targets)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(targets.targetDate));
   }
 }
 

@@ -35,17 +35,33 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Download, Search, Filter, FileText, Users, School, Eye, User as UserIcon } from "lucide-react";
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger,
+  DialogFooter
+} from "@/components/ui/dialog";
+import { Download, Search, Filter, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
-import { useQuery } from "@tanstack/react-query";
-import type { Visit, User } from "@shared/schema";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import type { Visit, User, Target } from "@shared/schema";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string>("all");
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+  const [isTargetDialogOpen, setIsTargetDialogOpen] = useState(false);
+  const [targetExecId, setTargetExecId] = useState<string>("");
+  const [targetCount, setTargetCount] = useState<string>("5");
+  const [targetDate, setTargetDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
+  
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Fetch all users to populate filter
   const { data: users } = useQuery<User[]>({
@@ -56,6 +72,41 @@ export default function AdminDashboard() {
       return res.json();
     }
   });
+
+  const { data: targets } = useQuery<Target[]>({
+    queryKey: ["/api/targets"],
+    queryFn: async () => {
+      const res = await fetch("/api/targets");
+      if (!res.ok) throw new Error("Failed to fetch targets");
+      return res.json();
+    }
+  });
+
+  const setTargetMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch("/api/targets", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error("Failed to set target");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/targets"] });
+      toast({ title: "Target Set", description: "The daily target has been assigned." });
+      setIsTargetDialogOpen(false);
+    }
+  });
+
+  const handleSetTarget = () => {
+    if (!targetExecId) return;
+    setTargetMutation.mutate({
+      executiveId: Number(targetExecId),
+      targetVisits: Number(targetCount),
+      targetDate: new Date(targetDate)
+    });
+  };
 
   // In a real app, date range picker would be here
   const startDate = format(subDays(new Date(), 30), "yyyy-MM-dd");
@@ -84,15 +135,17 @@ export default function AdminDashboard() {
       .map(user => {
         const userVisits = visits.filter(v => v.userId === user.id);
         const todayVisits = userVisits.filter(v => isSameDay(new Date(v.visitDate), new Date()));
+        const userTarget = targets?.find(t => t.executiveId === user.id && isSameDay(new Date(t.targetDate), new Date()));
         
         return {
           ...user,
           totalVisits: userVisits.length,
           revisits: userVisits.filter(v => v.visitType === 'Re-Visit').length,
-          todayCount: todayVisits.length
+          todayCount: todayVisits.length,
+          target: userTarget?.targetVisits || 0
         };
       });
-  }, [users, visits]);
+  }, [users, visits, targets]);
 
   const handleViewVisit = (visit: Visit) => {
     setSelectedVisit(visit);
@@ -149,6 +202,56 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Dialog open={isTargetDialogOpen} onOpenChange={setIsTargetDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <TargetIcon className="h-4 w-4" />
+                Set Daily Targets
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Assign Daily Target</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sales Executive</label>
+                  <Select value={targetExecId} onValueChange={setTargetExecId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select executive" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {users?.filter(u => u.role === 'executive').map(user => (
+                        <SelectItem key={user.id} value={user.id.toString()}>{user.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Target Visits</label>
+                  <Input 
+                    type="number" 
+                    value={targetCount} 
+                    onChange={(e) => setTargetCount(e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Target Date</label>
+                  <Input 
+                    type="date" 
+                    value={targetDate} 
+                    onChange={(e) => setTargetDate(e.target.value)} 
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleSetTarget} disabled={setTargetMutation.isPending}>
+                  {setTargetMutation.isPending && <Plus className="mr-2 h-4 w-4 animate-spin" />}
+                  Assign Target
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Select value={selectedUserId} onValueChange={setSelectedUserId}>
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="Filter by User" />
@@ -172,9 +275,16 @@ export default function AdminDashboard() {
         {executiveStats.map(exec => (
           <Card key={exec.id} className="hover:bg-accent/5 transition-colors cursor-pointer" onClick={() => setSelectedUserId(exec.id.toString())}>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium flex items-center gap-2">
-                <UserIcon className="h-4 w-4 text-primary" />
-                {exec.name}
+              <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <UserIcon className="h-4 w-4 text-primary" />
+                  {exec.name}
+                </div>
+                {exec.target > 0 && (
+                   <Badge variant={exec.todayCount >= exec.target ? "default" : "secondary"} className="text-[10px]">
+                     {exec.todayCount}/{exec.target} Target
+                   </Badge>
+                )}
               </CardTitle>
               <CardDescription>ID: {exec.username}</CardDescription>
             </CardHeader>

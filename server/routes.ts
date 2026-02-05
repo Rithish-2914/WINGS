@@ -205,6 +205,33 @@ export async function registerRoutes(
     res.json(visit);
   });
 
+  // --- Target Routes ---
+  app.post("/api/targets", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    
+    try {
+      const target = await storage.createTarget({
+        ...req.body,
+        adminId: user.id
+      });
+      res.status(201).json(target);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.get("/api/targets", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    const executiveId = req.query.executiveId ? Number(req.query.executiveId) : (user.role === 'executive' ? user.id : undefined);
+    const date = req.query.date ? new Date(req.query.date as string) : undefined;
+    
+    const targets = await storage.listTargets({ executiveId, date });
+    res.json(targets);
+  });
+
   // --- Upload Route ---
   app.post(api.upload.create.path, upload.single('file'), (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
