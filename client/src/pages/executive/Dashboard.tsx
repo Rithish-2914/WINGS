@@ -29,6 +29,11 @@ export default function ExecutiveDashboard() {
     endDate: dateStr 
   });
 
+  // Sort visits by date descending for the timeline
+  const sortedVisits = visits ? [...visits].sort((a, b) => 
+    new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime()
+  ) : [];
+
   const totalVisits = visits?.length || 0;
   const reVisits = visits?.filter(v => v.visitType === "Re-Visit").length || 0;
   const newVisits = visits?.filter(v => v.visitType === "First Visit").length || 0;
@@ -102,7 +107,7 @@ export default function ExecutiveDashboard() {
             ) : (
               <ScrollArea className="h-[400px] pr-4">
                 <div className="space-y-4">
-                  {visits?.map((visit) => (
+                  {sortedVisits.map((visit) => (
                     <div 
                       key={visit.id} 
                       className="flex gap-4 p-4 rounded-xl border bg-card hover:bg-accent/5 transition-colors group relative overflow-hidden"

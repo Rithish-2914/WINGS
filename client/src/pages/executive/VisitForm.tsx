@@ -97,12 +97,18 @@ export default function VisitForm() {
     }
   };
 
-  const onSubmit = (data: VisitFormValues) => {
+  const onSubmit = async (data: VisitFormValues) => {
     // Ensure array format for books submitted if empty
     if (!data.booksSubmitted) {
       data.booksSubmitted = [];
     }
-    createVisit.mutate(data);
+    
+    try {
+      await createVisit.mutateAsync(data);
+      setLocation("/dashboard");
+    } catch (error) {
+      console.error("Failed to create visit:", error);
+    }
   };
 
   return (

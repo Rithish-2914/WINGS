@@ -100,10 +100,7 @@ export default function History() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <h4 className="font-semibold text-base">{visit.schoolName}</h4>
-                          <span className={cn(
-                            "text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded",
-                            visit.visitType === "First Visit" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" : "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400"
-                          )}>
+                          <span className="text-[10px] uppercase tracking-wider font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
                             {visit.visitType}
                           </span>
                         </div>
