@@ -2,8 +2,9 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
+import { db } from "./db.js";
+import { users, visits, insertVisitSchema } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
-import { insertVisitSchema } from "../shared/schema.js";
 import { z } from "zod";
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
@@ -126,6 +127,17 @@ export async function registerRoutes(
   app.get(api.auth.me.path, (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
+  });
+
+  // --- User Routes ---
+  app.get("/api/users", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    
+    const allUsers = await db.select().from(users);
+    // Don't send passwords
+    res.json(allUsers.map(({ password, ...rest }) => rest));
   });
 
   // --- Visit Routes ---

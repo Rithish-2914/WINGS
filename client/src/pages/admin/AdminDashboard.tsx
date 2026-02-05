@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useVisits } from "@/hooks/use-visits";
-import { format, subDays } from "date-fns";
+import { format, subDays, isSameDay } from "date-fns";
 import { 
   BarChart, 
   Bar, 
@@ -28,23 +28,76 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Download, Search, Filter } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { Download, Search, Filter, FileText, Users, School, Eye, User as UserIcon } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
-import { FileText, Users, School } from "lucide-react";
+import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
+import { useQuery } from "@tanstack/react-query";
+import type { Visit, User } from "@shared/schema";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedUserId, setSelectedUserId] = useState<string>("all");
+  const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
+
+  // Fetch all users to populate filter
+  const { data: users } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+    queryFn: async () => {
+      const res = await fetch("/api/users");
+      if (!res.ok) throw new Error("Failed to fetch users");
+      return res.json();
+    }
+  });
+
   // In a real app, date range picker would be here
   const startDate = format(subDays(new Date(), 30), "yyyy-MM-dd");
   const endDate = format(new Date(), "yyyy-MM-dd");
   
-  const { data: visits, isLoading } = useVisits({ startDate, endDate });
+  const { data: visits, isLoading } = useVisits({ 
+    startDate, 
+    endDate,
+    userId: selectedUserId === "all" ? undefined : Number(selectedUserId)
+  });
 
   // Filter logic
-  const filteredVisits = visits?.filter(visit => 
-    visit.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    visit.city.toLowerCase().includes(searchTerm.toLowerCase())
-  ) || [];
+  const filteredVisits = useMemo(() => {
+    return visits?.filter(visit => 
+      visit.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      visit.city.toLowerCase().includes(searchTerm.toLowerCase())
+    ) || [];
+  }, [visits, searchTerm]);
+
+  // Executive stats for the current day and overall
+  const executiveStats = useMemo(() => {
+    if (!users || !visits) return [];
+    
+    return users
+      .filter(u => u.role === 'executive')
+      .map(user => {
+        const userVisits = visits.filter(v => v.userId === user.id);
+        const todayVisits = userVisits.filter(v => isSameDay(new Date(v.visitDate), new Date()));
+        
+        return {
+          ...user,
+          totalVisits: userVisits.length,
+          revisits: userVisits.filter(v => v.visitType === 'Re-Visit').length,
+          todayCount: todayVisits.length
+        };
+      });
+  }, [users, visits]);
+
+  const handleViewVisit = (visit: Visit) => {
+    setSelectedVisit(visit);
+    setIsDetailsOpen(true);
+  };
 
   // Stats calculation
   const totalVisits = filteredVisits.length;
@@ -95,16 +148,50 @@ export default function AdminDashboard() {
             Overview of field activities for the last 30 days
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Filter className="h-4 w-4" />
-            Filters
-          </Button>
+        <div className="flex flex-wrap gap-2">
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filter by User" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Executives</SelectItem>
+              {users?.filter(u => u.role === 'executive').map(user => (
+                <SelectItem key={user.id} value={user.id.toString()}>{user.name}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <Button onClick={handleExport} className="gap-2">
             <Download className="h-4 w-4" />
-            Export Report
+            Export CSV
           </Button>
         </div>
+      </div>
+
+      {/* Executive Performance Summary */}
+      <div className="grid gap-4 md:grid-cols-4">
+        {executiveStats.map(exec => (
+          <Card key={exec.id} className="hover:bg-accent/5 transition-colors cursor-pointer" onClick={() => setSelectedUserId(exec.id.toString())}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <UserIcon className="h-4 w-4 text-primary" />
+                {exec.name}
+              </CardTitle>
+              <CardDescription>ID: {exec.username}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex justify-between items-end">
+                <div className="space-y-1">
+                  <p className="text-2xl font-bold">{exec.totalVisits}</p>
+                  <p className="text-xs text-muted-foreground">Total Visits</p>
+                </div>
+                <div className="text-right space-y-1">
+                  <Badge variant="outline" className="text-[10px]">{exec.todayCount} Today</Badge>
+                  <p className="text-[10px] text-muted-foreground">{exec.revisits} Re-visits</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Stats Row */}
@@ -172,10 +259,10 @@ export default function AdminDashboard() {
               <TableHeader>
                 <TableRow>
                   <TableHead>Date</TableHead>
+                  <TableHead>Executive</TableHead>
                   <TableHead>School Name</TableHead>
                   <TableHead>City</TableHead>
                   <TableHead>Type</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
@@ -193,35 +280,47 @@ export default function AdminDashboard() {
                     </TableCell>
                   </TableRow>
                 ) : (
-                  filteredVisits.map((visit) => (
-                    <TableRow key={visit.id}>
-                      <TableCell className="font-medium">
-                        {format(new Date(visit.visitDate), "MMM d, yyyy")}
-                      </TableCell>
-                      <TableCell>{visit.schoolName}</TableCell>
-                      <TableCell>{visit.city}</TableCell>
-                      <TableCell>
-                        <Badge variant={visit.visitType === "First Visit" ? "default" : "secondary"}>
-                          {visit.visitType}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-2">
-                          {visit.demoGiven && <Badge variant="outline" className="border-blue-200 bg-blue-50 text-blue-700">Demo</Badge>}
-                          {visit.sampleSubmitted && <Badge variant="outline" className="border-green-200 bg-green-50 text-green-700">Sample</Badge>}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Button variant="ghost" size="sm">View</Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
+                  filteredVisits.map((visit) => {
+                    const exec = users?.find(u => u.id === visit.userId);
+                    return (
+                      <TableRow key={visit.id}>
+                        <TableCell className="font-medium">
+                          {format(new Date(visit.visitDate), "MMM d, yyyy")}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{exec?.name || "Missing User"}</span>
+                            <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{visit.schoolName}</TableCell>
+                        <TableCell>{visit.city}</TableCell>
+                        <TableCell>
+                          <Badge variant={visit.visitType === "First Visit" ? "default" : "secondary"}>
+                            {visit.visitType}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="ghost" size="sm" onClick={() => handleViewVisit(visit)}>
+                            <Eye className="h-4 w-4 mr-2" />
+                            View
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
                 )}
               </TableBody>
             </Table>
           </div>
         </CardContent>
       </Card>
+
+      <VisitDetailsDialog 
+        visit={selectedVisit} 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+      />
     </div>
   );
 }

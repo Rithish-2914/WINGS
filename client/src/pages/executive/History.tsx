@@ -5,22 +5,33 @@ import {
   MapPin, 
   Calendar, 
   Filter,
-  Search as SearchIcon
+  Search as SearchIcon,
+  Eye
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
+import type { Visit } from "@shared/schema";
 
 export default function History() {
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
+  const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
   const { data: visits, isLoading } = useVisits({ 
     userId: user?.id
   });
+
+  const handleViewVisit = (visit: Visit) => {
+    setSelectedVisit(visit);
+    setIsDetailsOpen(true);
+  };
 
   const filteredVisits = visits?.filter(v => 
     v.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -104,9 +115,19 @@ export default function History() {
                             {visit.visitType}
                           </span>
                         </div>
-                        <span className="text-xs text-muted-foreground font-medium">
-                          {format(new Date(visit.visitDate), "MMM do, yyyy • h:mm a")}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-muted-foreground font-medium">
+                            {format(new Date(visit.visitDate), "MMM do, yyyy • h:mm a")}
+                          </span>
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity"
+                            onClick={() => handleViewVisit(visit)}
+                          >
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
                         <MapPin className="h-3 w-3" />
@@ -125,6 +146,12 @@ export default function History() {
           )}
         </CardContent>
       </Card>
+
+      <VisitDetailsDialog 
+        visit={selectedVisit} 
+        open={isDetailsOpen} 
+        onOpenChange={setIsDetailsOpen} 
+      />
     </div>
   );
 }
