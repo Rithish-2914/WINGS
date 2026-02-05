@@ -30,7 +30,6 @@ export function Navigation() {
   const links = isAdmin
     ? [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
-        { href: "/admin/reports", label: "Reports", icon: FileText },
       ]
     : [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -57,7 +56,7 @@ export function Navigation() {
             <SheetContent side="left" className="w-[240px] sm:w-[300px]">
               <div className="flex flex-col gap-6 py-4">
                 <div className="flex items-center gap-2 font-bold text-xl px-2">
-                  <span className="bg-primary text-primary-foreground p-1 rounded">FR</span>
+                  <span>F</span>
                   <span>FieldReport</span>
                 </div>
                 <nav className="flex flex-col gap-2">
@@ -97,7 +96,7 @@ export function Navigation() {
         {/* Desktop Logo */}
         <div className="mr-4 hidden md:flex">
           <Link href={isAdmin ? "/admin" : "/dashboard"} className="mr-6 flex items-center space-x-2">
-            <span className="bg-primary text-primary-foreground p-1 rounded font-bold">FR</span>
+            <span className="font-bold">F</span>
             <span className="hidden font-bold sm:inline-block">FieldReport</span>
           </Link>
           <nav className="flex items-center space-x-6 text-sm font-medium">
