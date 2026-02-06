@@ -49,10 +49,9 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             {(() => {
               try {
                 if (!visit.visitDate) return "No Date";
+                // Parse date robustly to prevent RangeError
                 const date = new Date(visit.visitDate);
                 if (isNaN(date.getTime())) return "No Date";
-                // Add check for format availability
-                if (typeof format !== 'function') return "Date Format Error";
                 return format(date, "PPPP 'at' p");
               } catch (e) {
                 return "No Date";
@@ -84,11 +83,12 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                       <Clock className="h-3 w-3" />
                       Captured: {(() => {
                         try {
+                          if (!metadata.timestamp) return "No Time";
                           const date = new Date(metadata.timestamp);
-                          if (isNaN(date.getTime())) return "Invalid Time";
+                          if (isNaN(date.getTime())) return "No Time";
                           return format(date, "h:mm:ss a");
                         } catch (e) {
-                          return "Invalid Time";
+                          return "No Time";
                         }
                       })()}
                     </div>
