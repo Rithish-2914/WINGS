@@ -49,8 +49,9 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             {(() => {
               try {
                 if (!visit.visitDate) return "No Date";
-                // Parse date robustly to prevent RangeError
-                const date = new Date(visit.visitDate);
+                // Double parse for extra safety
+                const d = typeof visit.visitDate === 'string' ? new Date(visit.visitDate) : visit.visitDate;
+                const date = new Date(d);
                 if (isNaN(date.getTime())) return "No Date";
                 return format(date, "PPPP 'at' p");
               } catch (e) {

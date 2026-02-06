@@ -36,7 +36,8 @@ export default function History() {
   const filteredVisits = visits?.filter(v => 
     (v.schoolName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (v.city || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (v.remarks || "").toLowerCase().includes(searchTerm.toLowerCase())
+    (v.remarks || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (v.address || "").toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -120,8 +121,9 @@ export default function History() {
                             {(() => {
                               try {
                                 if (!visit.visitDate) return "No Date";
-                                // Parse date robustly to prevent RangeError
-                                const date = new Date(visit.visitDate);
+                                // Double parse for extra safety
+                                const d = typeof visit.visitDate === 'string' ? new Date(visit.visitDate) : visit.visitDate;
+                                const date = new Date(d);
                                 if (isNaN(date.getTime())) return "No Date";
                                 return format(date, "MMM do, yyyy • h:mm a");
                               } catch (e) {
