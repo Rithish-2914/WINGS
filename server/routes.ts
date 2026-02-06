@@ -37,17 +37,19 @@ try {
 
 // Final check/fallback for the actual directory path used by multer
 const finalUploadDir = (function() {
+  console.log("process.cwd():", process.cwd());
   try {
     if (!fs.existsSync(uploadDir)) {
       fs.mkdirSync(uploadDir, { recursive: true });
-      return uploadDir;
     }
+    console.log("Using uploadDir:", uploadDir);
     return uploadDir;
   } catch (e) {
     const tmpPath = "/tmp/uploads";
     if (!fs.existsSync(tmpPath)) {
       fs.mkdirSync(tmpPath, { recursive: true });
     }
+    console.log("Falling back to tmpPath:", tmpPath);
     return tmpPath;
   }
 })();
