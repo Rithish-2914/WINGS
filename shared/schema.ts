@@ -63,10 +63,11 @@ export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {
   visitDate: z.coerce.date(),
   booksSubmitted: z.array(z.string()).optional(),
+  visitCount: z.number().min(1).default(1),
 }).omit({ 
   id: true, 
   createdAt: true,
-  userId: true // Set by backend from session
+  userId: true 
 });
 
 export const insertTargetSchema = createInsertSchema(targets, {

@@ -4,23 +4,30 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen } from "lucide-react";
+import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen, Clock, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/hooks/use-auth";
 import type { Visit } from "@shared/schema";
 
 interface VisitDetailsDialogProps {
   visit: Visit | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDelete?: (id: number) => void;
 }
 
-export function VisitDetailsDialog({ visit, open, onOpenChange }: VisitDetailsDialogProps) {
+export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: VisitDetailsDialogProps) {
+  const { user } = useAuth();
   if (!visit) return null;
 
+  const isAdmin = user?.role === 'admin';
   const books = Array.isArray(visit.booksSubmitted) ? visit.booksSubmitted : [];
+  const metadata = visit.photoMetadata as { timestamp: string, lat: string, lng: string } | null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -28,9 +35,14 @@ export function VisitDetailsDialog({ visit, open, onOpenChange }: VisitDetailsDi
         <DialogHeader>
           <div className="flex items-center justify-between gap-4">
             <DialogTitle className="text-2xl font-bold">{visit.schoolName}</DialogTitle>
-            <Badge variant={visit.visitType === "First Visit" ? "default" : "secondary"}>
-              {visit.visitType}
-            </Badge>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline">
+                Visit #{visit.visitCount || 1}
+              </Badge>
+              <Badge variant={visit.visitType === "First Visit" ? "default" : "secondary"}>
+                {visit.visitType}
+              </Badge>
+            </div>
           </div>
           <DialogDescription className="flex items-center gap-2 mt-1">
             <Calendar className="h-4 w-4" />
@@ -42,23 +54,26 @@ export function VisitDetailsDialog({ visit, open, onOpenChange }: VisitDetailsDi
           <div className="space-y-6 pb-4">
             {/* Photo Preview if available */}
             {visit.photoUrl && (
-              <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
-                <img 
-                  src={visit.photoUrl} 
-                  alt="Visit" 
-                  className="object-cover w-full h-full"
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      const fallback = document.createElement('div');
-                      fallback.className = 'flex items-center justify-center w-full h-full text-muted-foreground bg-muted';
-                      fallback.innerHTML = '<span>Image could not be loaded</span>';
-                      parent.appendChild(fallback);
-                    }
-                  }}
-                />
+              <div className="space-y-2">
+                <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
+                  <img 
+                    src={visit.photoUrl} 
+                    alt="Visit" 
+                    className="object-cover w-full h-full"
+                  />
+                </div>
+                {metadata && (
+                  <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
+                    <div className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      Captured: {format(new Date(metadata.timestamp), "h:mm:ss a")}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <MapPin className="h-3 w-3" />
+                      GPS: {Number(metadata.lat).toFixed(4)}, {Number(metadata.lng).toFixed(4)}
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -150,6 +165,23 @@ export function VisitDetailsDialog({ visit, open, onOpenChange }: VisitDetailsDi
             </div>
           </div>
         </ScrollArea>
+
+        {isAdmin && onDelete && (
+          <DialogFooter className="border-t pt-4">
+            <Button 
+              variant="destructive" 
+              className="w-full sm:w-auto"
+              onClick={() => {
+                if (confirm("Are you sure you want to delete this visit history? This action cannot be undone.")) {
+                  onDelete(visit.id);
+                }
+              }}
+            >
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Visit History
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   );

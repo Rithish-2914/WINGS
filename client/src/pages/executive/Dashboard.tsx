@@ -48,6 +48,7 @@ export default function ExecutiveDashboard() {
   });
 
   const dailyTarget = targets && targets.length > 0 ? targets[0].targetVisits : 0;
+  const targetRemarks = targets && targets.length > 0 ? (targets[0] as any).remarks : null;
 
   const handleViewVisit = (visit: Visit) => {
     setSelectedVisit(visit);
@@ -72,19 +73,26 @@ export default function ExecutiveDashboard() {
             {format(today, "EEEE, MMMM do, yyyy")}
           </p>
         </div>
-        <div className="flex gap-2">
-          {dailyTarget > 0 && (
-            <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold border border-primary/20">
-              <TargetIcon className="h-5 w-5" />
-              Target: {totalVisits}/{dailyTarget}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex gap-2">
+            {dailyTarget > 0 && (
+              <div className="flex items-center gap-2 bg-primary/10 text-primary px-4 py-2 rounded-lg font-bold border border-primary/20">
+                <TargetIcon className="h-5 w-5" />
+                Target: {totalVisits}/{dailyTarget}
+              </div>
+            )}
+            <Link href="/visits/new">
+              <Button size="lg" className="shadow-lg shadow-primary/20">
+                <Plus className="mr-2 h-5 w-5" />
+                New Visit Entry
+              </Button>
+            </Link>
+          </div>
+          {targetRemarks && (
+            <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 p-2 rounded text-xs max-w-xs italic text-right">
+              Admin note: "{targetRemarks}"
             </div>
           )}
-          <Link href="/visits/new">
-            <Button size="lg" className="shadow-lg shadow-primary/20">
-              <Plus className="mr-2 h-5 w-5" />
-              New Visit Entry
-            </Button>
-          </Link>
         </div>
       </div>
 

@@ -433,7 +433,8 @@ export default function AdminDashboard() {
       <VisitDetailsDialog 
         visit={selectedVisit} 
         open={isDetailsOpen} 
-        onOpenChange={setIsDetailsOpen} 
+        onOpenChange={setIsDetailsOpen}
+        onDelete={(id) => deleteVisitMutation.mutate(id)}
       />
     </div>
   );
