@@ -48,11 +48,12 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             <Calendar className="h-4 w-4" />
             {(() => {
               try {
+                if (!visit.visitDate) return "No Date";
                 const date = new Date(visit.visitDate);
-                if (isNaN(date.getTime())) return "Invalid Date";
+                if (isNaN(date.getTime())) return "No Date";
                 return format(date, "PPPP 'at' p");
               } catch (e) {
-                return "Invalid Date";
+                return "No Date";
               }
             })()}
           </DialogDescription>
@@ -91,7 +92,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      GPS: {Number(metadata.lat).toFixed(4)}, {Number(metadata.lng).toFixed(4)}
+                      GPS: {metadata.lat ? Number(metadata.lat).toFixed(4) : "0.0000"}, {metadata.lng ? Number(metadata.lng).toFixed(4) : "0.0000"}
                     </div>
                   </div>
                 )}
