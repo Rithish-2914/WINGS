@@ -122,6 +122,8 @@ export default function History() {
                                 if (!visit.visitDate) return "No Date";
                                 const date = new Date(visit.visitDate);
                                 if (isNaN(date.getTime())) return "No Date";
+                                // Add check for format availability
+                                if (typeof format !== 'function') return "Date Format Error";
                                 return format(date, "MMM do, yyyy • h:mm a");
                               } catch (e) {
                                 return "No Date";

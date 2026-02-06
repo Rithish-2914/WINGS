@@ -51,6 +51,8 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                 if (!visit.visitDate) return "No Date";
                 const date = new Date(visit.visitDate);
                 if (isNaN(date.getTime())) return "No Date";
+                // Add check for format availability
+                if (typeof format !== 'function') return "Date Format Error";
                 return format(date, "PPPP 'at' p");
               } catch (e) {
                 return "No Date";
