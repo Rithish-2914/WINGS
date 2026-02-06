@@ -46,7 +46,15 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
           </div>
           <DialogDescription className="flex items-center gap-2 mt-1">
             <Calendar className="h-4 w-4" />
-            {format(new Date(visit.visitDate), "PPPP 'at' p")}
+            {(() => {
+              try {
+                const date = new Date(visit.visitDate);
+                if (isNaN(date.getTime())) return "Invalid Date";
+                return format(date, "PPPP 'at' p");
+              } catch (e) {
+                return "Invalid Date";
+              }
+            })()}
           </DialogDescription>
         </DialogHeader>
 
@@ -67,11 +75,19 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                     }}
                   />
                 </div>
-                {metadata && (
+                {metadata && metadata.timestamp && (
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
-                      Captured: {format(new Date(metadata.timestamp), "h:mm:ss a")}
+                      Captured: {(() => {
+                        try {
+                          const date = new Date(metadata.timestamp);
+                          if (isNaN(date.getTime())) return "Invalid Time";
+                          return format(date, "h:mm:ss a");
+                        } catch (e) {
+                          return "Invalid Time";
+                        }
+                      })()}
                     </div>
                     <div className="flex items-center gap-1">
                       <MapPin className="h-3 w-3" />

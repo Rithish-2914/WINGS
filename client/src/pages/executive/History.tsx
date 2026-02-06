@@ -117,7 +117,15 @@ export default function History() {
                         </div>
                         <div className="flex items-center gap-3">
                           <span className="text-xs text-muted-foreground font-medium">
-                            {format(new Date(visit.visitDate), "MMM do, yyyy • h:mm a")}
+                            {(() => {
+                              try {
+                                const date = new Date(visit.visitDate);
+                                if (isNaN(date.getTime())) return "Invalid Date";
+                                return format(date, "MMM do, yyyy • h:mm a");
+                              } catch (e) {
+                                return "Invalid Date";
+                              }
+                            })()}
                           </span>
                           <Button 
                             variant="ghost" 
