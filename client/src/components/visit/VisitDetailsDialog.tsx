@@ -57,11 +57,12 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
               <div className="space-y-2">
                 <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
                   <img 
-                    src={visit.photoUrl} 
+                    src={visit.photoUrl.startsWith('data:') ? visit.photoUrl : visit.photoUrl} 
                     alt="Visit" 
                     className="object-contain w-full h-full"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
+                      console.error("Image load error for URL:", visit.photoUrl);
                       target.src = "https://placehold.co/600x400?text=Image+Load+Error";
                     }}
                   />
