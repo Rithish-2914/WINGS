@@ -205,6 +205,20 @@ export async function registerRoutes(
     res.json(visit);
   });
 
+  // Delete Visit (Admin only)
+  app.delete("/api/visits/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    
+    try {
+      await storage.deleteVisit(Number(req.params.id));
+      res.sendStatus(200);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Target Routes ---
   app.post("/api/targets", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

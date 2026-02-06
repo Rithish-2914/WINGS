@@ -44,6 +44,8 @@ export const visits = pgTable("visits", {
   booksSubmitted: jsonb("books_submitted"), // Array of book names
   
   createdAt: timestamp("created_at").defaultNow(),
+  visitCount: integer("visit_count").default(1),
+  photoMetadata: jsonb("photo_metadata"), // { timestamp: string, lat: string, lng: string }
 });
 
 export const targets = pgTable("targets", {
@@ -52,6 +54,7 @@ export const targets = pgTable("targets", {
   executiveId: integer("executive_id").notNull(),
   targetVisits: integer("target_visits").notNull(),
   targetDate: timestamp("target_date").notNull(),
+  remarks: text("remarks"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 

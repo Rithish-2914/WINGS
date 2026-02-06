@@ -22,6 +22,7 @@ export interface IStorage {
   createVisit(visit: InsertVisit & { userId: number }): Promise<Visit>;
   getVisit(id: number): Promise<Visit | undefined>;
   listVisits(filter?: { userId?: number, startDate?: Date, endDate?: Date }): Promise<Visit[]>;
+  deleteVisit(id: number): Promise<void>;
   
   // Targets
   createTarget(target: InsertTarget & { adminId: number }): Promise<Target>;
@@ -64,6 +65,10 @@ export class DatabaseStorage implements IStorage {
   async getVisit(id: number): Promise<Visit | undefined> {
     const [visit] = await db.select().from(visits).where(eq(visits.id, id));
     return visit;
+  }
+
+  async deleteVisit(id: number): Promise<void> {
+    await db.delete(visits).where(eq(visits.id, id));
   }
 
   async listVisits(filter?: { userId?: number, startDate?: Date, endDate?: Date }): Promise<Visit[]> {
