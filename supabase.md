@@ -53,7 +53,8 @@ CREATE TABLE IF NOT EXISTS visits (
   sample_submitted BOOLEAN DEFAULT FALSE,
   books_submitted JSONB DEFAULT '[]'::jsonb, -- Array of book names
   
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  visit_count INTEGER DEFAULT 1
 );
 
 -- Ensure the session store table exists for connect-pg-simple

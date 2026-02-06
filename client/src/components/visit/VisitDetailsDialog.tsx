@@ -31,7 +31,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh]">
+      <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
         <DialogHeader>
           <div className="flex items-center justify-between gap-4">
             <DialogTitle className="text-2xl font-bold">{visit.schoolName}</DialogTitle>
@@ -50,7 +50,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="pr-4 mt-4">
+        <ScrollArea className="flex-1 pr-4 mt-4">
           <div className="space-y-6 pb-4">
             {/* Photo Preview if available */}
             {visit.photoUrl && (
@@ -59,7 +59,11 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                   <img 
                     src={visit.photoUrl} 
                     alt="Visit" 
-                    className="object-cover w-full h-full"
+                    className="object-contain w-full h-full"
+                    onError={(e) => {
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://placehold.co/600x400?text=Image+Load+Error";
+                    }}
                   />
                 </div>
                 {metadata && (
