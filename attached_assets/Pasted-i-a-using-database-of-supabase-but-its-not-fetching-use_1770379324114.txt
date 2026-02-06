@@ -1,0 +1,55 @@
+i a using database of supabase but its not fetching user details i ahve given the database secrets in secrets check it and say why isnt it fetching user details 
+and error is coming 
+
+Feb 06 17:30:50.49
+GET
+---
+wings-one-jet.vercel.app
+/api/visits
+3
+error: column "photo_me
+2026-02-06 12:00:52.332 [info] Could not create local uploads directory, falling back to /tmp/uploads: Error: ENOENT: no such file or directory, mkdir '/var/task/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/routes.ts:23:10)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:24831) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/uploads'
+}
+2026-02-06 12:00:54.049 [info] Listing visits with conditions: 1
+2026-02-06 12:00:54.243 [error] error: column "photo_metadata" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///var/task/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DatabaseStorage.listVisits (/vercel/path0/server/storage.ts:94:20)
+    at async <anonymous> (/vercel/path0/server/routes.ts:185:20)
+    
+Feb 06 17:30:50.49
+GET
+---
+wings-one-jet.vercel.app
+/api/targets
+2
+error: relation "targets" does not exist at /var/task/node_modules/pg-poo
+2026-02-06 12:00:51.103 [info] Could not create local uploads directory, falling back to /tmp/uploads: Error: ENOENT: no such file or directory, mkdir '/var/task/uploads'
+    at Object.mkdirSync (node:fs:1363:26)
+    at <anonymous> (/vercel/path0/server/routes.ts:23:10)
+    at ModuleJob.run (node:internal/modules/esm/module_job:413:25)
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:660:26)
+    at async d (/opt/rust/nodejs.js:17:24831) {
+  errno: -2,
+  code: 'ENOENT',
+  syscall: 'mkdir',
+  path: '/var/task/uploads'
+}
+2026-02-06 12:00:53.035 [error] error: relation "targets" does not exist
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///var/task/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DatabaseStorage.listTargets (/vercel/path0/server/storage.ts:119:12)
+    at async <anonymous> (/vercel/path0/server/routes.ts:245:21)
