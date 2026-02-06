@@ -3,12 +3,12 @@ import { drizzle } from "drizzle-orm/node-postgres";
 import pg from "pg";
 import * as schema from "../shared/schema.js";
 
-// Supabase/PostgreSQL connection configuration
+// Database connection configuration
 const { Pool } = pg;
 
 if (!process.env.DATABASE_URL) {
   throw new Error(
-    "DATABASE_URL must be set. Please provide your Supabase connection string.",
+    "DATABASE_URL must be set. Please provide your connection string.",
   );
 }
 
