@@ -312,6 +312,7 @@ export default function VisitForm() {
                           onClick={() => {
                             setPhotoPreview(null);
                             form.setValue("photoUrl", null);
+                            form.setValue("photoMetadata", null);
                           }}
                         >
                           <X className="h-4 w-4" />
@@ -320,31 +321,42 @@ export default function VisitForm() {
                     ) : (
                       <div className="py-8">
                         <Camera className="mx-auto h-12 w-12 text-muted-foreground" />
-                        <div className="mt-4 flex text-sm leading-6 text-gray-600 justify-center">
-                          <label
-                            htmlFor="file-upload"
-                            className="relative cursor-pointer rounded-md bg-background font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-primary/80"
+                        <div className="mt-4 flex flex-col items-center gap-4">
+                          <Button
+                            type="button"
+                            size="lg"
+                            className="relative"
+                            onClick={() => document.getElementById('camera-capture')?.click()}
+                            disabled={geoLoading || uploadPhoto.isPending}
                           >
-                            <span>Upload a file</span>
+                            <Camera className="mr-2 h-5 w-5" />
+                            Open Camera
                             <input 
-                              id="file-upload" 
-                              name="file-upload" 
+                              id="camera-capture" 
                               type="file" 
-                              className="sr-only" 
+                              className="hidden" 
                               accept="image/*"
                               capture="environment"
                               onChange={handleFileChange}
-                              disabled={uploadPhoto.isPending}
                             />
-                          </label>
-                          <p className="pl-1">or drag and drop</p>
+                          </Button>
+                          <p className="text-sm text-muted-foreground">
+                            Take a photo of the school to verify your visit.
+                          </p>
                         </div>
-                        <p className="text-xs text-gray-500">PNG, JPG, GIF up to 10MB</p>
+                        <p className="mt-4 text-xs text-gray-500 italic">
+                          Location and timestamp will be automatically tagged.
+                        </p>
                       </div>
                     )}
-                    {uploadPhoto.isPending && (
+                    {(uploadPhoto.isPending || geoLoading) && (
                       <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        <div className="flex flex-col items-center gap-2">
+                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                          <span className="text-sm font-medium">
+                            {geoLoading ? "Tagging location..." : "Uploading..."}
+                          </span>
+                        </div>
                       </div>
                     )}
                   </div>

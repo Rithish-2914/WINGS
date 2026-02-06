@@ -26,6 +26,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -43,7 +44,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, Filter, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
