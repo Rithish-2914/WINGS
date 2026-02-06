@@ -1,7 +1,7 @@
 import { useAuth } from "@/hooks/use-auth";
 import { useVisits } from "@/hooks/use-visits";
 import { Link } from "wouter";
-import { format } from "date-fns";
+import { format, isSameDay } from "date-fns";
 import { 
   Plus, 
   MapPin, 
@@ -30,12 +30,18 @@ export default function ExecutiveDashboard() {
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  // Fetch today's visits
-  const { data: visits, isLoading } = useVisits({ 
-    userId: user?.id,
-    startDate: dateStr, 
-    endDate: dateStr 
+  const { data: allVisits, isLoading } = useVisits({ 
+    userId: user?.id
   });
+
+  const todayVisits = allVisits?.filter(v => isSameDay(new Date(v.visitDate), today)) || [];
+  const sortedVisits = [...todayVisits].sort((a, b) => 
+    new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime()
+  );
+
+  const totalVisits = todayVisits.length;
+  const reVisits = todayVisits.filter(v => v.visitType === "Re-Visit").length;
+  const newVisits = todayVisits.filter(v => v.visitType === "First Visit").length;
 
   // Fetch today's targets
   const { data: targets } = useQuery<Target[]>({
@@ -54,15 +60,6 @@ export default function ExecutiveDashboard() {
     setSelectedVisit(visit);
     setIsDetailsOpen(true);
   };
-
-  // Sort visits by date descending for the timeline
-  const sortedVisits = visits ? [...visits].sort((a, b) => 
-    new Date(b.visitDate).getTime() - new Date(a.visitDate).getTime()
-  ) : [];
-
-  const totalVisits = visits?.length || 0;
-  const reVisits = visits?.filter(v => v.visitType === "Re-Visit").length || 0;
-  const newVisits = visits?.filter(v => v.visitType === "First Visit").length || 0;
 
   return (
     <div className="container p-4 md:p-8 space-y-8 animate-in fade-in duration-500">

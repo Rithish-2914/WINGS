@@ -109,11 +109,21 @@ export default function AdminDashboard() {
   const startDate = format(subDays(new Date(), 30), "yyyy-MM-dd");
   const endDate = format(new Date(), "yyyy-MM-dd");
   
-  const { data: visits, isLoading } = useVisits({ 
+  const { data: visits, isLoading: visitsLoading } = useVisits({ 
     startDate, 
     endDate,
     userId: selectedUserId === "all" ? undefined : Number(selectedUserId)
   });
+
+  const { data: users, isLoading: usersLoading } = useQuery<User[]>({
+    queryKey: ["/api/users"],
+  });
+
+  const { data: targets, isLoading: targetsLoading } = useQuery<Target[]>({
+    queryKey: ["/api/targets"],
+  });
+
+  const isLoading = visitsLoading || usersLoading || targetsLoading;
 
   // Filter logic
   const filteredVisits = useMemo(() => {
