@@ -59,26 +59,20 @@ export default function AdminDashboard() {
   const [targetExecId, setTargetExecId] = useState<string>("");
   const [targetCount, setTargetCount] = useState<string>("5");
   const [targetDate, setTargetDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
-  
+  const [targetRemarks, setTargetRemarks] = useState<string>("");
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch all users to populate filter
-  const { data: users } = useQuery<User[]>({
-    queryKey: ["/api/users"],
-    queryFn: async () => {
-      const res = await fetch("/api/users");
-      if (!res.ok) throw new Error("Failed to fetch users");
-      return res.json();
-    }
-  });
-
-  const { data: targets } = useQuery<Target[]>({
-    queryKey: ["/api/targets"],
-    queryFn: async () => {
-      const res = await fetch("/api/targets");
-      if (!res.ok) throw new Error("Failed to fetch targets");
-      return res.json();
+  const deleteVisitMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/visits/${id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed to delete visit");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/visits"] });
+      toast({ title: "Visit Deleted", description: "The visit record has been removed." });
+      setIsDetailsOpen(false);
     }
   });
 
@@ -96,6 +90,7 @@ export default function AdminDashboard() {
       queryClient.invalidateQueries({ queryKey: ["/api/targets"] });
       toast({ title: "Target Set", description: "The daily target has been assigned." });
       setIsTargetDialogOpen(false);
+      setTargetRemarks("");
     }
   });
 
@@ -104,7 +99,8 @@ export default function AdminDashboard() {
     setTargetMutation.mutate({
       executiveId: Number(targetExecId),
       targetVisits: Number(targetCount),
-      targetDate: new Date(targetDate)
+      targetDate: new Date(targetDate),
+      remarks: targetRemarks
     });
   };
 
@@ -241,6 +237,14 @@ export default function AdminDashboard() {
                     type="date" 
                     value={targetDate} 
                     onChange={(e) => setTargetDate(e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Remarks / Instructions</label>
+                  <Textarea 
+                    placeholder="E.g. Focus on schools in South Extension today..."
+                    value={targetRemarks}
+                    onChange={(e) => setTargetRemarks(e.target.value)}
                   />
                 </div>
               </div>

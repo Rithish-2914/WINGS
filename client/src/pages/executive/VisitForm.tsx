@@ -51,49 +51,56 @@ export default function VisitForm() {
       pincode: "",
       contactPerson: "",
       contactMobile: "",
-      visitDate: new Date(), // Fixed: Should be Date object, not string
+      visitDate: new Date(),
       demoGiven: false,
       sampleSubmitted: false,
       booksSubmitted: [],
+      visitCount: 1,
     },
   });
 
-  const getGeolocation = () => {
-    if (!navigator.geolocation) {
-      alert("Geolocation is not supported by your browser");
-      return;
-    }
-
-    setGeoLoading(true);
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        form.setValue("locationLat", String(position.coords.latitude));
-        form.setValue("locationLng", String(position.coords.longitude));
-        setGeoLoading(false);
-      },
-      (error) => {
-        console.error(error);
-        alert("Unable to retrieve your location");
-        setGeoLoading(false);
+  const getGeolocation = (): Promise<{lat: string, lng: string}> => {
+    return new Promise((resolve, reject) => {
+      if (!navigator.geolocation) {
+        reject(new Error("Geolocation not supported"));
+        return;
       }
-    );
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = String(position.coords.latitude);
+          const lng = String(position.coords.longitude);
+          form.setValue("locationLat", lat);
+          form.setValue("locationLng", lng);
+          resolve({ lat, lng });
+        },
+        (error) => reject(error)
+      );
+    });
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Create local preview
-    const objectUrl = URL.createObjectURL(file);
-    setPhotoPreview(objectUrl);
-
+    setGeoLoading(true);
     try {
-      // Upload immediately
+      const coords = await getGeolocation();
+      const objectUrl = URL.createObjectURL(file);
+      setPhotoPreview(objectUrl);
+
       const { url } = await uploadPhoto.mutateAsync(file);
       form.setValue("photoUrl", url);
+      form.setValue("photoMetadata", {
+        timestamp: new Date().toISOString(),
+        lat: coords.lat,
+        lng: coords.lng
+      });
     } catch (error) {
-      console.error("Upload failed", error);
+      console.error("Capture failed", error);
+      alert("Please enable location services to take a photo.");
       setPhotoPreview(null);
+    } finally {
+      setGeoLoading(false);
     }
   };
 
@@ -168,6 +175,26 @@ export default function VisitForm() {
                         <SelectItem value="High School">High School</SelectItem>
                       </SelectContent>
                     </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="visitCount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Visit Count</FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="number" 
+                        min={1} 
+                        {...field} 
+                        onChange={e => field.onChange(parseInt(e.target.value) || 1)}
+                      />
+                    </FormControl>
+                    <FormDescription>How many times have you visited this school?</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
