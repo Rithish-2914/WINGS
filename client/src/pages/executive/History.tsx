@@ -34,8 +34,8 @@ export default function History() {
   };
 
   const filteredVisits = visits?.filter(v => 
-    v.schoolName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    v.city.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (v.schoolName || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (v.city || "").toLowerCase().includes(searchTerm.toLowerCase()) ||
     (v.remarks && v.remarks.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
