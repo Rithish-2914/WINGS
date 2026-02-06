@@ -61,7 +61,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
           </DialogDescription>
         </DialogHeader>
 
-        <ScrollArea className="flex-1 pr-4 mt-4">
+        <ScrollArea className="flex-1 pr-4 mt-4 overflow-y-auto">
           <div className="space-y-6 pb-4">
             {/* Photo Preview if available */}
             {visit.photoUrl && (
