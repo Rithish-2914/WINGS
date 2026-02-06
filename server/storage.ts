@@ -79,23 +79,24 @@ export class DatabaseStorage implements IStorage {
     }
     
     if (filter?.startDate) {
-      // Set to start of day
       const start = new Date(filter.startDate);
       start.setHours(0, 0, 0, 0);
       conditions.push(gte(visits.visitDate, start));
     }
     
     if (filter?.endDate) {
-      // Set to end of day
       const end = new Date(filter.endDate);
       end.setHours(23, 59, 59, 999);
       conditions.push(lte(visits.visitDate, end));
     }
 
-    return await db.select()
+    console.log("Listing visits with conditions:", conditions.length);
+    const result = await db.select()
       .from(visits)
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(visits.visitDate));
+    console.log("Found visits:", result.length);
+    return result;
   }
 
   async createTarget(target: InsertTarget & { adminId: number }): Promise<Target> {
