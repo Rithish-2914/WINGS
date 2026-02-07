@@ -100,7 +100,12 @@ export default function History() {
                     <div className="flex-none">
                       <Avatar className="h-12 w-12 border-2 border-background shadow-sm">
                         {visit.photoUrl ? (
-                          <AvatarImage src={visit.photoUrl} alt={visit.schoolName} className="object-cover" />
+                          <AvatarImage 
+                            src={visit.photoUrl} 
+                            alt={visit.schoolName} 
+                            className="object-cover"
+                            crossOrigin="anonymous"
+                          />
                         ) : (
                           <AvatarFallback className="bg-primary/10 text-primary font-bold">
                             {visit.schoolName.substring(0, 2).toUpperCase()}

@@ -68,13 +68,15 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
               <div className="space-y-2">
                 <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
                   <img 
-                    src={visit.photoUrl.startsWith('data:') ? visit.photoUrl : visit.photoUrl} 
+                    src={visit.photoUrl.startsWith('http') || visit.photoUrl.startsWith('data:') ? visit.photoUrl : visit.photoUrl} 
                     alt="Visit" 
                     className="object-contain w-full h-full"
+                    crossOrigin="anonymous"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
                       console.error("Image load error for URL:", visit.photoUrl);
-                      target.src = "https://placehold.co/600x400?text=Image+Load+Error";
+                      // If it's a relative path and failed, it might be missing on this server
+                      target.src = "https://placehold.co/600x400?text=Image+Not+Found+on+Server";
                     }}
                   />
                 </div>
