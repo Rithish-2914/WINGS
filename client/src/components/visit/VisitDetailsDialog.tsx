@@ -269,6 +269,24 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                   ) : (
                     <p className="text-sm text-muted-foreground italic">No specific books listed</p>
                   )}
+                  
+                  {visit.samplePhotoUrl && (
+                    <div className="mt-3">
+                      <span className="text-xs font-bold text-muted-foreground block mb-2">Sample Proof Photo:</span>
+                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted max-w-sm">
+                        <img 
+                          src={visit.samplePhotoUrl} 
+                          alt="Sample Proof" 
+                          className="object-contain w-full h-full"
+                          crossOrigin="anonymous"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = "https://placehold.co/600x400?text=Sample+Photo+Not+Found";
+                          }}
+                        />
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

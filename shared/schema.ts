@@ -49,6 +49,7 @@ export const visits = pgTable("visits", {
   // Samples
   sampleSubmitted: boolean("sample_submitted").default(false),
   booksSubmitted: jsonb("books_submitted").default([]), // Array of book names
+  samplePhotoUrl: text("sample_photo_url"), // Photo of the samples provided
   products: jsonb("products").default([]), // Array of selected products
   
   createdAt: timestamp("created_at").defaultNow(),
