@@ -121,6 +121,15 @@ export class DatabaseStorage implements IStorage {
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(targets.targetDate));
   }
+
+  async updateVisitFollowUp(id: number, adminFollowUp: string): Promise<Visit> {
+    const [updatedVisit] = await db
+      .update(visits)
+      .set({ adminFollowUp })
+      .where(eq(visits.id, id))
+      .returning();
+    return updatedVisit;
+  }
 }
 
 export const storage = new DatabaseStorage();

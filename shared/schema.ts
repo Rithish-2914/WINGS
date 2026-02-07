@@ -47,6 +47,7 @@ export const visits = pgTable("visits", {
   createdAt: timestamp("created_at").defaultNow(),
   visitCount: integer("visit_count").default(1),
   photoMetadata: jsonb("photo_metadata"), // { timestamp: string, lat: string, lng: string }
+  adminFollowUp: text("admin_follow_up"),
 });
 
 export const targets = pgTable("targets", {

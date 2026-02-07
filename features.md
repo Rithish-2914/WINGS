@@ -1,37 +1,38 @@
-# Features List
+# Sales Field Reporting Application - Features
 
-## Sales Executive Features
-- **Authentication**: Login with ID (e.g., 1001) and password (123abc).
-- **Dashboard**: 
-  - View current date automatically.
-  - Count of visits completed today (e.g., 3/6).
-  - List of today's submitted visits.
-  - Quick action button to add a "New Visit".
-- **Visit Reporting**:
-  - **Type Selection**: Choose between "First Visit" (New School) or "Re-Visit" (Follow-up).
-  - **School Details**: Capture school name, type (Pre-school, Kindergarten, Primary), and address.
-  - **Location & Verification**: 
-    - Auto-capture GPS coordinates.
-    - Mandatory GPS-enabled photo upload for physical proof.
-  - **Contact Information**: Record school phone, contact person, and mobile number.
-  - **Meeting Minutes**:
-    - Record whether a demo was given.
-    - Write Minutes of Meeting (MOM) with a minimum word count.
-    - Add school remarks.
-  - **Sample Management**:
-    - Track if samples were submitted.
-    - Multi-select list of predefined book products.
-    - Upload acknowledgement forms.
+## 1. Authentication & Role-Based Access
+- **Secure Login:** Role-based login for Sales Executives and Admins.
+- **Admin Dashboard:** Centralized view for managing users, targets, and reports.
+- **Executive Dashboard:** Personalized view for tracking visits and targets.
 
-## Admin Features
-- **Centralized Dashboard**: View all visits from all executives.
-- **Reporting & Filtering**:
-  - Filter by date, executive, city, and school.
-  - Track metrics like visits per executive, demo conversions, and sample submissions.
-- **Exporting**: Download data as Excel or PDF (standard report formats).
+## 2. Sales Executive Features
+- **Daily Visit Logging:**
+  - School name, type, and address.
+  - Automatic GPS location capture (Latitude/Longitude).
+  - Photo upload for visit verification.
+  - Contact person and mobile details.
+  - Meeting details: Demo given, Minutes of Meeting (MOM), and remarks.
+  - Sample tracking: Book samples and product selections.
+- **Personalized Greeting:** "Good Morning, {Name}" greeting based on time of day.
+- **Usage Guide:** Integrated manual on how to use the app effectively.
+- **Visit History:** View and track past visits.
+- **Target Tracking:** View assigned monthly/daily visit targets.
 
-## Technical Features
-- **Role-Based Access**: Secure separation between field staff and management.
-- **Validation**: Strict enforcement of mandatory fields (mobile numbers, GPS photos, etc.).
-- **Photo Storage**: Centralized storage for visit proof photos.
-- **Persistence**: PostgreSQL database for all visit history and user accounts.
+## 3. Admin Features
+- **User Management:** Create and manage Sales Executive accounts.
+- **Target Setting:** Assign visit targets to specific executives.
+- **Visit Monitoring:** 
+  - Real-time feed of school visits.
+  - View visit details including location, photos, and meeting notes.
+- **Follow-up Communication:**
+  - Review visits and provide direct feedback.
+  - "Follow-up" button to send remarks back to the executive for specific visits.
+- **Analytics & Reporting:**
+  - Charts showing visit trends and target achievement.
+  - Filterable reports by date range and executive.
+
+## 4. Technical Features
+- **Offline Support (Future):** Architecture ready for local caching.
+- **Responsive Design:** Mobile-first UI for field use.
+- **Secure Data Storage:** PostgreSQL with Drizzle ORM.
+- **Automatic Metadata:** Timestamps and location data for every visit.

@@ -289,6 +289,28 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/visits/:id/follow-up", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+
+    try {
+      const { adminFollowUp } = req.body;
+      if (!adminFollowUp) {
+        return res.status(400).json({ message: "Remark is required" });
+      }
+
+      const updatedVisit = await (storage as any).updateVisitFollowUp(
+        Number(req.params.id),
+        adminFollowUp
+      );
+      res.json(updatedVisit);
+    } catch (err) {
+      console.error("Error updating follow-up:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Target Routes ---
   app.post("/api/targets", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

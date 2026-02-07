@@ -7,11 +7,15 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen, Clock, Trash2 } from "lucide-react";
+import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen, Clock, Trash2, Send } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { useAuth } from "@/hooks/use-auth";
+import { useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import type { Visit } from "@shared/schema";
 
 interface VisitDetailsDialogProps {
@@ -23,6 +27,31 @@ interface VisitDetailsDialogProps {
 
 export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: VisitDetailsDialogProps) {
   const { user } = useAuth();
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [followUpText, setFollowUpText] = useState("");
+
+  const followUpMutation = useMutation({
+    mutationFn: async (text: string) => {
+      if (!visit) return;
+      const res = await fetch(`/api/visits/${visit.id}/follow-up`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ adminFollowUp: text }),
+      });
+      if (!res.ok) throw new Error("Failed to send follow-up");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/visits"] });
+      toast({ title: "Follow-up Sent", description: "Your remark has been sent to the executive." });
+      setFollowUpText("");
+    },
+    onError: (err: any) => {
+      toast({ title: "Error", description: err.message, variant: "destructive" });
+    }
+  });
+
   if (!visit) return null;
 
   const isAdmin = user?.role === 'admin';
@@ -186,6 +215,33 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                     <p className="text-sm italic text-foreground/80 rounded-md border-l-4 border-primary/20 bg-primary/5 p-3">
                       "{visit.remarks}"
                     </p>
+                  </div>
+                )}
+                {visit.adminFollowUp && (
+                  <div>
+                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block mb-1">Admin Follow-up Remark:</span>
+                    <p className="text-sm italic text-amber-900 dark:text-amber-100 rounded-md border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3">
+                      "{visit.adminFollowUp}"
+                    </p>
+                  </div>
+                )}
+                {isAdmin && (
+                  <div className="space-y-2 pt-4 border-t">
+                    <span className="text-xs font-bold text-muted-foreground block">Send Follow-up to Executive:</span>
+                    <Textarea 
+                      placeholder="Type follow-up instructions for the executive..."
+                      value={followUpText}
+                      onChange={(e) => setFollowUpText(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                    <Button 
+                      className="w-full gap-2" 
+                      onClick={() => followUpMutation.mutate(followUpText)}
+                      disabled={!followUpText || followUpMutation.isPending}
+                    >
+                      {followUpMutation.isPending ? <Clock className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                      Send Follow-up Remark
+                    </Button>
                   </div>
                 )}
               </div>

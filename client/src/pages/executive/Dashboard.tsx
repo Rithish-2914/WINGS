@@ -65,7 +65,14 @@ export default function ExecutiveDashboard() {
     <div className="container p-4 md:p-8 space-y-8 animate-in fade-in duration-500">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            {(() => {
+              const hour = new Date().getHours();
+              if (hour < 12) return "Good Morning";
+              if (hour < 17) return "Good Afternoon";
+              return "Good Evening";
+            })()}, {user?.name}
+          </h1>
           <p className="text-muted-foreground mt-1">
             {format(today, "EEEE, MMMM do, yyyy")}
           </p>
@@ -115,6 +122,20 @@ export default function ExecutiveDashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-1">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" />
+              Usage Guide for Sales Executive
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-sm space-y-2">
+            <p>1. <strong>Logging Visits:</strong> Use the "New Visit Entry" button to log school visits. Ensure GPS is enabled for location verification.</p>
+            <p>2. <strong>Photo Proof:</strong> A photo is mandatory for each visit. Capture school signage or meeting proof.</p>
+            <p>3. <strong>Admin Follow-ups:</strong> Check your visit timeline below. If an admin leaves a remark, it will appear highlighted on the visit card.</p>
+          </CardContent>
+        </Card>
+
         <Card className="col-span-1 shadow-md border-border/50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -180,6 +201,15 @@ export default function ExecutiveDashboard() {
                           <p className="text-sm mt-2 p-2 bg-muted/30 rounded text-foreground/80 italic border-l-2 border-primary/20">
                             "{visit.remarks}"
                           </p>
+                        )}
+                        {visit.adminFollowUp && (
+                          <div className="mt-2 p-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded text-xs">
+                            <p className="font-semibold text-amber-800 dark:text-amber-200 flex items-center gap-1">
+                              <TargetIcon className="h-3 w-3" />
+                              Admin Follow-up:
+                            </p>
+                            <p className="text-amber-700 dark:text-amber-300 mt-1 italic">"{visit.adminFollowUp}"</p>
+                          </div>
                         )}
                       </div>
                     </div>
