@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useCreateVisit, useUploadPhoto } from "@/hooks/use-visits";
 import { insertVisitSchema } from "@shared/schema";
 import { useLocation } from "wouter";
-import { Loader2, MapPin, Camera, Upload, Save, X } from "lucide-react";
+import { Loader2, MapPin, Camera, Upload, Save, X, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -28,6 +28,10 @@ import {
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 // Extend schema for form usage if needed, or use as is
 const formSchema = insertVisitSchema;
@@ -45,6 +49,8 @@ export default function VisitForm() {
     defaultValues: {
       visitType: "First Visit",
       schoolName: "",
+      principalName: "",
+      phoneNumber: "",
       schoolType: "Primary",
       address: "",
       city: "",
@@ -53,10 +59,18 @@ export default function VisitForm() {
       contactMobile: "",
       visitDate: new Date(),
       demoGiven: false,
+      mom: "",
+      remarks: "",
+      followUpRequired: false,
+      followUpDate: null,
+      booksInterested: "",
       sampleSubmitted: false,
       booksSubmitted: [],
       products: [],
       visitCount: 1,
+      photoUrl: "",
+      locationLat: "",
+      locationLng: "",
     },
   });
 
@@ -71,18 +85,26 @@ export default function VisitForm() {
   const getGeolocation = (): Promise<{lat: string, lng: string}> => {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
-        reject(new Error("Geolocation not supported"));
+        const err = new Error("Geolocation not supported");
+        alert(err.message);
+        reject(err);
         return;
       }
+      setGeoLoading(true);
       navigator.geolocation.getCurrentPosition(
         (position) => {
           const lat = String(position.coords.latitude);
           const lng = String(position.coords.longitude);
           form.setValue("locationLat", lat);
           form.setValue("locationLng", lng);
+          setGeoLoading(false);
           resolve({ lat, lng });
         },
-        (error) => reject(error)
+        (error) => {
+          setGeoLoading(false);
+          alert("Error getting location: " + error.message);
+          reject(error);
+        }
       );
     });
   };
@@ -91,7 +113,6 @@ export default function VisitForm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    setGeoLoading(true);
     try {
       const coords = await getGeolocation();
       const objectUrl = URL.createObjectURL(file);
@@ -106,22 +127,10 @@ export default function VisitForm() {
       });
     } catch (error) {
       console.error("Capture failed", error);
-      alert("Please enable location services to take a photo.");
-      setPhotoPreview(null);
-    } finally {
-      setGeoLoading(false);
     }
   };
 
   const onSubmit = async (data: VisitFormValues) => {
-    // Ensure array format for books submitted if empty
-    if (!data.booksSubmitted) {
-      data.booksSubmitted = [];
-    }
-    if (!data.products) {
-      data.products = [];
-    }
-    
     try {
       await createVisit.mutateAsync(data);
       setLocation("/dashboard");
@@ -129,6 +138,8 @@ export default function VisitForm() {
       console.error("Failed to create visit:", error);
     }
   };
+
+  const followUpRequired = form.watch("followUpRequired");
 
   return (
     <div className="container max-w-3xl py-8 px-4">
@@ -174,7 +185,7 @@ export default function VisitForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>School Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select level" />
@@ -227,6 +238,34 @@ export default function VisitForm() {
                   )}
                 />
               </div>
+
+              <FormField
+                control={form.control}
+                name="principalName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Principal Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter principal name" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phoneNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>School Phone Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter school phone number" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="md:col-span-2">
                 <FormField
@@ -288,14 +327,14 @@ export default function VisitForm() {
                       control={form.control}
                       name="locationLat"
                       render={({ field }) => (
-                        <Input placeholder="Latitude" readOnly {...field} value={field.value || ""} />
+                        <Input placeholder="Latitude" readOnly {...field} />
                       )}
                     />
                     <FormField
                       control={form.control}
                       name="locationLng"
                       render={({ field }) => (
-                        <Input placeholder="Longitude" readOnly {...field} value={field.value || ""} />
+                        <Input placeholder="Longitude" readOnly {...field} />
                       )}
                     />
                   </div>
@@ -323,8 +362,8 @@ export default function VisitForm() {
                           className="absolute top-2 right-2 h-8 w-8"
                           onClick={() => {
                             setPhotoPreview(null);
-                            form.setValue("photoUrl", null);
-                            form.setValue("photoMetadata", null);
+                            form.setValue("photoUrl", "");
+                            form.setValue("photoMetadata", undefined);
                           }}
                         >
                           <X className="h-4 w-4" />
@@ -356,9 +395,6 @@ export default function VisitForm() {
                             Take a photo of the school to verify your visit.
                           </p>
                         </div>
-                        <p className="mt-4 text-xs text-gray-500 italic">
-                          Location and timestamp will be automatically tagged.
-                        </p>
                       </div>
                     )}
                     {(uploadPhoto.isPending || geoLoading) && (
@@ -390,7 +426,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Contact Person</FormLabel>
                     <FormControl>
-                      <Input placeholder="Name of person met" {...field} value={field.value || ""} />
+                      <Input placeholder="Name of person met" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -404,7 +440,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Mobile Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="10-digit mobile" {...field} value={field.value || ""} />
+                      <Input placeholder="10-digit mobile" {...field} maxLength={10} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -423,7 +459,6 @@ export default function VisitForm() {
                           placeholder="Detailed discussion points..." 
                           className="min-h-[120px]"
                           {...field} 
-                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -438,7 +473,7 @@ export default function VisitForm() {
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Remarks / Feedback</FormLabel>
+                      <FormLabel>Remarks / Feedback (Optional)</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Quick summary or next steps..." 
@@ -456,35 +491,29 @@ export default function VisitForm() {
               <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
-                    checked={form.watch("demoGiven") || false}
+                    checked={form.watch("demoGiven")}
                     onCheckedChange={field => form.setValue("demoGiven", !!field)}
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>Demo Given</FormLabel>
-                  <FormDescription>
-                    Check if a product demonstration was conducted.
-                  </FormDescription>
                 </div>
               </div>
 
               <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
-                    checked={form.watch("sampleSubmitted") || false}
+                    checked={form.watch("sampleSubmitted")}
                     onCheckedChange={field => form.setValue("sampleSubmitted", !!field)}
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel>Samples Submitted</FormLabel>
-                  <FormDescription>
-                    Check if any book samples were left at the school.
-                  </FormDescription>
                 </div>
               </div>
 
               <div className="md:col-span-2 space-y-4">
-                <FormLabel>Products Selected</FormLabel>
+                <FormLabel>Products Selected (Optional)</FormLabel>
                 <div className="grid gap-2">
                   {productList.map((product) => (
                     <div key={product} className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
@@ -510,6 +539,101 @@ export default function VisitForm() {
                   ))}
                 </div>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Section 4: Follow-up */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Follow-up</CardTitle>
+            </CardHeader>
+            <CardContent className="grid gap-6">
+              <FormField
+                control={form.control}
+                name="followUpRequired"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>Follow-up Required?</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              {followUpRequired && (
+                <div className="grid gap-6 md:grid-cols-2 animate-in fade-in duration-300">
+                  <FormField
+                    control={form.control}
+                    name="followUpDate"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col">
+                        <FormLabel>Next Follow-up Date</FormLabel>
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant={"outline"}
+                                className={cn(
+                                  "w-full pl-3 text-left font-normal",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                              >
+                                {field.value ? (
+                                  format(field.value, "PPP")
+                                ) : (
+                                  <span>Pick a date</span>
+                                )}
+                                <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-auto p-0" align="start">
+                            <Calendar
+                              mode="single"
+                              selected={field.value || undefined}
+                              onSelect={field.onChange}
+                              disabled={(date) =>
+                                date < new Date() || date < new Date("1900-01-01")
+                              }
+                              initialFocus
+                            />
+                          </PopoverContent>
+                        </Popover>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="booksInterested"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Books Interested In</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select option" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="Term">Term</SelectItem>
+                            <SelectItem value="Semester">Semester</SelectItem>
+                            <SelectItem value="Individual">Individual</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              )}
             </CardContent>
           </Card>
 
