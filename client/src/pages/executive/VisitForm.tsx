@@ -178,16 +178,29 @@ export default function VisitForm() {
       // If sample is submitted, we create the sample record too
       if (data.sampleSubmitted) {
         console.log("Submitting sample record...");
-        await apiRequest("POST", "/api/samples", {
-          schoolName: data.schoolName,
-          booksSubmitted: data.booksSubmitted || [],
-          photoUrl: samplePhotoPreview || data.photoUrl,
-        });
-        queryClient.invalidateQueries({ queryKey: ["/api/samples"] });
+        try {
+          await apiRequest("POST", "/api/samples", {
+            schoolName: data.schoolName,
+            booksSubmitted: data.booksSubmitted || [],
+            photoUrl: samplePhotoPreview || data.photoUrl,
+          });
+          queryClient.invalidateQueries({ queryKey: ["/api/samples"] });
+        } catch (sampleErr) {
+          console.error("Failed to create sample record (continuing anyway):", sampleErr);
+          // We don't block visit creation if sample record fails
+        }
       }
 
       console.log("Creating visit...");
-      await createVisit.mutateAsync(data);
+      const visitData = {
+        ...data,
+        remarks: data.remarks || null,
+        followUpDate: data.followUpDate || null,
+        booksSubmitted: data.booksSubmitted || [],
+        products: data.products || [],
+      };
+      
+      await createVisit.mutateAsync(visitData);
       toast({ title: "Success", description: "Visit entry saved successfully" });
       setLocation("/dashboard");
     } catch (error) {
