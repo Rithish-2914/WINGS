@@ -19,28 +19,35 @@ export const visits = pgTable("visits", {
   
   // School Details
   schoolName: text("school_name").notNull(),
-  schoolType: text("school_type"), // Pre school, Kindergarten, Primary
+  principalName: text("principal_name").notNull(),
+  phoneNumber: text("phone_number").notNull(),
+  schoolType: text("school_type").notNull(), // Pre school, Kindergarten, Primary
   address: text("address").notNull(),
   city: text("city").notNull(),
   pincode: text("pincode").notNull(),
   
   // Location & Photo
-  locationLat: text("location_lat"),
-  locationLng: text("location_lng"),
-  photoUrl: text("photo_url"), // Path to uploaded photo
+  locationLat: text("location_lat").notNull(),
+  locationLng: text("location_lng").notNull(),
+  photoUrl: text("photo_url").notNull(), // Path to uploaded photo
   
   // Contact Details
-  schoolPhone: text("school_phone"),
-  contactPerson: text("contact_person"),
-  contactMobile: text("contact_mobile"),
+  schoolPhone: text("school_phone").notNull(),
+  contactPerson: text("contact_person").notNull(),
+  contactMobile: text("contact_mobile").notNull(),
   
   // Meeting Details
-  demoGiven: boolean("demo_given").default(false),
-  mom: text("mom"), // Minutes of Meeting
+  demoGiven: boolean("demo_given").notNull().default(false),
+  mom: text("mom").notNull(), // Minutes of Meeting
   remarks: text("remarks"),
   
+  // Follow-up Details
+  followUpRequired: boolean("follow_up_required").notNull().default(false),
+  followUpDate: timestamp("follow_up_date"),
+  booksInterested: text("books_interested"), // Term, Semester, Individual
+  
   // Samples
-  sampleSubmitted: boolean("sample_submitted").default(false),
+  sampleSubmitted: boolean("sample_submitted").notNull().default(false),
   booksSubmitted: jsonb("books_submitted"), // Array of book names
   products: jsonb("products"), // Array of selected products
   
@@ -64,9 +71,12 @@ export const targets = pgTable("targets", {
 export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {
   visitDate: z.coerce.date(),
-  booksSubmitted: z.array(z.string()).optional(),
-  products: z.array(z.string()).optional(),
+  followUpDate: z.coerce.date().optional().nullable(),
+  booksSubmitted: z.array(z.string()).optional().nullable(),
+  products: z.array(z.string()).optional().nullable(),
   visitCount: z.number().min(1).default(1),
+  contactMobile: z.string().length(10, "Mobile number must be exactly 10 digits"),
+  pincode: z.string().regex(/^\d+$/, "Pincode must be numerical"),
 }).omit({ 
   id: true, 
   createdAt: true,
