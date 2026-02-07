@@ -19,7 +19,8 @@ import { createClient } from "@supabase/supabase-js";
 // Initialize Supabase client
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_ANON_KEY;
-const supabaseBucket = process.env.SUPABASE_BUCKET_NAME || "school-visit-photos";
+const visitBucket = process.env.SUPABASE_BUCKET_NAME || "school-visit-photos";
+const sampleBucket = "samples"; // Dedicated bucket for samples as per supabase.md
 
 const supabase = (supabaseUrl && supabaseKey) 
   ? createClient(supabaseUrl, supabaseKey) 
@@ -344,6 +345,11 @@ export async function registerRoutes(
   app.post(api.upload.create.path, upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
 
+    // Determine target bucket based on request header or query param if needed
+    // For now, default to visits or detect from context if possible
+    // Using a simple logic: if it's coming from /api/samples flow, we might want to use sampleBucket
+    const targetBucket = req.headers['x-bucket-name'] === 'samples' ? sampleBucket : visitBucket;
+
     if (supabase) {
       try {
         const fileExt = path.extname(req.file.originalname);
@@ -353,23 +359,23 @@ export async function registerRoutes(
         const fileContent = fs.readFileSync(req.file.path);
         
         const { data, error } = await supabase.storage
-          .from(supabaseBucket)
+          .from(targetBucket)
           .upload(filePath, fileContent, {
             contentType: req.file.mimetype,
             upsert: false
           });
 
         if (error) {
-          console.error("Supabase storage error:", error);
+          console.error(`Supabase storage error in bucket ${targetBucket}:`, error);
           throw error;
         }
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
-          .from(supabaseBucket)
+          .from(targetBucket)
           .getPublicUrl(filePath);
 
-        console.log("Supabase upload success. Public URL:", publicUrl);
+        console.log(`Supabase upload success to ${targetBucket}. Public URL:`, publicUrl);
 
         // Clean up local file
         if (fs.existsSync(req.file.path)) {
@@ -379,7 +385,7 @@ export async function registerRoutes(
         res.json({ url: publicUrl });
       } catch (err: any) {
         console.error("Supabase upload process error:", err);
-        // Fallback to local if Supabase fails (optional, but safer to just return local URL for now)
+        // Fallback to local if Supabase fails
         const url = `/uploads/${req.file.filename}`;
         res.json({ url });
       }
