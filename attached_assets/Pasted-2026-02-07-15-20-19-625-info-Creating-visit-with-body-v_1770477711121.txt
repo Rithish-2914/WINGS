@@ -1,0 +1,58 @@
+2026-02-07 15:20:19.625 [info] Creating visit with body: {
+  visitDate: '2026-02-07T15:19:07.950Z',
+  visitType: 'First Visit',
+  schoolName: 'vit',
+  principalName: 'testing',
+  phoneNumber: '9837598747',
+  schoolType: 'Primary',
+  address: 'test',
+  city: 'test',
+  pincode: '500033',
+  locationLat: '12.973189455503512',
+  locationLng: '79.1639372127802',
+  photoUrl: 'https://qsnmctmhwqknipcmdpjg.supabase.co/storage/v1/object/public/school-visit-photos/1770477612873-880515201.png',
+  contactPerson: 'Syamali Chowdhury',
+  contactMobile: '8455295133',
+  demoGiven: false,
+  mom: 'nkjbhfgdfjhg',
+  remarks: 'mlknjbhvg',
+  followUpRequired: true,
+  followUpDate: '2026-02-11T18:30:00.000Z',
+  booksInterested: '',
+  sampleSubmitted: true,
+  booksSubmitted: [],
+  products: [
+    'Kinder box - Revised Edition1.0 (Term Books - Pack of 9)',
+    'My First Little Steps - Individual Books -Pack of 7'
+  ],
+  visitCount: 1,
+  photoMetadata: {
+    timestamp: '2026-02-07T15:19:49.413Z',
+    lat: '12.973189455503512',
+    lng: '79.1639372127802'
+  }
+}
+2026-02-07 15:20:19.816 [error] Error creating visit: error: null value in column "school_phone" of relation "visits" violates not-null constraint
+    at /var/task/node_modules/pg-pool/index.js:45:11
+    at process.processTicksAndRejections (node:internal/process/task_queues:103:5)
+    at async file:///var/task/node_modules/drizzle-orm/node-postgres/session.js:83:22
+    at async DatabaseStorage.createVisit (/vercel/path0/server/storage.ts:81:24)
+    at async <anonymous> (/vercel/path0/server/routes.ts:237:21) {
+  length: 690,
+  severity: 'ERROR',
+  code: '23502',
+  detail: 'Failing row contains (27, 3, 2026-02-07 15:19:07.95+00, First Visit, vit, Primary, test, test, 500033, 12.973189455503512, 79.1639372127802, https://qsnmctmhwqknipcmdpjg.supabase.co/storage/v1/object/publi..., null, Syamali Chowdhury, 8455295133, f, nkjbhfgdfjhg, mlknjbhvg, t, [], 2026-02-07 15:20:19.712725+00, 1, {"lat": "12.973189455503512", "lng": "79.1639372127802", "timest..., ["Kinder box - Revised Edition1.0 (Term Books - Pack of 9)", "My..., null, testing, 9837598747, t, 2026-02-11 18:30:00+00, ).',
+  hint: undefined,
+  position: undefined,
+  internalPosition: undefined,
+  internalQuery: undefined,
+  where: undefined,
+  schema: 'public',
+  table: 'visits',
+  column: 'school_phone',
+  dataType: undefined,
+  constraint: undefined,
+  file: 'execMain.c',
+  line: '1981',
+  routine: 'ExecConstraints'
+}

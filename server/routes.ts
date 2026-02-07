@@ -233,6 +233,11 @@ export async function registerRoutes(
         cleanedBody.followUpDate = null;
       }
 
+      // Map phoneNumber to schoolPhone for legacy/schema consistency if schoolPhone is missing
+      if (!cleanedBody.schoolPhone && cleanedBody.phoneNumber) {
+        cleanedBody.schoolPhone = cleanedBody.phoneNumber;
+      }
+
       const input = api.visits.create.input.parse(cleanedBody);
       const visit = await storage.createVisit({
         ...input,

@@ -18,21 +18,21 @@ export const visits = pgTable("visits", {
   visitType: text("visit_type").notNull(), // 'First Visit' or 'Re-Visit'
   
   // School Details
-  schoolName: text("school_name").notNull(),
-  principalName: text("principal_name").notNull(),
-  phoneNumber: text("phone_number").notNull(),
-  schoolType: text("school_type").notNull(), // Pre school, Kindergarten, Primary
-  address: text("address").notNull(),
-  city: text("city").notNull(),
-  pincode: text("pincode").notNull(),
+  schoolName: text("school_name").notNull().default(""),
+  principalName: text("principal_name").notNull().default(""),
+  phoneNumber: text("phone_number").notNull().default(""),
+  schoolType: text("school_type").notNull().default("Primary"),
+  address: text("address").notNull().default(""),
+  city: text("city").notNull().default(""),
+  pincode: text("pincode").notNull().default(""),
   
   // Location & Photo
-  locationLat: text("location_lat").notNull(),
-  locationLng: text("location_lng").notNull(),
-  photoUrl: text("photo_url").notNull(), // Path to uploaded photo
+  locationLat: text("location_lat").notNull().default("0"),
+  locationLng: text("location_lng").notNull().default("0"),
+  photoUrl: text("photo_url").notNull().default(""),
   
   // Contact Details
-  schoolPhone: text("school_phone"),
+  schoolPhone: text("school_phone").notNull().default(""),
   contactPerson: text("contact_person"),
   contactMobile: text("contact_mobile"),
   
@@ -96,9 +96,13 @@ export const insertVisitSchema = createInsertSchema(visits, {
   products: z.array(z.string()).optional().nullable(),
   visitCount: z.number().min(1).default(1),
   contactMobile: z.string().optional().nullable(),
-  phoneNumber: z.string().optional().nullable(),
-  schoolPhone: z.string().optional().nullable(),
-  pincode: z.string().optional().nullable(),
+  phoneNumber: z.string().default(""),
+  schoolPhone: z.string().default(""),
+  pincode: z.string().default(""),
+  principalName: z.string().default(""),
+  schoolName: z.string().default(""),
+  address: z.string().default(""),
+  city: z.string().default(""),
 }).omit({ 
   id: true, 
   createdAt: true,
