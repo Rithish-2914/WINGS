@@ -3,7 +3,8 @@ import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
-import { users, visits, insertVisitSchema } from "../shared/schema.js";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { users, visits, insertVisitSchema, targets } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
@@ -186,6 +187,25 @@ export async function registerRoutes(
       res.status(201).json(userWithoutPassword);
     } catch (err) {
       console.error("Error creating user:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.delete("/api/users/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const currentUser = req.user as any;
+    if (currentUser.role !== 'admin') return res.sendStatus(403);
+
+    const userIdToDelete = Number(req.params.id);
+    if (userIdToDelete === currentUser.id) {
+      return res.status(400).json({ message: "Cannot delete your own admin account" });
+    }
+
+    try {
+      await db.delete(users).where(eq(users.id, userIdToDelete));
+      res.sendStatus(200);
+    } catch (err) {
+      console.error("Error deleting user:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });

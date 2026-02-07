@@ -44,12 +44,22 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2 } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2 } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Visit, User, Target } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -58,6 +68,8 @@ export default function AdminDashboard() {
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isTargetDialogOpen, setIsTargetDialogOpen] = useState(false);
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
+  const [isUserDeleteConfirmOpen, setIsUserDeleteConfirmOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [targetExecId, setTargetExecId] = useState<string>("");
   const [targetCount, setTargetCount] = useState<string>("5");
   const [targetDate, setTargetDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
@@ -129,6 +141,25 @@ export default function AdminDashboard() {
         description: error.message,
         variant: "destructive"
       });
+    }
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`/api/users/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to delete user");
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({ title: "User Deleted", description: "The user has been removed." });
+      setIsUserDeleteConfirmOpen(false);
+      setUserToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
     }
   });
 
@@ -403,11 +434,25 @@ export default function AdminDashboard() {
                   <UserIcon className="h-4 w-4 text-primary" />
                   {exec.name}
                 </div>
-                {exec.target > 0 && (
-                   <Badge variant={exec.todayCount >= exec.target ? "default" : "secondary"} className="text-[10px]">
-                     {exec.todayCount}/{exec.target} Target
-                   </Badge>
-                )}
+                <div className="flex items-center gap-1">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-6 w-6 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setUserToDelete(exec);
+                      setIsUserDeleteConfirmOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                  {exec.target > 0 && (
+                    <Badge variant={exec.todayCount >= exec.target ? "default" : "secondary"} className="text-[10px]">
+                      {exec.todayCount}/{exec.target} Target
+                    </Badge>
+                  )}
+                </div>
               </CardTitle>
               <CardDescription>ID: {exec.username}</CardDescription>
             </CardHeader>
@@ -555,6 +600,28 @@ export default function AdminDashboard() {
         onOpenChange={setIsDetailsOpen}
         onDelete={(id) => deleteVisitMutation.mutate(id)}
       />
+
+      <AlertDialog open={isUserDeleteConfirmOpen} onOpenChange={setIsUserDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the account for <strong>{userToDelete?.name}</strong> ({userToDelete?.username}). 
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => userToDelete && deleteUserMutation.mutate(userToDelete.id)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteUserMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+              Delete User
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
