@@ -2,10 +2,11 @@
 import { db, pool } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
-  users, visits, targets,
+  users, visits, targets, sampleSubmissions,
   type User, type InsertUser, 
   type Visit, type InsertVisit,
-  type Target, type InsertTarget
+  type Target, type InsertTarget,
+  type SampleSubmission, type InsertSampleSubmission
 } from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -28,6 +29,10 @@ export interface IStorage {
   createTarget(target: InsertTarget & { adminId: number }): Promise<Target>;
   listTargets(filter?: { executiveId?: number, date?: Date }): Promise<Target[]>;
 
+  // Samples
+  createSampleSubmission(sample: InsertSampleSubmission & { userId: number }): Promise<SampleSubmission>;
+  listSampleSubmissions(): Promise<SampleSubmission[]>;
+
   // Session Store
   sessionStore: session.Store;
 }
@@ -40,6 +45,15 @@ export class DatabaseStorage implements IStorage {
       pool,
       createTableIfMissing: true,
     });
+  }
+
+  async createSampleSubmission(sample: InsertSampleSubmission & { userId: number }): Promise<SampleSubmission> {
+    const [newSample] = await db.insert(sampleSubmissions).values(sample).returning();
+    return newSample;
+  }
+
+  async listSampleSubmissions(): Promise<SampleSubmission[]> {
+    return await db.select().from(sampleSubmissions).orderBy(desc(sampleSubmissions.createdAt));
   }
 
   async getUser(id: number): Promise<User | undefined> {

@@ -67,6 +67,26 @@ export const targets = pgTable("targets", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const sampleSubmissions = pgTable("sample_submissions", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  schoolName: text("school_name").notNull(),
+  booksSubmitted: jsonb("books_submitted").default([]),
+  photoUrl: text("photo_url").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSampleSubmissionSchema = createInsertSchema(sampleSubmissions, {
+  booksSubmitted: z.array(z.string()).optional().nullable(),
+}).omit({
+  id: true,
+  createdAt: true,
+  userId: true,
+});
+
+export type SampleSubmission = typeof sampleSubmissions.$inferSelect;
+export type InsertSampleSubmission = z.infer<typeof insertSampleSubmissionSchema>;
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {

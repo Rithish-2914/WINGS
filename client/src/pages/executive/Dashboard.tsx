@@ -10,7 +10,8 @@ import {
   Clock,
   Briefcase,
   Eye,
-  Target as TargetIcon
+  Target as TargetIcon,
+  Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatCard } from "@/components/StatCard";
@@ -89,6 +90,12 @@ export default function ExecutiveDashboard() {
               <Button size="lg" className="shadow-lg shadow-primary/20">
                 <Plus className="mr-2 h-5 w-5" />
                 New Visit Entry
+              </Button>
+            </Link>
+            <Link href="/samples/new">
+              <Button size="lg" variant="outline" className="shadow-lg">
+                <Package className="mr-2 h-5 w-5" />
+                Submit Sample
               </Button>
             </Link>
           </div>

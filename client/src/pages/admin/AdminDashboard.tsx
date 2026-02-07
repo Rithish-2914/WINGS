@@ -44,11 +44,11 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2 } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2, Package } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import type { Visit, User, Target } from "@shared/schema";
+import type { Visit, User, Target, SampleSubmission } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { 
   AlertDialog,
@@ -204,7 +204,11 @@ export default function AdminDashboard() {
     queryKey: ["/api/targets"],
   });
 
-  const isLoading = visitsLoading || usersLoading || targetsLoading;
+  const { data: samples, isLoading: samplesLoading } = useQuery<SampleSubmission[]>({
+    queryKey: ["/api/samples"],
+  });
+
+  const isLoading = visitsLoading || usersLoading || targetsLoading || samplesLoading;
 
   // Filter logic
   const filteredVisits = useMemo(() => {
@@ -473,7 +477,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* Stats Row */}
-      <div className="grid gap-4 md:grid-cols-3">
+      <div className="grid gap-4 md:grid-cols-4">
         <StatCard
           title="Total Visits"
           value={isLoading ? "..." : totalVisits}
@@ -491,6 +495,12 @@ export default function AdminDashboard() {
           value={isLoading ? "..." : demosGiven}
           icon={Users}
           className="border-l-pink-500"
+        />
+        <StatCard
+          title="Samples Submitted"
+          value={isLoading ? "..." : samples?.length || 0}
+          icon={Package}
+          className="border-l-orange-500"
         />
       </div>
 
@@ -512,6 +522,88 @@ export default function AdminDashboard() {
               <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Samples Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Package className="h-5 w-5 text-primary" />
+            Submitted Samples
+          </CardTitle>
+          <CardDescription>Visual proof and details of samples provided to schools</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Executive</TableHead>
+                  <TableHead>School Name</TableHead>
+                  <TableHead>Books Provided</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {samplesLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24">Loading samples...</TableCell>
+                  </TableRow>
+                ) : !samples || samples.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={5} className="text-center h-24 text-muted-foreground">No samples submitted yet.</TableCell>
+                  </TableRow>
+                ) : (
+                  samples.map((sample) => {
+                    const exec = users?.find(u => u.id === sample.userId);
+                    return (
+                      <TableRow key={sample.id}>
+                        <TableCell>{format(new Date(sample.createdAt!), "MMM d, yyyy")}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-col">
+                            <span className="font-medium text-sm">{exec?.name || "Unknown"}</span>
+                            <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{sample.schoolName}</TableCell>
+                        <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                            {((sample.booksSubmitted as string[]) || []).map((book, i) => (
+                              <Badge key={i} variant="outline" className="text-[10px]">{book}</Badge>
+                            ))}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Photo
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-3xl">
+                              <DialogHeader>
+                                <DialogTitle>{sample.schoolName} - Sample Proof</DialogTitle>
+                              </DialogHeader>
+                              <div className="aspect-video w-full rounded-lg overflow-hidden border">
+                                <img 
+                                  src={sample.photoUrl} 
+                                  alt="Sample Proof" 
+                                  className="w-full h-full object-contain bg-black/5"
+                                />
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })
+                )}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 

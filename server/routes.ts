@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { users, visits, insertVisitSchema, targets } from "../shared/schema.js";
+import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
@@ -409,6 +409,33 @@ export async function registerRoutes(
     });
     console.log("Seeded admin user: admin / admin123");
   }
+
+  // Sample Submissions
+  app.post("/api/samples", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const data = insertSampleSubmissionSchema.parse(req.body);
+      const sample = await storage.createSampleSubmission({
+        ...data,
+        userId: (req.user as any).id,
+      });
+      res.status(201).json(sample);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/samples", async (req, res) => {
+    if (!req.isAuthenticated() || (req.user as any).role !== "admin") {
+      return res.sendStatus(403);
+    }
+    const samples = await storage.listSampleSubmissions();
+    res.json(samples);
+  });
 
   return httpServer;
 }
