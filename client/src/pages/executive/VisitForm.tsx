@@ -173,9 +173,11 @@ export default function VisitForm() {
   };
 
   const onSubmit = async (data: VisitFormValues) => {
+    console.log("Submitting form with data:", data);
     try {
       // If sample is submitted, we create the sample record too
       if (data.sampleSubmitted) {
+        console.log("Submitting sample record...");
         await apiRequest("POST", "/api/samples", {
           schoolName: data.schoolName,
           booksSubmitted: data.booksSubmitted || [],
@@ -184,15 +186,28 @@ export default function VisitForm() {
         queryClient.invalidateQueries({ queryKey: ["/api/samples"] });
       }
 
+      console.log("Creating visit...");
       await createVisit.mutateAsync(data);
       toast({ title: "Success", description: "Visit entry saved successfully" });
       setLocation("/dashboard");
     } catch (error) {
       console.error("Failed to create visit:", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Error", 
+        description: error instanceof Error ? error.message : "Failed to create visit" 
+      });
     }
   };
 
   const followUpRequired = form.watch("followUpRequired");
+
+  // Debug form errors
+  useEffect(() => {
+    if (Object.keys(form.formState.errors).length > 0) {
+      console.log("Form validation errors:", form.formState.errors);
+    }
+  }, [form.formState.errors]);
 
   return (
     <div className="container max-w-3xl py-8 px-4">
