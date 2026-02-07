@@ -78,7 +78,6 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             {(() => {
               try {
                 if (!visit.visitDate) return "No Date";
-                // Double parse for extra safety
                 const d = typeof visit.visitDate === 'string' ? new Date(visit.visitDate) : visit.visitDate;
                 const date = new Date(d);
                 if (isNaN(date.getTime())) return "No Date";
@@ -97,14 +96,12 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
               <div className="space-y-2">
                 <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
                   <img 
-                    src={visit.photoUrl.startsWith('http') || visit.photoUrl.startsWith('data:') ? visit.photoUrl : visit.photoUrl} 
+                    src={visit.photoUrl} 
                     alt="Visit" 
                     className="object-contain w-full h-full"
                     crossOrigin="anonymous"
                     onError={(e) => {
                       const target = e.target as HTMLImageElement;
-                      console.error("Image load error for URL:", visit.photoUrl);
-                      // If it's a relative path and failed, it might be missing on this server
                       target.src = "https://placehold.co/600x400?text=Image+Not+Found+on+Server";
                     }}
                   />
@@ -115,7 +112,6 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                       <Clock className="h-3 w-3" />
                       Captured: {(() => {
                         try {
-                          if (!metadata.timestamp) return "No Time";
                           const date = new Date(metadata.timestamp);
                           if (isNaN(date.getTime())) return "No Time";
                           return format(date, "h:mm:ss a");
@@ -140,7 +136,25 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <CheckCircle2 className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Principal: {visit.principalName}</span>
+                    <span className="text-sm font-medium">Visit Type: {visit.visitType}</span>
+                  </div>
+                  {visit.schoolType && (
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-primary" />
+                      <span className="text-sm">School Type: {visit.schoolType}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Visit Count: {visit.visitCount || 1}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span className="text-sm">School Name: {visit.schoolName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Principal Name: {visit.principalName}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-primary" />
@@ -148,14 +162,12 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                   </div>
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 text-primary" />
-                    <span className="text-sm">{visit.address}, {visit.city} - {visit.pincode}</span>
-                  </div>
-                  {visit.schoolType && (
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-primary" />
-                      <span className="text-sm">Type: {visit.schoolType}</span>
+                    <div className="text-sm">
+                      <p>Address: {visit.address}</p>
+                      <p>City: {visit.city}</p>
+                      <p>Pincode: {visit.pincode}</p>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
 
@@ -165,153 +177,147 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Name: {visit.contactPerson || "No contact person"}</span>
+                    <span className="text-sm">Contact Person: {visit.contactPerson || "No contact person"}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-primary" />
-                    <span className="text-sm">Mobile: {visit.contactMobile || "No mobile number"}</span>
+                    <span className="text-sm">Mobile Number: {visit.contactMobile || "No mobile number"}</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Location Evidence */}
+            {/* Location & Evidence */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">GPS Location</h3>
-                <div className="space-y-1 text-sm">
-                  <p>Latitude: {visit.locationLat}</p>
-                  <p>Longitude: {visit.locationLng}</p>
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Location & Evidence</h3>
+                <div className="space-y-2 text-sm">
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-4 w-4 text-primary" />
+                    <span className="font-medium">GPS Location</span>
+                  </div>
+                  <div className="pl-6 space-y-1">
+                    <p>Latitude: {visit.locationLat}</p>
+                    <p>Longitude: {visit.locationLng}</p>
+                  </div>
                 </div>
               </div>
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Visit Timing</h3>
-                <div className="space-y-1 text-sm">
-                  <p>Visit Date: {visit.visitDate ? format(new Date(visit.visitDate), "PPP p") : "N/A"}</p>
-                  <p>System Entry: {visit.createdAt ? format(new Date(visit.createdAt), "PPP p") : "N/A"}</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Visit Details Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Follow-up Details</h3>
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Meeting Details</h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className={`h-4 w-4 ${visit.followUpRequired ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="text-sm font-medium">Follow-up: {visit.followUpRequired ? "Required" : "Not Required"}</span>
+                    <CheckCircle2 className={`h-4 w-4 ${visit.demoGiven ? "text-green-500" : "text-muted-foreground"}`} />
+                    <span className="text-sm">Demo Given: {visit.demoGiven ? "Yes" : "No"}</span>
                   </div>
-                  {visit.followUpDate && (
-                    <div className="flex items-center gap-2 text-sm">
-                      <Calendar className="h-4 w-4 text-primary" />
-                      <span>Next Follow-up: {format(new Date(visit.followUpDate), "PPP")}</span>
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-4 w-4 ${visit.sampleSubmitted ? "text-green-500" : "text-muted-foreground"}`} />
+                    <span className="text-sm">Samples Submitted: {visit.sampleSubmitted ? "Yes" : "No"}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Detailed Info */}
+            <div className="space-y-4 pt-4 border-t">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Products Interested</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {Array.isArray(visit.products) && visit.products.length > 0 ? (
+                      visit.products.map((product: any, i: number) => (
+                        <Badge key={i} variant="secondary">
+                          {product}
+                        </Badge>
+                      ))
+                    ) : (
+                      <span className="text-sm text-muted-foreground">No products selected</span>
+                    )}
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Follow-up</h3>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className={`h-4 w-4 ${visit.followUpRequired ? "text-primary" : "text-muted-foreground"}`} />
+                      <span className="text-sm font-medium">Follow-up Required: {visit.followUpRequired ? "Yes" : "No"}</span>
                     </div>
+                    {visit.followUpDate && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <Calendar className="h-4 w-4 text-primary" />
+                        <span>Follow-up Date: {format(new Date(visit.followUpDate), "PPP")}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Books Section */}
+              {visit.sampleSubmitted && (
+                <div className="space-y-3 pt-2">
+                  <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                    <BookOpen className="h-4 w-4" />
+                    Books Provided (Samples)
+                  </h3>
+                  {books.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {books.map((book: any, i: number) => (
+                        <Badge key={i} variant="outline" className="bg-background">
+                          {book}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground italic">No specific books listed</p>
                   )}
                 </div>
-              </div>
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Books Interested</h3>
-                <p className="text-sm bg-muted/30 p-2 rounded-md border-l-2 border-primary/20 italic">
-                  {visit.booksInterested || "No books specified"}
+              )}
+
+              {/* MOM & Remarks */}
+              <div className="space-y-3 pt-2">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Minutes of Meeting (MOM)
+                </h3>
+                <p className="text-sm whitespace-pre-wrap rounded-md bg-muted p-3">
+                  {visit.mom || "No notes recorded"}
                 </p>
               </div>
-            </div>
 
-            {/* Products & Samples */}
-            <div className="space-y-4 pt-4 border-t">
-              {Array.isArray(visit.products) && visit.products.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Remarks (Optional)</h3>
+                <p className="text-sm italic text-foreground/80 rounded-md border-l-4 border-primary/20 bg-primary/5 p-3">
+                  {visit.remarks ? `"${visit.remarks}"` : "No remarks provided"}
+                </p>
+              </div>
+
+              {visit.adminFollowUp && (
                 <div className="space-y-3">
-                  <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Interested Products</h3>
-                  <div className="flex flex-wrap gap-2">
-                    {visit.products.map((product: any, i: number) => (
-                      <Badge key={i} variant="secondary">
-                        {product}
-                      </Badge>
-                    ))}
-                  </div>
+                  <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block mb-1">Admin Follow-up Remark:</span>
+                  <p className="text-sm italic text-amber-900 dark:text-amber-100 rounded-md border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3">
+                    "{visit.adminFollowUp}"
+                  </p>
                 </div>
               )}
-            </div>
 
-            {/* Visit Status */}
-            <div className="flex gap-4 p-4 rounded-lg bg-muted/50 border">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className={`h-5 w-5 ${visit.demoGiven ? "text-green-500" : "text-muted-foreground"}`} />
-                <span className="text-sm font-medium">Demo Given</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className={`h-5 w-5 ${visit.sampleSubmitted ? "text-green-500" : "text-muted-foreground"}`} />
-                <span className="text-sm font-medium">Samples Submitted</span>
-              </div>
-            </div>
-
-            {/* Books Submitted */}
-            {books.length > 0 && (
-              <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                  <BookOpen className="h-4 w-4" />
-                  Books Submitted
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  {books.map((book: any, i: number) => (
-                    <Badge key={i} variant="outline" className="bg-background">
-                      {book}
-                    </Badge>
-                  ))}
+              {isAdmin && (
+                <div className="space-y-2 pt-4 border-t">
+                  <span className="text-xs font-bold text-muted-foreground block">Send Follow-up to Executive:</span>
+                  <Textarea 
+                    placeholder="Type follow-up instructions for the executive..."
+                    value={followUpText}
+                    onChange={(e) => setFollowUpText(e.target.value)}
+                    className="min-h-[80px]"
+                  />
+                  <Button 
+                    className="w-full gap-2" 
+                    onClick={() => followUpMutation.mutate(followUpText)}
+                    disabled={!followUpText || followUpMutation.isPending}
+                  >
+                    {followUpMutation.isPending ? <Clock className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                    Send Follow-up Remark
+                  </Button>
                 </div>
-              </div>
-            )}
-
-            {/* Meeting Details */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                <FileText className="h-4 w-4" />
-                Meeting Notes & Remarks
-              </h3>
-              <div className="space-y-4">
-                {visit.mom && (
-                  <div>
-                    <span className="text-xs font-bold text-muted-foreground block mb-1">MOM:</span>
-                    <p className="text-sm whitespace-pre-wrap rounded-md bg-muted p-3">{visit.mom}</p>
-                  </div>
-                )}
-                {visit.remarks && (
-                  <div>
-                    <span className="text-xs font-bold text-muted-foreground block mb-1">Remarks:</span>
-                    <p className="text-sm italic text-foreground/80 rounded-md border-l-4 border-primary/20 bg-primary/5 p-3">
-                      "{visit.remarks}"
-                    </p>
-                  </div>
-                )}
-                {visit.adminFollowUp && (
-                  <div>
-                    <span className="text-xs font-bold text-amber-600 dark:text-amber-400 block mb-1">Admin Follow-up Remark:</span>
-                    <p className="text-sm italic text-amber-900 dark:text-amber-100 rounded-md border-l-4 border-amber-400 bg-amber-50 dark:bg-amber-900/20 p-3">
-                      "{visit.adminFollowUp}"
-                    </p>
-                  </div>
-                )}
-                {isAdmin && (
-                  <div className="space-y-2 pt-4 border-t">
-                    <span className="text-xs font-bold text-muted-foreground block">Send Follow-up to Executive:</span>
-                    <Textarea 
-                      placeholder="Type follow-up instructions for the executive..."
-                      value={followUpText}
-                      onChange={(e) => setFollowUpText(e.target.value)}
-                      className="min-h-[80px]"
-                    />
-                    <Button 
-                      className="w-full gap-2" 
-                      onClick={() => followUpMutation.mutate(followUpText)}
-                      disabled={!followUpText || followUpMutation.isPending}
-                    >
-                      {followUpMutation.isPending ? <Clock className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                      Send Follow-up Remark
-                    </Button>
-                  </div>
-                )}
-              </div>
+              )}
             </div>
           </div>
         </ScrollArea>
