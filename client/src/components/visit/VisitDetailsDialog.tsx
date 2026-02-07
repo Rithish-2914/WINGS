@@ -134,10 +134,18 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             )}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Location Details */}
+              {/* School Details */}
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Location</h3>
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">School Details</h3>
                 <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="h-4 w-4 text-primary" />
+                    <span className="text-sm">Principal: {visit.principalName}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Phone className="h-4 w-4 text-primary" />
+                    <span className="text-sm">School Phone: {visit.schoolPhone || visit.phoneNumber}</span>
+                  </div>
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 text-primary" />
                     <span className="text-sm">{visit.address}, {visit.city} - {visit.pincode}</span>
@@ -151,18 +159,36 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                 </div>
               </div>
 
-              {/* Contact Details */}
+              {/* Contact Person Details */}
               <div className="space-y-3">
-                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Contact</h3>
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Contact Person</h3>
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <User className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{visit.contactPerson || "No contact person"}</span>
+                    <span className="text-sm">Name: {visit.contactPerson || "No contact person"}</span>
                   </div>
                   <div className="flex items-center gap-2">
                     <Phone className="h-4 w-4 text-primary" />
-                    <span className="text-sm">{visit.contactMobile || visit.schoolPhone || "No contact number"}</span>
+                    <span className="text-sm">Mobile: {visit.contactMobile || "No mobile number"}</span>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Location Evidence */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">GPS Location</h3>
+                <div className="space-y-1 text-sm">
+                  <p>Latitude: {visit.locationLat}</p>
+                  <p>Longitude: {visit.locationLng}</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Visit Timing</h3>
+                <div className="space-y-1 text-sm">
+                  <p>Visit Date: {visit.visitDate ? format(new Date(visit.visitDate), "PPP p") : "N/A"}</p>
+                  <p>System Entry: {visit.createdAt ? format(new Date(visit.createdAt), "PPP p") : "N/A"}</p>
                 </div>
               </div>
             </div>
