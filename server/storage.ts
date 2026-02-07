@@ -72,9 +72,16 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVisit(visit: any): Promise<Visit> {
-    const { booksSubmitted, products, ...rest } = visit;
+    const { booksSubmitted, products, visitDate, followUpDate, ...rest } = visit;
+    
+    // Ensure dates are actual Date objects for Drizzle/node-postgres
+    const vDate = visitDate instanceof Date ? visitDate : (visitDate ? new Date(visitDate) : new Date());
+    const fDate = followUpDate instanceof Date ? followUpDate : (followUpDate ? new Date(followUpDate) : null);
+
     const [newVisit] = await db.insert(visits).values({
       ...rest,
+      visitDate: vDate,
+      followUpDate: fDate,
       booksSubmitted: booksSubmitted || [],
       products: products || [],
     }).returning();

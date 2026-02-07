@@ -218,7 +218,22 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       console.log("Creating visit with body:", req.body);
-      const input = api.visits.create.input.parse(req.body);
+      // Clean the input to match schema expectations
+      const cleanedBody = { ...req.body };
+      
+      // Ensure visitDate is a Date object if provided as string
+      if (typeof cleanedBody.visitDate === 'string') {
+        cleanedBody.visitDate = new Date(cleanedBody.visitDate);
+      }
+      
+      // Ensure followUpDate is a Date object if provided as string
+      if (typeof cleanedBody.followUpDate === 'string') {
+        cleanedBody.followUpDate = new Date(cleanedBody.followUpDate);
+      } else if (cleanedBody.followUpDate === "") {
+        cleanedBody.followUpDate = null;
+      }
+
+      const input = api.visits.create.input.parse(cleanedBody);
       const visit = await storage.createVisit({
         ...input,
         userId: (req.user as any).id
