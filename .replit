@@ -43,3 +43,10 @@ waitForPort = 5000
 
 [agent]
 expertMode = true
+
+[userenv]
+
+[userenv.shared]
+SUPABASE_URL = "https://qsnmctmhwqknipcmdpjg.supabase.co"
+SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzbm1jdG1od3FrbmlwY21kcGpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzAyMDM3MDIsImV4cCI6MjA4NTc3OTcwMn0.tpGcCQkini_FKJ6QAPOicoez75mOIJ9Bja0Mjkw2eEw"
+SUPABASE_BUCKET_NAME = "samples"
