@@ -116,8 +116,33 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
-        <CardFooter className="flex justify-center text-sm text-muted-foreground">
-          <p>Protected System • Authorized Personnel Only</p>
+        <CardFooter className="flex-col gap-4 text-center text-sm text-muted-foreground border-t pt-6">
+          <div className="space-y-2">
+            <h4 className="font-semibold text-foreground">Sales Executive Usage Guide</h4>
+            <div className="grid grid-cols-1 gap-2 text-xs text-left">
+              <div className="flex items-start gap-2">
+                <span className="flex-none h-4 w-4 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">1</span>
+                <span>Log in with your assigned ID and password.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-none h-4 w-4 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">2</span>
+                <span>Click "New Visit Entry" to record a school visit.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-none h-4 w-4 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">3</span>
+                <span>Ensure your GPS is enabled to capture location proof automatically.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-none h-4 w-4 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">4</span>
+                <span>Upload a live photo of the school or meeting to verify your visit.</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <span className="flex-none h-4 w-4 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold">5</span>
+                <span>Check your history for admin follow-ups and remarks.</span>
+              </div>
+            </div>
+          </div>
+          <p className="mt-4 opacity-50">Protected System • Authorized Personnel Only</p>
         </CardFooter>
       </Card>
     </div>
