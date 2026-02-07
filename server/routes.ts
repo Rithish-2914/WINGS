@@ -281,19 +281,26 @@ export async function registerRoutes(
             upsert: false
           });
 
-        if (error) throw error;
+        if (error) {
+          console.error("Supabase storage error:", error);
+          throw error;
+        }
 
         // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from(supabaseBucket)
           .getPublicUrl(filePath);
 
+        console.log("Supabase upload success. Public URL:", publicUrl);
+
         // Clean up local file
-        fs.unlinkSync(req.file.path);
+        if (fs.existsSync(req.file.path)) {
+          fs.unlinkSync(req.file.path);
+        }
 
         res.json({ url: publicUrl });
       } catch (err: any) {
-        console.error("Supabase upload error:", err);
+        console.error("Supabase upload process error:", err);
         // Fallback to local if Supabase fails (optional, but safer to just return local URL for now)
         const url = `/uploads/${req.file.filename}`;
         res.json({ url });
