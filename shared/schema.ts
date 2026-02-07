@@ -42,6 +42,7 @@ export const visits = pgTable("visits", {
   // Samples
   sampleSubmitted: boolean("sample_submitted").default(false),
   booksSubmitted: jsonb("books_submitted"), // Array of book names
+  products: jsonb("products"), // Array of selected products
   
   createdAt: timestamp("created_at").defaultNow(),
   visitCount: integer("visit_count").default(1),
@@ -63,6 +64,7 @@ export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {
   visitDate: z.coerce.date(),
   booksSubmitted: z.array(z.string()).optional(),
+  products: z.array(z.string()).optional(),
   visitCount: z.number().min(1).default(1),
 }).omit({ 
   id: true, 
