@@ -262,26 +262,68 @@ export default function AdminDashboard() {
   }, []).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   const handleExport = () => {
-    const headers = ["Date", "School", "City", "Type", "Contact", "Remarks"];
+    const headers = [
+      "Date", 
+      "Executive", 
+      "School Name", 
+      "Principal Name", 
+      "Phone Number", 
+      "School Type", 
+      "Address", 
+      "City", 
+      "Pincode", 
+      "Visit Type", 
+      "Contact Person", 
+      "Contact Mobile", 
+      "Demo Given", 
+      "MOM", 
+      "Remarks", 
+      "Follow-up Required", 
+      "Follow-up Date", 
+      "Books Interested", 
+      "Books Submitted", 
+      "Products", 
+      "Admin Follow-up"
+    ];
+
     const csvContent = [
       headers.join(","),
-      ...filteredVisits.map(v => [
-        format(new Date(v.visitDate), "yyyy-MM-dd"),
-        `"${v.schoolName}"`,
-        `"${v.city}"`,
-        v.visitType,
-        `"${v.contactPerson}"`,
-        `"${v.remarks || ''}"`
-      ].join(","))
+      ...filteredVisits.map(v => {
+        const exec = users?.find(u => u.id === v.userId);
+        return [
+          format(new Date(v.visitDate), "yyyy-MM-dd"),
+          `"${exec?.name || 'Unknown'}"`,
+          `"${v.schoolName}"`,
+          `"${v.principalName}"`,
+          `"${v.phoneNumber}"`,
+          `"${v.schoolType}"`,
+          `"${v.address.replace(/"/g, '""')}"`,
+          `"${v.city}"`,
+          `"${v.pincode}"`,
+          `"${v.visitType}"`,
+          `"${v.contactPerson}"`,
+          `"${v.contactMobile}"`,
+          v.demoGiven ? "Yes" : "No",
+          `"${v.mom.replace(/"/g, '""')}"`,
+          `"${(v.remarks || '').replace(/"/g, '""')}"`,
+          v.followUpRequired ? "Yes" : "No",
+          v.followUpDate ? format(new Date(v.followUpDate), "yyyy-MM-dd") : "",
+          `"${(v.booksInterested || '').replace(/"/g, '""')}"`,
+          `"${JSON.stringify(v.booksSubmitted || []).replace(/"/g, '""')}"`,
+          `"${JSON.stringify(v.products || []).replace(/"/g, '""')}"`,
+          `"${(v.adminFollowUp || '').replace(/"/g, '""')}"`
+        ].join(",");
+      })
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.setAttribute("download", `visits_report_${format(new Date(), "yyyy-MM-dd")}.csv`);
+    link.setAttribute("download", `full_visits_report_${format(new Date(), "yyyy-MM-dd")}.csv`);
     document.body.appendChild(link);
     link.click();
+    document.body.removeChild(link);
   };
 
   return (

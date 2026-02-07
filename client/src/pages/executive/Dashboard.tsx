@@ -14,8 +14,16 @@ import {
   Package
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { StatCard } from "@/components/StatCard";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { 
+  StatCard 
+} from "@/components/StatCard";
+import { 
+  Card, 
+  CardContent, 
+  CardHeader, 
+  CardTitle,
+  CardDescription
+} from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -31,9 +39,11 @@ export default function ExecutiveDashboard() {
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   
-  const { data: allVisits, isLoading } = useVisits({ 
+  const { data: allVisits, isLoading: visitsLoading } = useVisits({ 
     userId: user?.id
   });
+
+  const isLoading = visitsLoading;
 
   const todayVisits = allVisits?.filter(v => isSameDay(new Date(v.visitDate), today)) || [];
   const sortedVisits = [...todayVisits].sort((a, b) => 
@@ -140,6 +150,37 @@ export default function ExecutiveDashboard() {
             <p>1. <strong>Logging Visits:</strong> Use the "New Visit Entry" button to log school visits. Ensure GPS is enabled for location verification.</p>
             <p>2. <strong>Photo Proof:</strong> A photo is mandatory for each visit. Capture school signage or meeting proof.</p>
             <p>3. <strong>Admin Follow-ups:</strong> Check your visit timeline below. If an admin leaves a remark, it will appear highlighted on the visit card.</p>
+          </CardContent>
+        </Card>
+
+        <Card className="col-span-1 shadow-md border-border/50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TargetIcon className="h-5 w-5 text-amber-500" />
+              Admin Remarks & Follow-ups
+            </CardTitle>
+            <CardDescription>Visits with specific instructions from management</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoading ? (
+              <Skeleton className="h-24 w-full" />
+            ) : allVisits?.filter(v => v.adminFollowUp).length === 0 ? (
+              <p className="text-sm text-muted-foreground py-4 text-center">No active admin remarks.</p>
+            ) : (
+              <ScrollArea className="h-[200px]">
+                <div className="space-y-3">
+                  {allVisits?.filter(v => v.adminFollowUp).map(visit => (
+                    <div key={visit.id} className="p-3 rounded-lg border bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
+                      <div className="flex justify-between items-start mb-1">
+                        <span className="font-semibold text-sm">{visit.schoolName}</span>
+                        <span className="text-[10px] text-muted-foreground">{format(new Date(visit.visitDate), "MMM d")}</span>
+                      </div>
+                      <p className="text-xs text-amber-800 dark:text-amber-200 italic">"{visit.adminFollowUp}"</p>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </CardContent>
         </Card>
 
