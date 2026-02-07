@@ -32,24 +32,24 @@ export const visits = pgTable("visits", {
   photoUrl: text("photo_url").notNull(), // Path to uploaded photo
   
   // Contact Details
-  schoolPhone: text("school_phone").notNull(),
-  contactPerson: text("contact_person").notNull(),
-  contactMobile: text("contact_mobile").notNull(),
+  schoolPhone: text("school_phone"),
+  contactPerson: text("contact_person"),
+  contactMobile: text("contact_mobile"),
   
   // Meeting Details
-  demoGiven: boolean("demo_given").notNull().default(false),
-  mom: text("mom").notNull(), // Minutes of Meeting
+  demoGiven: boolean("demo_given").default(false),
+  mom: text("mom"), // Minutes of Meeting
   remarks: text("remarks"),
   
   // Follow-up Details
-  followUpRequired: boolean("follow_up_required").notNull().default(false),
+  followUpRequired: boolean("follow_up_required").default(false),
   followUpDate: timestamp("follow_up_date"),
   booksInterested: text("books_interested"), // Term, Semester, Individual
   
   // Samples
-  sampleSubmitted: boolean("sample_submitted").notNull().default(false),
-  booksSubmitted: jsonb("books_submitted"), // Array of book names
-  products: jsonb("products"), // Array of selected products
+  sampleSubmitted: boolean("sample_submitted").default(false),
+  booksSubmitted: jsonb("books_submitted").default([]), // Array of book names
+  products: jsonb("products").default([]), // Array of selected products
   
   createdAt: timestamp("created_at").defaultNow(),
   visitCount: integer("visit_count").default(1),

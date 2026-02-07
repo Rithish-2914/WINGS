@@ -216,6 +216,7 @@ export async function registerRoutes(
   app.post(api.visits.create.path, async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
+      console.log("Creating visit with body:", req.body);
       const input = api.visits.create.input.parse(req.body);
       const visit = await storage.createVisit({
         ...input,
@@ -223,13 +224,14 @@ export async function registerRoutes(
       });
       res.status(201).json(visit);
     } catch (err) {
+      console.error("Error creating visit:", err);
       if (err instanceof z.ZodError) {
         res.status(400).json({
           message: err.errors[0].message,
           field: err.errors[0].path.join('.')
         });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: String(err) });
       }
     }
   });
