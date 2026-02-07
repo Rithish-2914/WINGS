@@ -44,7 +44,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2 } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -57,10 +57,17 @@ export default function AdminDashboard() {
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isTargetDialogOpen, setIsTargetDialogOpen] = useState(false);
+  const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [targetExecId, setTargetExecId] = useState<string>("");
   const [targetCount, setTargetCount] = useState<string>("5");
   const [targetDate, setTargetDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
   const [targetRemarks, setTargetRemarks] = useState<string>("");
+
+  // New User Form State
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserUsername, setNewUserUsername] = useState("");
+  const [newUserPassword, setNewUserPassword] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"admin" | "executive">("executive");
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -94,6 +101,49 @@ export default function AdminDashboard() {
       setTargetRemarks("");
     }
   });
+
+  const createUserMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await fetch("/api/users", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to create user");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+      toast({ title: "User Created", description: "New user has been successfully registered." });
+      setIsUserDialogOpen(false);
+      setNewUserName("");
+      setNewUserUsername("");
+      setNewUserPassword("");
+    },
+    onError: (error: Error) => {
+      toast({ 
+        title: "Error", 
+        description: error.message,
+        variant: "destructive"
+      });
+    }
+  });
+
+  const handleCreateUser = () => {
+    if (!newUserName || !newUserUsername || !newUserPassword) {
+      toast({ title: "Error", description: "Please fill all required fields", variant: "destructive" });
+      return;
+    }
+    createUserMutation.mutate({
+      name: newUserName,
+      username: newUserUsername,
+      password: newUserPassword,
+      role: newUserRole
+    });
+  };
 
   const handleSetTarget = () => {
     if (!targetExecId) return;
@@ -209,6 +259,64 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <UserPlus className="h-4 w-4" />
+                Create User
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Create New User</DialogTitle>
+              </DialogHeader>
+              <div className="grid gap-4 py-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Full Name</label>
+                  <Input 
+                    placeholder="Enter full name"
+                    value={newUserName} 
+                    onChange={(e) => setNewUserName(e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Username / Login ID</label>
+                  <Input 
+                    placeholder="Enter login ID"
+                    value={newUserUsername} 
+                    onChange={(e) => setNewUserUsername(e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Password</label>
+                  <Input 
+                    type="password"
+                    placeholder="Enter password"
+                    value={newUserPassword} 
+                    onChange={(e) => setNewUserPassword(e.target.value)} 
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Role</label>
+                  <Select value={newUserRole} onValueChange={(val: any) => setNewUserRole(val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="executive">Sales Executive</SelectItem>
+                      <SelectItem value="admin">Administrator</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={handleCreateUser} disabled={createUserMutation.isPending}>
+                  {createUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Create User
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
           <Dialog open={isTargetDialogOpen} onOpenChange={setIsTargetDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">
@@ -261,7 +369,7 @@ export default function AdminDashboard() {
               </div>
               <DialogFooter>
                 <Button onClick={handleSetTarget} disabled={setTargetMutation.isPending}>
-                  {setTargetMutation.isPending && <Plus className="mr-2 h-4 w-4 animate-spin" />}
+                  {setTargetMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Assign Target
                 </Button>
               </DialogFooter>

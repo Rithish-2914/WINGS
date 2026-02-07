@@ -156,6 +156,40 @@ export async function registerRoutes(
     res.json(allUsers.map(({ password, ...rest }) => rest));
   });
 
+  app.post("/api/users", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const currentUser = req.user as any;
+    if (currentUser.role !== 'admin') return res.sendStatus(403);
+
+    try {
+      const { username, password, name, role } = req.body;
+      
+      // Basic validation
+      if (!username || !password || !name) {
+        return res.status(400).json({ message: "Missing required fields" });
+      }
+
+      // Check if user already exists
+      const existingUser = await storage.getUserByUsername(username);
+      if (existingUser) {
+        return res.status(400).json({ message: "Username already exists" });
+      }
+
+      const newUser = await storage.createUser({
+        username,
+        password,
+        name,
+        role: role || 'executive'
+      });
+
+      const { password: _, ...userWithoutPassword } = newUser;
+      res.status(201).json(userWithoutPassword);
+    } catch (err) {
+      console.error("Error creating user:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Visit Routes ---
   
   // Create Visit
