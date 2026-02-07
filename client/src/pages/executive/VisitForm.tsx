@@ -34,6 +34,7 @@ import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 const formSchema = insertVisitSchema;
 type VisitFormValues = z.infer<typeof formSchema>;
@@ -173,6 +174,16 @@ export default function VisitForm() {
 
   const onSubmit = async (data: VisitFormValues) => {
     try {
+      // If sample is submitted, we create the sample record too
+      if (data.sampleSubmitted) {
+        await apiRequest("POST", "/api/samples", {
+          schoolName: data.schoolName,
+          booksSubmitted: data.booksSubmitted || [],
+          photoUrl: samplePhotoPreview || data.photoUrl,
+        });
+        queryClient.invalidateQueries({ queryKey: ["/api/samples"] });
+      }
+
       await createVisit.mutateAsync(data);
       toast({ title: "Success", description: "Visit entry saved successfully" });
       setLocation("/dashboard");
