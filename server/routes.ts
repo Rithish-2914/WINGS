@@ -13,6 +13,20 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import express from "express";
+import { createClient } from "@supabase/supabase-js";
+
+// Initialize Supabase client
+const supabaseUrl = process.env.SUPABASE_URL;
+const supabaseKey = process.env.SUPABASE_ANON_KEY;
+const supabaseBucket = process.env.SUPABASE_BUCKET_NAME || "school-visit-photos";
+
+const supabase = (supabaseUrl && supabaseKey) 
+  ? createClient(supabaseUrl, supabaseKey) 
+  : null;
+
+if (!supabase) {
+  console.warn("Supabase credentials missing. Falling back to local storage for uploads.");
+}
 
 // Ensure uploads directory exists (safely for different environments)
 const uploadDir = path.join(process.cwd(), "uploads");
@@ -249,11 +263,46 @@ export async function registerRoutes(
   });
 
   // --- Upload Route ---
-  app.post(api.upload.create.path, upload.single('file'), (req, res) => {
+  app.post(api.upload.create.path, upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ message: "No file uploaded" });
-    // Return relative URL
-    const url = `/uploads/${req.file.filename}`;
-    res.json({ url });
+
+    if (supabase) {
+      try {
+        const fileExt = path.extname(req.file.originalname);
+        const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${fileExt}`;
+        const filePath = fileName;
+
+        const fileContent = fs.readFileSync(req.file.path);
+        
+        const { data, error } = await supabase.storage
+          .from(supabaseBucket)
+          .upload(filePath, fileContent, {
+            contentType: req.file.mimetype,
+            upsert: false
+          });
+
+        if (error) throw error;
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from(supabaseBucket)
+          .getPublicUrl(filePath);
+
+        // Clean up local file
+        fs.unlinkSync(req.file.path);
+
+        res.json({ url: publicUrl });
+      } catch (err: any) {
+        console.error("Supabase upload error:", err);
+        // Fallback to local if Supabase fails (optional, but safer to just return local URL for now)
+        const url = `/uploads/${req.file.filename}`;
+        res.json({ url });
+      }
+    } else {
+      // Return relative URL for local storage
+      const url = `/uploads/${req.file.filename}`;
+      res.json({ url });
+    }
   });
 
   // Seed Data (if empty)
