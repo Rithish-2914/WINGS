@@ -326,7 +326,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>School Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="10-digit phone number" {...field} maxLength={10} />
+                      <Input placeholder="10-digit phone number" {...field} value={field.value || ""} maxLength={10} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -370,7 +370,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Pincode</FormLabel>
                     <FormControl>
-                      <Input placeholder="Numerical pincode" {...field} />
+                      <Input placeholder="Numerical pincode" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -490,7 +490,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Mobile Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="10-digit mobile" {...field} maxLength={10} />
+                      <Input placeholder="10-digit mobile" {...field} value={field.value || ""} maxLength={10} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

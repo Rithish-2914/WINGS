@@ -72,7 +72,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVisit(visit: InsertVisit & { userId: number }): Promise<Visit> {
-    const [newVisit] = await db.insert(visits).values(visit).returning();
+    const [newVisit] = await db.insert(visits).values([visit]).returning();
     return newVisit;
   }
 
