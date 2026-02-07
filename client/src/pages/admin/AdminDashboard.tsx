@@ -283,7 +283,8 @@ export default function AdminDashboard() {
       "Books Interested", 
       "Books Submitted", 
       "Products", 
-      "Admin Follow-up"
+      "Admin Follow-up",
+      "Photo URL"
     ];
 
     const csvContent = [
@@ -301,17 +302,18 @@ export default function AdminDashboard() {
           `"${v.city}"`,
           `"${v.pincode}"`,
           `"${v.visitType}"`,
-          `"${v.contactPerson}"`,
-          `"${v.contactMobile}"`,
+          `"${v.contactPerson || ''}"`,
+          `"${v.contactMobile || ''}"`,
           v.demoGiven ? "Yes" : "No",
-          `"${v.mom.replace(/"/g, '""')}"`,
+          `"${(v.mom || '').replace(/"/g, '""')}"`,
           `"${(v.remarks || '').replace(/"/g, '""')}"`,
           v.followUpRequired ? "Yes" : "No",
           v.followUpDate ? format(new Date(v.followUpDate), "yyyy-MM-dd") : "",
           `"${(v.booksInterested || '').replace(/"/g, '""')}"`,
-          `"${JSON.stringify(v.booksSubmitted || []).replace(/"/g, '""')}"`,
+          `"${(v.visitType === 'Sample' ? 'Sample Provided' : JSON.stringify(v.booksSubmitted || [])).replace(/"/g, '""')}"`,
           `"${JSON.stringify(v.products || []).replace(/"/g, '""')}"`,
-          `"${(v.adminFollowUp || '').replace(/"/g, '""')}"`
+          `"${(v.adminFollowUp || '').replace(/"/g, '""')}"`,
+          `"${v.photoUrl || ''}"`
         ].join(",");
       })
     ].join("\n");

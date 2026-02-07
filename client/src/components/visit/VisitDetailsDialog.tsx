@@ -167,6 +167,47 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
               </div>
             </div>
 
+            {/* Visit Details Section */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t">
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Follow-up Details</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className={`h-4 w-4 ${visit.followUpRequired ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="text-sm font-medium">Follow-up: {visit.followUpRequired ? "Required" : "Not Required"}</span>
+                  </div>
+                  {visit.followUpDate && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-4 w-4 text-primary" />
+                      <span>Next Follow-up: {format(new Date(visit.followUpDate), "PPP")}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="space-y-3">
+                <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Books Interested</h3>
+                <p className="text-sm bg-muted/30 p-2 rounded-md border-l-2 border-primary/20 italic">
+                  {visit.booksInterested || "No books specified"}
+                </p>
+              </div>
+            </div>
+
+            {/* Products & Samples */}
+            <div className="space-y-4 pt-4 border-t">
+              {Array.isArray(visit.products) && visit.products.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="font-semibold text-sm uppercase tracking-wider text-muted-foreground">Interested Products</h3>
+                  <div className="flex flex-wrap gap-2">
+                    {visit.products.map((product: any, i: number) => (
+                      <Badge key={i} variant="secondary">
+                        {product}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Visit Status */}
             <div className="flex gap-4 p-4 rounded-lg bg-muted/50 border">
               <div className="flex items-center gap-2">
