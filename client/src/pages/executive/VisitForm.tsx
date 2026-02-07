@@ -489,7 +489,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Contact Person</FormLabel>
                     <FormControl>
-                      <Input placeholder="Name of person met" {...field} />
+                      <Input placeholder="Name of person met" {...field} value={field.value || ""} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -522,6 +522,7 @@ export default function VisitForm() {
                           placeholder="Detailed discussion points..." 
                           className="min-h-[120px]"
                           {...field} 
+                          value={field.value || ""}
                         />
                       </FormControl>
                       <FormMessage />
@@ -551,10 +552,39 @@ export default function VisitForm() {
                 />
               </div>
 
+              <div className="md:col-span-2">
+                <FormLabel className="mb-4 block">Products Interested</FormLabel>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {productList.map((product) => (
+                    <div
+                      key={product}
+                      className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4"
+                    >
+                      <FormControl>
+                        <Checkbox
+                          checked={!!(form.watch("products") || []).includes(product)}
+                          onCheckedChange={(checked) => {
+                            const current = form.getValues("products") || [];
+                            if (checked) {
+                              form.setValue("products", [...current, product]);
+                            } else {
+                              form.setValue("products", current.filter((p) => p !== product));
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <FormLabel className="font-normal leading-tight">
+                        {product}
+                      </FormLabel>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
               <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
                   <Checkbox
-                    checked={form.watch("demoGiven")}
+                    checked={!!form.watch("demoGiven")}
                     onCheckedChange={field => form.setValue("demoGiven", !!field)}
                   />
                 </FormControl>
@@ -567,7 +597,7 @@ export default function VisitForm() {
                 <div className="flex items-center space-x-3">
                   <FormControl>
                     <Checkbox
-                      checked={form.watch("sampleSubmitted")}
+                      checked={!!form.watch("sampleSubmitted")}
                       onCheckedChange={field => form.setValue("sampleSubmitted", !!field)}
                     />
                   </FormControl>
@@ -664,7 +694,7 @@ export default function VisitForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                      <Checkbox checked={!!field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Follow-up Required?</FormLabel>
