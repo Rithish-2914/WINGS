@@ -55,9 +55,18 @@ export default function VisitForm() {
       demoGiven: false,
       sampleSubmitted: false,
       booksSubmitted: [],
+      products: [],
       visitCount: 1,
     },
   });
+
+  const productList = [
+    "Kinder box - Revised Edition1.0 (Term Books - Pack of 9)",
+    "Kinder box - Premium Combo 2.0(Term Books - Pack of 14)",
+    "Kinder Play (Term Books - Pack of 10)",
+    "Special Edition - Economy Pack (Term Books -Pack of 6)",
+    "My First Little Steps - Individual Books -Pack of 7"
+  ];
 
   const getGeolocation = (): Promise<{lat: string, lng: string}> => {
     return new Promise((resolve, reject) => {
@@ -108,6 +117,9 @@ export default function VisitForm() {
     // Ensure array format for books submitted if empty
     if (!data.booksSubmitted) {
       data.booksSubmitted = [];
+    }
+    if (!data.products) {
+      data.products = [];
     }
     
     try {
@@ -468,6 +480,34 @@ export default function VisitForm() {
                   <FormDescription>
                     Check if any book samples were left at the school.
                   </FormDescription>
+                </div>
+              </div>
+
+              <div className="md:col-span-2 space-y-4">
+                <FormLabel>Products Selected</FormLabel>
+                <div className="grid gap-2">
+                  {productList.map((product) => (
+                    <div key={product} className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={(form.watch("products") || []).includes(product)}
+                          onCheckedChange={(checked) => {
+                            const current = form.getValues("products") || [];
+                            if (checked) {
+                              form.setValue("products", [...current, product]);
+                            } else {
+                              form.setValue("products", current.filter((p) => p !== product));
+                            }
+                          }}
+                        />
+                      </FormControl>
+                      <div className="space-y-1 leading-none">
+                        <FormLabel className="text-sm font-normal">
+                          {product}
+                        </FormLabel>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </CardContent>

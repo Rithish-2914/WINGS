@@ -52,9 +52,7 @@ export default function LoginPage() {
       <Card className="w-full max-w-md shadow-2xl border-primary/10">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
-            <div className="h-12 w-12 rounded-xl bg-primary flex items-center justify-center text-primary-foreground shadow-lg shadow-primary/30">
-              <Briefcase className="h-6 w-6" />
-            </div>
+            <img src="/logo.png" alt="Master Brains" className="h-16 w-auto" />
           </div>
           <CardTitle className="text-2xl font-bold tracking-tight">
             Sales Field Reporting
