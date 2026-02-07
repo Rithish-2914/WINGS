@@ -71,7 +71,7 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createVisit(visit: InsertVisit & { userId: number }): Promise<Visit> {
+  async createVisit(visit: any): Promise<Visit> {
     const [newVisit] = await db.insert(visits).values([visit]).returning();
     return newVisit;
   }
