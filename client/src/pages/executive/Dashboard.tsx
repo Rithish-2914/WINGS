@@ -102,12 +102,6 @@ export default function ExecutiveDashboard() {
                 New Visit Entry
               </Button>
             </Link>
-            <Link href="/samples/new">
-              <Button size="lg" variant="outline" className="shadow-lg">
-                <Package className="mr-2 h-5 w-5" />
-                Submit Sample
-              </Button>
-            </Link>
           </div>
           {targetRemarks && (
             <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-200 p-2 rounded text-xs max-w-xs italic text-right">

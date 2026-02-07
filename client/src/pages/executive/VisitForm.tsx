@@ -5,7 +5,7 @@ import { z } from "zod";
 import { useCreateVisit, useUploadPhoto } from "@/hooks/use-visits";
 import { insertVisitSchema } from "@shared/schema";
 import { useLocation } from "wouter";
-import { Loader2, MapPin, Camera, Upload, Save, X, Calendar as CalendarIcon } from "lucide-react";
+import { Loader2, MapPin, Camera, Upload, Save, X, Calendar as CalendarIcon, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -30,19 +30,24 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
-// Extend schema for form usage if needed, or use as is
 const formSchema = insertVisitSchema;
 type VisitFormValues = z.infer<typeof formSchema>;
 
 export default function VisitForm() {
+  const { toast } = useToast();
   const [, setLocation] = useLocation();
   const createVisit = useCreateVisit();
   const uploadPhoto = useUploadPhoto();
   const [geoLoading, setGeoLoading] = useState(false);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [isSampleUploading, setIsSampleUploading] = useState(false);
+  const [samplePhotoPreview, setSamplePhotoPreview] = useState<string | null>(null);
+  const [bookInput, setBookInput] = useState("");
 
   const form = useForm<VisitFormValues>({
     resolver: zodResolver(formSchema),
@@ -86,7 +91,7 @@ export default function VisitForm() {
     return new Promise((resolve, reject) => {
       if (!navigator.geolocation) {
         const err = new Error("Geolocation not supported");
-        alert(err.message);
+        toast({ variant: "destructive", title: "Error", description: err.message });
         reject(err);
         return;
       }
@@ -102,7 +107,7 @@ export default function VisitForm() {
         },
         (error) => {
           setGeoLoading(false);
-          alert("Error getting location: " + error.message);
+          toast({ variant: "destructive", title: "Location Error", description: error.message });
           reject(error);
         }
       );
@@ -130,9 +135,46 @@ export default function VisitForm() {
     }
   };
 
+  const handleSamplePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsSampleUploading(true);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) throw new Error("Upload failed");
+      const { url } = await res.json();
+      setSamplePhotoPreview(url);
+      form.setValue("photoUrl", url); // Using photoUrl for consistency or metadata
+    } catch (error) {
+      toast({ variant: "destructive", title: "Error", description: "Failed to upload sample photo" });
+    } finally {
+      setIsSampleUploading(false);
+    }
+  };
+
+  const addBook = () => {
+    if (!bookInput.trim()) return;
+    const currentBooks = form.getValues("booksSubmitted") || [];
+    form.setValue("booksSubmitted", [...currentBooks, bookInput.trim()]);
+    setBookInput("");
+  };
+
+  const removeBook = (index: number) => {
+    const currentBooks = form.getValues("booksSubmitted") || [];
+    form.setValue("booksSubmitted", currentBooks.filter((_, i) => i !== index));
+  };
+
   const onSubmit = async (data: VisitFormValues) => {
     try {
       await createVisit.mutateAsync(data);
+      toast({ title: "Success", description: "Visit entry saved successfully" });
       setLocation("/dashboard");
     } catch (error) {
       console.error("Failed to create visit:", error);
@@ -151,7 +193,6 @@ export default function VisitForm() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           
-          {/* Section 1: Basic Details */}
           <Card>
             <CardHeader>
               <CardTitle>School Details</CardTitle>
@@ -217,7 +258,6 @@ export default function VisitForm() {
                         onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                       />
                     </FormControl>
-                    <FormDescription>How many times have you visited this school?</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -260,7 +300,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>School Phone Number</FormLabel>
                     <FormControl>
-                      <Input placeholder="Enter school phone number" {...field} />
+                      <Input placeholder="10-digit phone number" {...field} maxLength={10} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -304,7 +344,7 @@ export default function VisitForm() {
                   <FormItem>
                     <FormLabel>Pincode</FormLabel>
                     <FormControl>
-                      <Input placeholder="Pincode" {...field} />
+                      <Input placeholder="Numerical pincode" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -313,7 +353,6 @@ export default function VisitForm() {
             </CardContent>
           </Card>
 
-          {/* Section 2: Location & Photo */}
           <Card>
             <CardHeader>
               <CardTitle>Location & Evidence</CardTitle>
@@ -363,7 +402,6 @@ export default function VisitForm() {
                           onClick={() => {
                             setPhotoPreview(null);
                             form.setValue("photoUrl", "");
-                            form.setValue("photoMetadata", undefined);
                           }}
                         >
                           <X className="h-4 w-4" />
@@ -391,19 +429,6 @@ export default function VisitForm() {
                               onChange={handleFileChange}
                             />
                           </Button>
-                          <p className="text-sm text-muted-foreground">
-                            Take a photo of the school to verify your visit.
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {(uploadPhoto.isPending || geoLoading) && (
-                      <div className="absolute inset-0 bg-background/50 flex items-center justify-center">
-                        <div className="flex flex-col items-center gap-2">
-                          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                          <span className="text-sm font-medium">
-                            {geoLoading ? "Tagging location..." : "Uploading..."}
-                          </span>
                         </div>
                       </div>
                     )}
@@ -413,7 +438,6 @@ export default function VisitForm() {
             </CardContent>
           </Card>
 
-          {/* Section 3: Contact & Meeting */}
           <Card>
             <CardHeader>
               <CardTitle>Meeting Details</CardTitle>
@@ -473,10 +497,10 @@ export default function VisitForm() {
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Remarks / Feedback (Optional)</FormLabel>
+                      <FormLabel>Remarks (Optional)</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="Quick summary or next steps..." 
+                          placeholder="Quick summary..." 
                           className="min-h-[80px]"
                           {...field} 
                           value={field.value || ""}
@@ -500,49 +524,96 @@ export default function VisitForm() {
                 </div>
               </div>
 
-              <div className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={form.watch("sampleSubmitted")}
-                    onCheckedChange={field => form.setValue("sampleSubmitted", !!field)}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Samples Submitted</FormLabel>
+              <div className="flex flex-col items-start space-y-4 rounded-md border p-4">
+                <div className="flex items-center space-x-3">
+                  <FormControl>
+                    <Checkbox
+                      checked={form.watch("sampleSubmitted")}
+                      onCheckedChange={field => form.setValue("sampleSubmitted", !!field)}
+                    />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>Samples Submitted</FormLabel>
+                  </div>
                 </div>
-              </div>
 
-              <div className="md:col-span-2 space-y-4">
-                <FormLabel>Products Selected (Optional)</FormLabel>
-                <div className="grid gap-2">
-                  {productList.map((product) => (
-                    <div key={product} className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3">
-                      <FormControl>
-                        <Checkbox
-                          checked={(form.watch("products") || []).includes(product)}
-                          onCheckedChange={(checked) => {
-                            const current = form.getValues("products") || [];
-                            if (checked) {
-                              form.setValue("products", [...current, product]);
-                            } else {
-                              form.setValue("products", current.filter((p) => p !== product));
-                            }
-                          }}
+                {form.watch("sampleSubmitted") && (
+                  <div className="w-full space-y-4 pt-4 border-t animate-in fade-in slide-in-from-top-2">
+                    <div className="space-y-2">
+                      <FormLabel>Books Provided</FormLabel>
+                      <div className="flex gap-2">
+                        <Input 
+                          placeholder="Enter book name" 
+                          value={bookInput}
+                          onChange={(e) => setBookInput(e.target.value)}
+                          onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addBook())}
                         />
-                      </FormControl>
-                      <div className="space-y-1 leading-none">
-                        <FormLabel className="text-sm font-normal">
-                          {product}
-                        </FormLabel>
+                        <Button type="button" size="icon" onClick={addBook}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="flex flex-wrap gap-2 mt-2">
+                        {(form.watch("booksSubmitted") || []).map((book, i) => (
+                          <Badge key={i} variant="secondary" className="gap-1">
+                            {book}
+                            <X 
+                              className="h-3 w-3 cursor-pointer" 
+                              onClick={() => removeBook(i)} 
+                            />
+                          </Badge>
+                        ))}
                       </div>
                     </div>
-                  ))}
-                </div>
+
+                    <div className="space-y-2">
+                      <FormLabel>Photo of Samples</FormLabel>
+                      {samplePhotoPreview ? (
+                        <div className="relative aspect-video rounded-lg overflow-hidden border">
+                          <img src={samplePhotoPreview} alt="Sample Proof" className="w-full h-full object-cover" />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-2 right-2"
+                            onClick={() => setSamplePhotoPreview(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 gap-4">
+                          <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent transition-colors">
+                            <Camera className="h-6 w-6 mb-2" />
+                            <span className="text-xs">Take Photo</span>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              capture="environment" 
+                              className="hidden" 
+                              onChange={handleSamplePhotoUpload}
+                              disabled={isSampleUploading}
+                            />
+                          </label>
+                          <label className="flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-lg cursor-pointer hover:bg-accent transition-colors">
+                            <Upload className="h-6 w-6 mb-2" />
+                            <span className="text-xs">Gallery</span>
+                            <input 
+                              type="file" 
+                              accept="image/*" 
+                              className="hidden" 
+                              onChange={handleSamplePhotoUpload}
+                              disabled={isSampleUploading}
+                            />
+                          </label>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Section 4: Follow-up */}
           <Card>
             <CardHeader>
               <CardTitle>Follow-up</CardTitle>
@@ -554,10 +625,7 @@ export default function VisitForm() {
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>Follow-up Required?</FormLabel>
@@ -579,16 +647,9 @@ export default function VisitForm() {
                             <FormControl>
                               <Button
                                 variant={"outline"}
-                                className={cn(
-                                  "w-full pl-3 text-left font-normal",
-                                  !field.value && "text-muted-foreground"
-                                )}
+                                className={cn("w-full pl-3 text-left font-normal", !field.value && "text-muted-foreground")}
                               >
-                                {field.value ? (
-                                  format(field.value, "PPP")
-                                ) : (
-                                  <span>Pick a date</span>
-                                )}
+                                {field.value ? format(field.value, "PPP") : <span>Pick a date</span>}
                                 <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
                               </Button>
                             </FormControl>
@@ -598,36 +659,11 @@ export default function VisitForm() {
                               mode="single"
                               selected={field.value || undefined}
                               onSelect={field.onChange}
-                              disabled={(date) =>
-                                date < new Date() || date < new Date("1900-01-01")
-                              }
+                              disabled={(date) => date < new Date()}
                               initialFocus
                             />
                           </PopoverContent>
                         </Popover>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="booksInterested"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Books Interested In</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select option" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="Term">Term</SelectItem>
-                            <SelectItem value="Semester">Semester</SelectItem>
-                            <SelectItem value="Individual">Individual</SelectItem>
-                          </SelectContent>
-                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -637,29 +673,10 @@ export default function VisitForm() {
             </CardContent>
           </Card>
 
-          <div className="flex gap-4 justify-end pb-8">
-            <Button type="button" variant="outline" onClick={() => setLocation("/dashboard")}>
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              size="lg"
-              className="min-w-[150px]"
-              disabled={createVisit.isPending || uploadPhoto.isPending}
-            >
-              {createVisit.isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Submit Visit
-                </>
-              )}
-            </Button>
-          </div>
+          <Button type="submit" className="w-full" size="lg" disabled={createVisit.isPending || geoLoading || uploadPhoto.isPending || isSampleUploading}>
+            {createVisit.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+            Save Visit Entry
+          </Button>
         </form>
       </Form>
     </div>
