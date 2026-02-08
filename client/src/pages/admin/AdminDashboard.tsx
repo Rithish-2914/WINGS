@@ -44,12 +44,13 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2, Package } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2, Package, CheckCircle2 } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import type { Visit, User, Target, SampleSubmission } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -238,6 +239,14 @@ export default function AdminDashboard() {
         };
       });
   }, [users, visits, targets]);
+
+  const completedTasks = useMemo(() => {
+    return visits?.filter(v => (v as any).adminFollowUpStatus === 'completed') || [];
+  }, [visits]);
+
+  const activeFollowUps = useMemo(() => {
+    return visits?.filter(v => v.adminFollowUp && (v as any).adminFollowUpStatus !== 'completed') || [];
+  }, [visits]);
 
   const handleViewVisit = (visit: Visit) => {
     setSelectedVisit(visit);
@@ -559,25 +568,60 @@ export default function AdminDashboard() {
       </div>
 
       {/* Chart */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Visit Trends</CardTitle>
-          <CardDescription>Daily visit volume over the last 30 days</CardDescription>
-        </CardHeader>
-        <CardContent className="h-[300px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-              <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
-              />
-              <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Visit Trends</CardTitle>
+            <CardDescription>Daily visit volume over the last 30 days</CardDescription>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                <XAxis dataKey="date" fontSize={12} tickLine={false} axisLine={false} />
+                <YAxis fontSize={12} tickLine={false} axisLine={false} allowDecimals={false} />
+                <Tooltip 
+                  contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 12px rgba(0,0,0,0.1)' }}
+                />
+                <Bar dataKey="count" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
+              Completed Tasks
+            </CardTitle>
+            <CardDescription>Follow-ups completed by sales executives</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px]">
+              {completedTasks.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-4 text-center">No completed tasks yet.</p>
+              ) : (
+                <div className="space-y-4">
+                  {completedTasks.map(visit => {
+                    const exec = users?.find(u => u.id === visit.userId);
+                    return (
+                      <div key={visit.id} className="p-3 rounded-lg border bg-green-50/50 dark:bg-green-900/10 border-green-200 dark:border-green-800">
+                        <div className="flex justify-between items-start mb-1">
+                          <span className="font-semibold text-sm">{visit.schoolName}</span>
+                          <Badge variant="outline" className="text-[10px] bg-green-100 text-green-800 border-green-200">Completed</Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mb-1">Executive: {exec?.name}</p>
+                        <p className="text-xs text-foreground/80 italic">Remark: "{visit.adminFollowUp}"</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Samples Table */}
       <Card>

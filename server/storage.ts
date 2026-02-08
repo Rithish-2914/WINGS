@@ -152,7 +152,19 @@ export class DatabaseStorage implements IStorage {
   async updateVisitFollowUp(id: number, adminFollowUp: string): Promise<Visit> {
     const [updatedVisit] = await db
       .update(visits)
-      .set({ adminFollowUp })
+      .set({ 
+        adminFollowUp,
+        adminFollowUpStatus: 'pending'
+      })
+      .where(eq(visits.id, id))
+      .returning();
+    return updatedVisit;
+  }
+
+  async completeVisitFollowUp(id: number): Promise<Visit> {
+    const [updatedVisit] = await db
+      .update(visits)
+      .set({ adminFollowUpStatus: 'completed' })
       .where(eq(visits.id, id))
       .returning();
     return updatedVisit;

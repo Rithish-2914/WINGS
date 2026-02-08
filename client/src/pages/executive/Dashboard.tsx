@@ -11,7 +11,8 @@ import {
   Briefcase,
   Eye,
   Target as TargetIcon,
-  Package
+  Package,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { 
@@ -32,8 +33,13 @@ import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery } from "@tanstack/react-query";
 import type { Visit, Target } from "@shared/schema";
 
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useMutation } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
+
 export default function ExecutiveDashboard() {
   const { user } = useAuth();
+  const { toast } = useToast();
   const today = new Date();
   const dateStr = format(today, "yyyy-MM-dd");
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
@@ -43,7 +49,23 @@ export default function ExecutiveDashboard() {
     userId: user?.id
   });
 
+  const completeFollowUpMutation = useMutation({
+    mutationFn: async (visitId: number) => {
+      const res = await apiRequest("PATCH", `/api/visits/${visitId}/complete-follow-up`);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/visits"] });
+      toast({ title: "Task Completed", description: "The admin remark has been marked as completed." });
+    },
+    onError: () => {
+      toast({ variant: "destructive", title: "Error", description: "Failed to complete task" });
+    }
+  });
+
   const isLoading = visitsLoading;
+
+  const activeAdminRemarks = allVisits?.filter(v => v.adminFollowUp && (v as any).adminFollowUpStatus !== 'completed') || [];
 
   const todayVisits = allVisits?.filter(v => isSameDay(new Date(v.visitDate), today)) || [];
   const sortedVisits = [...todayVisits].sort((a, b) => 
@@ -158,16 +180,30 @@ export default function ExecutiveDashboard() {
           <CardContent>
             {isLoading ? (
               <Skeleton className="h-24 w-full" />
-            ) : allVisits?.filter(v => v.adminFollowUp).length === 0 ? (
+            ) : activeAdminRemarks.length === 0 ? (
               <p className="text-sm text-muted-foreground py-4 text-center">No active admin remarks.</p>
             ) : (
               <ScrollArea className="h-[200px]">
                 <div className="space-y-3">
-                  {allVisits?.filter(v => v.adminFollowUp).map(visit => (
+                  {activeAdminRemarks.map(visit => (
                     <div key={visit.id} className="p-3 rounded-lg border bg-amber-50/50 dark:bg-amber-900/10 border-amber-200 dark:border-amber-800">
                       <div className="flex justify-between items-start mb-1">
                         <span className="font-semibold text-sm">{visit.schoolName}</span>
-                        <span className="text-[10px] text-muted-foreground">{format(new Date(visit.visitDate), "MMM d")}</span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] text-muted-foreground">{format(new Date(visit.visitDate), "MMM d")}</span>
+                          <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="h-6 text-[10px] py-0 px-2 bg-white dark:bg-amber-950 hover:bg-green-50 dark:hover:bg-green-900/20 border-green-200 text-green-700 dark:text-green-300"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              completeFollowUpMutation.mutate(visit.id);
+                            }}
+                            disabled={completeFollowUpMutation.isPending}
+                          >
+                            {completeFollowUpMutation.isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : "Complete"}
+                          </Button>
+                        </div>
                       </div>
                       <p className="text-xs text-amber-800 dark:text-amber-200 italic">"{visit.adminFollowUp}"</p>
                     </div>

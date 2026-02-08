@@ -334,6 +334,26 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/visits/:id/complete-follow-up", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const visit = await storage.getVisit(Number(req.params.id));
+      if (!visit) return res.status(404).json({ message: "Visit not found" });
+      
+      const user = req.user as any;
+      if (user.role !== 'admin' && visit.userId !== user.id) {
+        return res.sendStatus(403);
+      }
+
+      const updatedVisit = await (storage as any).completeVisitFollowUp(Number(req.params.id));
+      res.json(updatedVisit);
+    } catch (err) {
+      console.error("Error completing follow-up:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Target Routes ---
   app.post("/api/targets", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

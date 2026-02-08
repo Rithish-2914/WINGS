@@ -56,6 +56,7 @@ export const visits = pgTable("visits", {
   visitCount: integer("visit_count").default(1),
   photoMetadata: jsonb("photo_metadata"), // { timestamp: string, lat: string, lng: string }
   adminFollowUp: text("admin_follow_up"),
+  adminFollowUpStatus: text("admin_follow_up_status").default("pending"), // 'pending' or 'completed'
 });
 
 export const targets = pgTable("targets", {
