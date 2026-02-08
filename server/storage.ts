@@ -72,7 +72,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createVisit(visit: any): Promise<Visit> {
-    const { booksSubmitted, products, visitDate, followUpDate, ...rest } = visit;
+    const { booksSubmitted, products, visitDate, followUpDate, samplePhotoUrl, ...rest } = visit;
     
     // Ensure dates are actual Date objects for Drizzle/node-postgres
     const vDate = visitDate instanceof Date ? visitDate : (visitDate ? new Date(visitDate) : new Date());
@@ -84,6 +84,7 @@ export class DatabaseStorage implements IStorage {
       followUpDate: fDate,
       booksSubmitted: booksSubmitted || [],
       products: products || [],
+      samplePhotoUrl: samplePhotoUrl || null,
     }).returning();
     return newVisit;
   }
