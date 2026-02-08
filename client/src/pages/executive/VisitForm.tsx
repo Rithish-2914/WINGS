@@ -148,11 +148,14 @@ export default function VisitForm() {
       const res = await fetch("/api/upload", {
         method: "POST",
         body: formData,
+        headers: {
+          "x-bucket-name": "samples"
+        }
       });
       if (!res.ok) throw new Error("Upload failed");
       const { url } = await res.json();
       setSamplePhotoPreview(url);
-      form.setValue("photoUrl", url); // Using photoUrl for consistency or metadata
+      form.setValue("samplePhotoUrl", url);
     } catch (error) {
       toast({ variant: "destructive", title: "Error", description: "Failed to upload sample photo" });
     } finally {
@@ -182,7 +185,7 @@ export default function VisitForm() {
           await apiRequest("POST", "/api/samples", {
             schoolName: data.schoolName,
             booksSubmitted: data.booksSubmitted || [],
-            photoUrl: samplePhotoPreview || data.photoUrl,
+            photoUrl: data.samplePhotoUrl || data.photoUrl,
           });
           queryClient.invalidateQueries({ queryKey: ["/api/samples"] });
         } catch (sampleErr) {

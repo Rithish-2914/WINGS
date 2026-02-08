@@ -95,6 +95,7 @@ export const insertVisitSchema = createInsertSchema(visits, {
   followUpDate: z.coerce.date().optional().nullable(),
   booksSubmitted: z.array(z.string()).optional().nullable(),
   products: z.array(z.string()).optional().nullable(),
+  samplePhotoUrl: z.string().optional().nullable(),
   visitCount: z.number().min(1).default(1),
   contactMobile: z.string().optional().nullable(),
   phoneNumber: z.string().default(""),
