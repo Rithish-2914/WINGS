@@ -97,5 +97,47 @@ export const insertVisitSchema = createInsertSchema(visits, {
   booksSubmitted: z.array(z.string()).optional().nullable(),
   products: z.array(z.string()).optional().nullable(),
   photoUrl: z.string().min(1, "Visit photo is required"),
-  
-  // Contact Details
+  samplePhotoUrl: z.string().optional().nullable(),
+  visitCount: z.number().min(1).default(1),
+  contactMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
+  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+  schoolPhone: z.string().optional().nullable(),
+  pincode: z.string().min(6, "Pincode must be 6 digits"),
+  principalName: z.string().min(1, "Principal name is required"),
+  schoolName: z.string().min(1, "School name is required"),
+  address: z.string().min(1, "Address is required"),
+  city: z.string().min(1, "City is required"),
+  visitType: z.string().min(1, "Visit type is required"),
+  schoolType: z.string().min(1, "School type is required"),
+  contactPerson: z.string().min(1, "Contact person is required"),
+}).omit({ 
+  id: true, 
+  createdAt: true,
+  userId: true 
+});
+
+export const insertTargetSchema = createInsertSchema(targets, {
+  targetDate: z.coerce.date(),
+}).omit({
+  id: true,
+  createdAt: true,
+  adminId: true
+});
+
+// Types
+export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type Visit = typeof visits.$inferSelect;
+export type InsertVisit = z.infer<typeof insertVisitSchema>;
+export type Target = typeof targets.$inferSelect;
+export type InsertTarget = z.infer<typeof insertTargetSchema>;
+
+// API Types
+export type LoginRequest = {
+  username: string;
+  password: string;
+};
+
+export type LoginResponse = {
+  user: User;
+};

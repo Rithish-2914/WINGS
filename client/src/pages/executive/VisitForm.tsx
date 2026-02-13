@@ -80,6 +80,9 @@ export default function VisitForm() {
     },
   });
 
+  // Watch photoUrl to show validation error if empty
+  const photoUrl = form.watch("photoUrl");
+
   const productList = [
     "Kinder box - Revised Edition1.0 (Term Books - Pack of 9)",
     "Kinder box - Premium Combo 2.0(Term Books - Pack of 14)",
@@ -176,6 +179,14 @@ export default function VisitForm() {
   };
 
   const onSubmit = async (data: VisitFormValues) => {
+    if (!data.photoUrl) {
+      toast({ 
+        variant: "destructive", 
+        title: "Photo Required", 
+        description: "You must capture a visit photo before saving." 
+      });
+      return;
+    }
     console.log("Submitting form with data:", data);
     try {
       // If sample is submitted, we create the sample record too
@@ -297,6 +308,7 @@ export default function VisitForm() {
                         type="number" 
                         min={1} 
                         {...field} 
+                        value={field.value ?? ""}
                         onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                       />
                     </FormControl>
@@ -432,8 +444,11 @@ export default function VisitForm() {
                 </div>
 
                 <div className="space-y-4">
-                  <FormLabel>Visit Photo</FormLabel>
-                  <div className="border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative">
+                  <FormLabel className={cn(!photoUrl && "text-destructive")}>Visit Photo *</FormLabel>
+                  <div className={cn(
+                    "border-2 border-dashed rounded-lg p-4 text-center hover:bg-muted/50 transition-colors relative",
+                    !photoUrl && "border-destructive"
+                  )}>
                     {photoPreview ? (
                       <div className="relative aspect-video w-full overflow-hidden rounded-md">
                         <img src={photoPreview} alt="Preview" className="object-cover w-full h-full" />
@@ -475,6 +490,11 @@ export default function VisitForm() {
                       </div>
                     )}
                   </div>
+                  {!photoUrl && (
+                    <p className="text-sm font-medium text-destructive">
+                      Visit photo is required. Please capture a photo to continue.
+                    </p>
+                  )}
                 </div>
               </div>
             </CardContent>
