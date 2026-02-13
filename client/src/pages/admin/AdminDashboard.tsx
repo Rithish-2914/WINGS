@@ -71,6 +71,9 @@ export default function AdminDashboard() {
   const [isUserDialogOpen, setIsUserDialogOpen] = useState(false);
   const [isUserDeleteConfirmOpen, setIsUserDeleteConfirmOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [selectedUserForPassword, setSelectedUserForPassword] = useState<User | null>(null);
+  const [newPassword, setNewPassword] = useState("");
   const [targetExecId, setTargetExecId] = useState<string>("");
   const [targetCount, setTargetCount] = useState<string>("5");
   const [targetDate, setTargetDate] = useState<string>(format(new Date(), "yyyy-MM-dd"));
@@ -158,6 +161,29 @@ export default function AdminDashboard() {
       toast({ title: "User Deleted", description: "The user has been removed." });
       setIsUserDeleteConfirmOpen(false);
       setUserToDelete(null);
+    },
+    onError: (error: Error) => {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+    }
+  });
+
+  const changePasswordMutation = useMutation({
+    mutationFn: async ({ userId, password }: { userId: number, password: string }) => {
+      const res = await fetch(`/api/users/${userId}/password`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "Failed to change password");
+      }
+    },
+    onSuccess: () => {
+      toast({ title: "Password Changed", description: "The user's password has been updated." });
+      setIsPasswordDialogOpen(false);
+      setNewPassword("");
+      setSelectedUserForPassword(null);
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -505,6 +531,18 @@ export default function AdminDashboard() {
                   <Button 
                     variant="ghost" 
                     size="icon" 
+                    className="h-6 w-6 text-muted-foreground hover:text-primary"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setSelectedUserForPassword(exec);
+                      setIsPasswordDialogOpen(true);
+                    }}
+                  >
+                    <Plus className="h-3 w-3" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
                     className="h-6 w-6 text-muted-foreground hover:text-destructive"
                     onClick={(e) => {
                       e.stopPropagation();
@@ -812,6 +850,41 @@ export default function AdminDashboard() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={isPasswordDialogOpen} onOpenChange={setIsPasswordDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change Password for {selectedUserForPassword?.name}</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">New Password</label>
+              <Input 
+                type="password"
+                placeholder="Enter new password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button 
+              onClick={() => {
+                if (selectedUserForPassword && newPassword) {
+                  changePasswordMutation.mutate({ 
+                    userId: selectedUserForPassword.id, 
+                    password: newPassword 
+                  });
+                }
+              }}
+              disabled={changePasswordMutation.isPending || !newPassword}
+            >
+              {changePasswordMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Update Password
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
