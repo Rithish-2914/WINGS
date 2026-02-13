@@ -519,7 +519,7 @@ export default function VisitForm() {
                   name="mom"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Minutes of Meeting (MOM)</FormLabel>
+                      <FormLabel>Minutes of Meeting (MOM) - Optional</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Detailed discussion points..." 
@@ -540,7 +540,7 @@ export default function VisitForm() {
                   name="remarks"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Remarks (Optional)</FormLabel>
+                      <FormLabel>Remarks - Optional</FormLabel>
                       <FormControl>
                         <Textarea 
                           placeholder="Quick summary..." 
