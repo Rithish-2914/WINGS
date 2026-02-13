@@ -100,7 +100,7 @@ export const insertVisitSchema = createInsertSchema(visits, {
   visitCount: z.number().min(1).default(1),
   contactMobile: z.string().min(10, "Mobile number must be at least 10 digits"),
   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-  schoolPhone: z.string().min(10, "School phone must be at least 10 digits"),
+  schoolPhone: z.string().optional().nullable(),
   pincode: z.string().min(6, "Pincode must be 6 digits"),
   principalName: z.string().min(1, "Principal name is required"),
   schoolName: z.string().min(1, "School name is required"),
