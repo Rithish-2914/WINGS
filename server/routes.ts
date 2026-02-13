@@ -211,6 +211,25 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/users/:id/password", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const currentUser = req.user as any;
+    if (currentUser.role !== 'admin') return res.sendStatus(403);
+
+    try {
+      const { password } = req.body;
+      if (!password) {
+        return res.status(400).json({ message: "Password is required" });
+      }
+
+      await storage.updateUserPassword(Number(req.params.id), password);
+      res.sendStatus(200);
+    } catch (err) {
+      console.error("Error updating password:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Visit Routes ---
   
   // Create Visit

@@ -32,6 +32,7 @@ export interface IStorage {
   // Samples
   createSampleSubmission(sample: InsertSampleSubmission & { userId: number }): Promise<SampleSubmission>;
   listSampleSubmissions(): Promise<SampleSubmission[]>;
+  updateUserPassword(id: number, password: string): Promise<User>;
 
   // Session Store
   sessionStore: session.Store;
@@ -45,6 +46,16 @@ export class DatabaseStorage implements IStorage {
       pool,
       createTableIfMissing: true,
     });
+  }
+
+  async updateUserPassword(id: number, password: string): Promise<User> {
+    const [user] = await db
+      .update(users)
+      .set({ password })
+      .where(eq(users.id, id))
+      .returning();
+    if (!user) throw new Error("User not found");
+    return user;
   }
 
   async createSampleSubmission(sample: InsertSampleSubmission & { userId: number }): Promise<SampleSubmission> {
