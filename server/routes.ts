@@ -263,8 +263,11 @@ export async function registerRoutes(
         userId: (req.user as any).id
       });
       res.status(201).json(visit);
-    } catch (err) {
-      console.error("Error creating visit:", err);
+    } catch (err: any) {
+      // Use a safe way to log error to avoid util.inspect issues
+      const errorMessage = err instanceof Error ? err.message : String(err);
+      console.error("Error creating visit:", errorMessage);
+      
       if (err instanceof z.ZodError) {
         res.status(400).json({
           message: err.errors[0].message,
