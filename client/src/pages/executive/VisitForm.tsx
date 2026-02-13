@@ -75,8 +75,8 @@ export default function VisitForm() {
       products: [],
       visitCount: 1,
       photoUrl: "",
-      locationLat: "",
-      locationLng: "",
+      locationLat: "0",
+      locationLng: "0",
     },
   });
 
