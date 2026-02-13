@@ -29,7 +29,7 @@ export const visits = pgTable("visits", {
   // Location & Photo
   locationLat: text("location_lat").notNull().default("0"),
   locationLng: text("location_lng").notNull().default("0"),
-  photoUrl: text("photo_url").notNull().default(""),
+  photoUrl: text("photo_url").notNull(),
   
   // Contact Details
   schoolPhone: text("school_phone").notNull().default(""),
