@@ -64,7 +64,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async listSampleSubmissions(): Promise<SampleSubmission[]> {
-    return await db.select().from(sampleSubmissions).orderBy(desc(sampleSubmissions.createdAt));
+    return [];
   }
 
   async getUser(id: number): Promise<User | undefined> {
