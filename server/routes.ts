@@ -120,10 +120,10 @@ export async function registerRoutes(
     secret: process.env.SESSION_SECRET || "secret",
     resave: false,
     saveUninitialized: false,
-    proxy: true,
     cookie: { 
-      secure: true,
-      sameSite: "none"
+      secure: false, // Set to false for local development/non-HTTPS
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
     }
   }));
 
@@ -203,6 +203,11 @@ export async function registerRoutes(
     }
 
     try {
+      // First, delete related visits
+      await db.delete(visits).where(eq(visits.userId, userIdToDelete));
+      // Also delete sample submissions if any
+      await db.delete(sampleSubmissions).where(eq(sampleSubmissions.userId, userIdToDelete));
+      // Finally, delete the user
       await db.delete(users).where(eq(users.id, userIdToDelete));
       res.sendStatus(200);
     } catch (err) {
