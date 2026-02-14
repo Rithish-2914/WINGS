@@ -160,6 +160,18 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                     <Phone className="h-4 w-4 text-primary" />
                     <span className="text-sm">School Phone: {visit.schoolPhone || visit.phoneNumber}</span>
                   </div>
+                  {visit.currentBooksUsed && (
+                    <div className="flex items-center gap-2">
+                      <BookOpen className="h-4 w-4 text-primary" />
+                      <span className="text-sm">Current Books: {visit.currentBooksUsed}</span>
+                    </div>
+                  )}
+                  {visit.modeOfBooks && (
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-primary" />
+                      <span className="text-sm">Mode: {visit.modeOfBooks}</span>
+                    </div>
+                  )}
                   <div className="flex items-start gap-2">
                     <MapPin className="h-4 w-4 mt-0.5 text-primary" />
                     <div className="text-sm">

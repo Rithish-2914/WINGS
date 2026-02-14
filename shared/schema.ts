@@ -57,6 +57,8 @@ export const visits = pgTable("visits", {
   photoMetadata: jsonb("photo_metadata"), // { timestamp: string, lat: string, lng: string }
   adminFollowUp: text("admin_follow_up"),
   adminFollowUpStatus: text("admin_follow_up_status").default("pending"), // 'pending' or 'completed'
+  currentBooksUsed: text("current_books_used"),
+  modeOfBooks: text("mode_of_books"), // 'Term', 'Semester', 'Individual'
 });
 
 export const targets = pgTable("targets", {

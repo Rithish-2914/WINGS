@@ -77,6 +77,8 @@ export default function VisitForm() {
       photoUrl: "",
       locationLat: "0",
       locationLng: "0",
+      currentBooksUsed: "",
+      modeOfBooks: "",
     },
   });
 
@@ -312,6 +314,43 @@ export default function VisitForm() {
                         onChange={e => field.onChange(parseInt(e.target.value) || 1)}
                       />
                     </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="currentBooksUsed"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Current books being used (Optional)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Enter current books" {...field} value={field.value || ""} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="modeOfBooks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Mode of Books (Optional)</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select mode" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="Term">Term</SelectItem>
+                        <SelectItem value="Semester">Semester</SelectItem>
+                        <SelectItem value="Individual">Individual</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
