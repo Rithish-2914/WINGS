@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema } from "../shared/schema.js";
+import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
