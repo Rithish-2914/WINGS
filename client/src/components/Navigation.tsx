@@ -8,6 +8,7 @@ import {
   LogOut,
   MapPin,
   Menu,
+  Calendar,
   X
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -30,11 +31,13 @@ export function Navigation() {
   const links = isAdmin
     ? [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/leaves", label: "Leaves", icon: Calendar },
       ]
     : [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/visits/new", label: "New Visit", icon: PlusCircle },
         { href: "/visits/history", label: "My History", icon: MapPin },
+        { href: "/leaves", label: "Apply Leave", icon: Calendar },
       ];
 
   const handleLogout = () => {

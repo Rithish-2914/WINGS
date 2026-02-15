@@ -2,11 +2,12 @@
 import { db, pool } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
-  users, visits, targets, sampleSubmissions,
+  users, visits, targets, sampleSubmissions, leaves,
   type User, type InsertUser, 
   type Visit, type InsertVisit,
   type Target, type InsertTarget,
-  type SampleSubmission, type InsertSampleSubmission
+  type SampleSubmission, type InsertSampleSubmission,
+  type Leave, type InsertLeave
 } from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -33,6 +34,10 @@ export interface IStorage {
   createSampleSubmission(sample: InsertSampleSubmission & { userId: number }): Promise<SampleSubmission>;
   listSampleSubmissions(): Promise<SampleSubmission[]>;
   updateUserPassword(id: number, password: string): Promise<User>;
+  
+  // Leaves
+  createLeave(leave: InsertLeave & { userId: number }): Promise<Leave>;
+  listLeaves(filter?: { userId?: number }): Promise<Leave[]>;
 
   // Session Store
   sessionStore: session.Store;
@@ -65,6 +70,22 @@ export class DatabaseStorage implements IStorage {
 
   async listSampleSubmissions(): Promise<SampleSubmission[]> {
     return [];
+  }
+
+  async createLeave(leave: InsertLeave & { userId: number }): Promise<Leave> {
+    const [newLeave] = await db.insert(leaves).values(leave).returning();
+    return newLeave;
+  }
+
+  async listLeaves(filter?: { userId?: number }): Promise<Leave[]> {
+    let conditions = [];
+    if (filter?.userId) {
+      conditions.push(eq(leaves.userId, filter.userId));
+    }
+    return await db.select()
+      .from(leaves)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(leaves.createdAt));
   }
 
   async getUser(id: number): Promise<User | undefined> {

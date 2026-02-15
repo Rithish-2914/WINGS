@@ -11,8 +11,10 @@ import LoginPage from "@/pages/LoginPage";
 import ExecutiveDashboard from "@/pages/executive/Dashboard";
 import VisitForm from "@/pages/executive/VisitForm";
 import History from "@/pages/executive/History";
+import LeaveApplication from "@/pages/executive/LeaveApplication";
 import SampleSubmission from "@/pages/executive/SampleSubmission";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
+import AdminLeaves from "@/pages/admin/AdminLeaves";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -40,6 +42,11 @@ function Router() {
             roles={['executive', 'admin']} 
           />
           <ProtectedRoute 
+            path="/leaves" 
+            component={LeaveApplication} 
+            roles={['executive']} 
+          />
+          <ProtectedRoute 
             path="/samples/new" 
             component={SampleSubmission} 
             roles={['executive', 'admin']} 
@@ -49,6 +56,11 @@ function Router() {
           <ProtectedRoute 
             path="/admin" 
             component={AdminDashboard} 
+            roles={['admin']} 
+          />
+          <ProtectedRoute 
+            path="/admin/leaves" 
+            component={AdminLeaves} 
             roles={['admin']} 
           />
           

@@ -91,6 +91,28 @@ export const insertSampleSubmissionSchema = createInsertSchema(sampleSubmissions
 export type SampleSubmission = typeof sampleSubmissions.$inferSelect;
 export type InsertSampleSubmission = z.infer<typeof insertSampleSubmissionSchema>;
 
+export const leaves = pgTable("leaves", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  startDate: timestamp("start_date").notNull(),
+  endDate: timestamp("end_date").notNull(),
+  reason: text("reason").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertLeaveSchema = createInsertSchema(leaves, {
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
+  reason: z.string().min(1, "Reason is required"),
+}).omit({
+  id: true,
+  userId: true,
+  createdAt: true,
+});
+
+export type Leave = typeof leaves.$inferSelect;
+export type InsertLeave = z.infer<typeof insertLeaveSchema>;
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {

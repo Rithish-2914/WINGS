@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions } from "../shared/schema.js";
+import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions, leaves, insertLeaveSchema } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
@@ -500,6 +500,38 @@ export async function registerRoutes(
     }
     const samples = await storage.listSampleSubmissions();
     res.json(samples);
+  });
+
+  // --- Leave Routes ---
+  app.post("/api/leaves", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const data = insertLeaveSchema.parse(req.body);
+      const leave = await storage.createLeave({
+        ...data,
+        userId: (req.user as any).id
+      });
+      res.status(201).json(leave);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/leaves", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    
+    let userIdFilter = user.role === 'admin' ? undefined : user.id;
+    if (user.role === 'admin' && req.query.userId) {
+      userIdFilter = Number(req.query.userId);
+    }
+
+    const leavesList = await storage.listLeaves({ userId: userIdFilter });
+    res.json(leavesList);
   });
 
   return httpServer;
