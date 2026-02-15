@@ -324,7 +324,7 @@ export default function VisitForm() {
                 name="currentBooksUsed"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Current books being used (Optional)</FormLabel>
+                    <FormLabel>Current books being used</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter current books" {...field} value={field.value || ""} />
                     </FormControl>
@@ -338,7 +338,7 @@ export default function VisitForm() {
                 name="modeOfBooks"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Mode of Books (Optional)</FormLabel>
+                    <FormLabel>Mode of Books</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
                       <FormControl>
                         <SelectTrigger>
