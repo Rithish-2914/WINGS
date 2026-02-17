@@ -15,6 +15,7 @@ import { useLocation } from "wouter";
 import { Loader2, Download, ChevronLeft, ChevronRight, Calculator } from "lucide-react";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { format } from "date-fns";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const PAGES = [
@@ -142,15 +143,66 @@ export default function OrderForm() {
   });
 
   const downloadPDF = async () => {
-    const element = document.getElementById("order-form-content");
-    if (!element) return;
-    const canvas = await html2canvas(element, { scale: 2 });
-    const imgData = canvas.toDataURL("image/png");
     const pdf = new jsPDF("p", "mm", "a4");
     const pdfWidth = pdf.internal.pageSize.getWidth();
-    const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-    pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-    pdf.save(`order-${form.getValues("schoolName") || "draft"}.pdf`);
+    const pdfHeight = pdf.internal.pageSize.getHeight();
+    const margin = 10;
+    const contentWidth = pdfWidth - (2 * margin);
+
+    const toastId = toast({
+      title: "Generating PDF",
+      description: "Capturing all 12 pages, please wait...",
+    });
+
+    try {
+      const originalPage = page;
+      
+      for (let i = 0; i < PAGES.length; i++) {
+        setPage(i);
+        // Wait for state update and re-render
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        const element = document.getElementById("order-form-content");
+        if (!element) continue;
+
+        const canvas = await html2canvas(element, { 
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        });
+        
+        const imgData = canvas.toDataURL("image/png");
+        const imgHeight = (canvas.height * contentWidth) / canvas.width;
+        
+        if (i > 0) {
+          pdf.addPage();
+        }
+        
+        // Add header info on each page
+        pdf.setFontSize(10);
+        pdf.setTextColor(100);
+        pdf.text(`MASTER BRAINS - Page ${i + 1}: ${PAGES[i]}`, margin, 8);
+        
+        pdf.addImage(imgData, "PNG", margin, margin + 5, contentWidth, imgHeight);
+      }
+      
+      setPage(originalPage);
+      pdf.save(`order-${form.getValues("schoolName") || "draft"}-${format(new Date(), "yyyyMMdd")}.pdf`);
+      
+      toast({
+        title: "Success",
+        description: "PDF generated with all 7 sections.",
+      });
+    } catch (error) {
+      console.error("PDF Error:", error);
+      toast({
+        title: "Error",
+        description: "Failed to generate full PDF. Try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   const renderBookTable = (category: string, title: string) => (

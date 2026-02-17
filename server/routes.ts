@@ -92,6 +92,44 @@ export async function registerRoutes(
   // Serve uploaded files statically
   app.use("/uploads", express.static(finalUploadDir));
 
+  // --- Auth Setup ---
+  passport.use(new LocalStrategy(async (username, password, done) => {
+    try {
+      const user = await storage.getUserByUsername(username);
+      if (!user || user.password !== password) { // Simple password check for now (as requested 123abc)
+        return done(null, false, { message: "Invalid credentials" });
+      }
+      return done(null, user);
+    } catch (err) {
+      return done(err);
+    }
+  }));
+
+  passport.serializeUser((user: any, done) => done(null, user.id));
+  passport.deserializeUser(async (id: number, done) => {
+    try {
+      const user = await storage.getUser(id);
+      done(null, user);
+    } catch (err) {
+      done(err);
+    }
+  });
+
+  app.use(session({
+    store: storage.sessionStore,
+    secret: process.env.SESSION_SECRET || "secret",
+    resave: false,
+    saveUninitialized: false,
+    cookie: { 
+      secure: false, // Set to false for local development/non-HTTPS
+      sameSite: "lax",
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    }
+  }));
+
+  app.use(passport.initialize());
+  app.use(passport.session());
+
   // --- Order Routes ---
   app.post("/api/orders", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -130,44 +168,6 @@ export async function registerRoutes(
     }
     res.json(order);
   });
-
-  // --- Auth Setup ---
-  passport.use(new LocalStrategy(async (username, password, done) => {
-    try {
-      const user = await storage.getUserByUsername(username);
-      if (!user || user.password !== password) { // Simple password check for now (as requested 123abc)
-        return done(null, false, { message: "Invalid credentials" });
-      }
-      return done(null, user);
-    } catch (err) {
-      return done(err);
-    }
-  }));
-
-  passport.serializeUser((user: any, done) => done(null, user.id));
-  passport.deserializeUser(async (id: number, done) => {
-    try {
-      const user = await storage.getUser(id);
-      done(null, user);
-    } catch (err) {
-      done(err);
-    }
-  });
-
-  app.use(session({
-    store: storage.sessionStore,
-    secret: process.env.SESSION_SECRET || "secret",
-    resave: false,
-    saveUninitialized: false,
-    cookie: { 
-      secure: false, // Set to false for local development/non-HTTPS
-      sameSite: "lax",
-      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
-    }
-  }));
-
-  app.use(passport.initialize());
-  app.use(passport.session());
 
   // --- Auth Routes ---
   app.post(api.auth.login.path, passport.authenticate("local"), (req, res) => {
