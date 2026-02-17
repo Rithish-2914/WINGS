@@ -157,6 +157,7 @@ export default function OrderForm() {
     try {
       const originalPage = page;
       
+      // We'll capture 12 pages as defined in PAGES array
       for (let i = 0; i < PAGES.length; i++) {
         setPage(i);
         // Wait for state update and re-render

@@ -141,10 +141,11 @@ export async function registerRoutes(
       });
       res.status(201).json(order);
     } catch (err) {
+      console.error("Error creating order:", err);
       if (err instanceof z.ZodError) {
         res.status(400).json({ message: err.errors[0].message });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: String(err) });
       }
     }
   });
