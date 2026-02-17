@@ -63,6 +63,7 @@ export class DatabaseStorage implements IStorage {
     const { items, ...rest } = order;
     const [newOrder] = await db.insert(orders).values([{
       ...rest,
+      userId: order.userId,
       items: items || {},
     }]).returning();
     return newOrder;

@@ -182,11 +182,25 @@ export default function OrderForm() {
         }
         
         // Add header info on each page
+        pdf.setFontSize(18);
+        pdf.setTextColor(30, 41, 59); // slate-800
+        pdf.text("MASTER BRAINS", margin, 15);
+        
         pdf.setFontSize(10);
         pdf.setTextColor(100);
-        pdf.text(`MASTER BRAINS - Page ${i + 1}: ${PAGES[i]}`, margin, 8);
+        pdf.text(`Section: ${PAGES[i]}`, margin, 22);
+        pdf.text(`Page ${i + 1} of ${PAGES.length}`, pdfWidth - margin - 25, 22);
         
-        pdf.addImage(imgData, "PNG", margin, margin + 5, contentWidth, imgHeight);
+        pdf.setDrawColor(200);
+        pdf.line(margin, 25, pdfWidth - margin, 25);
+        
+        pdf.addImage(imgData, "PNG", margin, 30, contentWidth, imgHeight);
+        
+        // Add footer
+        pdf.setFontSize(8);
+        pdf.setTextColor(150);
+        pdf.text("Generated on: " + format(new Date(), "PPpp"), margin, pdfHeight - 10);
+        pdf.text("Customer Copy - Master Brains Publications", pdfWidth / 2, pdfHeight - 10, { align: "center" });
       }
       
       setPage(originalPage);
