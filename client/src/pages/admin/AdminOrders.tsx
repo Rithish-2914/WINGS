@@ -3,13 +3,24 @@ import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText } from "lucide-react";
+import { Download, Eye, FileText, Check } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
+
+const CATEGORIES = [
+  "Kinder Box 1.0",
+  "Kinder Box Plus 2.0",
+  "Special Edition",
+  "Kinder Play",
+  "Little Steps",
+  "Little Steps Combo",
+  "Young Minds",
+  "General Books"
+];
 
 export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -19,38 +30,131 @@ export default function AdminOrders() {
 
   const downloadPDF = (order: Order) => {
     const doc = new jsPDF();
-    doc.setFontSize(20);
-    doc.text("MASTER BRAINS - ORDER INVOICE", 105, 15, { align: "center" });
-    
-    doc.setFontSize(10);
-    doc.text(`Order ID: ${order.id}`, 15, 25);
-    doc.text(`Date: ${order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}`, 15, 30);
-    
-    doc.setFontSize(12);
-    doc.text("SCHOOL DETAILS", 15, 40);
-    doc.setFontSize(10);
-    doc.text(`School Name: ${order.schoolName}`, 15, 45);
-    doc.text(`Address: ${order.address || "-"}`, 15, 50);
-    doc.text(`Phone: ${order.schoolPhone || "-"}`, 15, 55);
+    const margin = 15;
+    let yPos = 20;
 
+    // Helper for sections
+    const addSection = (title: string) => {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text(title, margin, yPos);
+      yPos += 7;
+      doc.line(margin, yPos - 5, 195, yPos - 5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+    };
+
+    const addField = (label: string, value: string | null | undefined) => {
+      doc.text(`${label}: ${value || "-"}`, margin, yPos);
+      yPos += 6;
+    };
+
+    // Header
+    doc.setFontSize(22);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(30, 41, 59);
+    doc.text("MASTER BRAINS", 105, 15, { align: "center" });
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Order ID: ${order.id} | Date: ${order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}`, 105, 22, { align: "center" });
+    doc.setTextColor(0);
+    yPos = 35;
+
+    // 1. Office Use & Mode
+    addSection("OFFICE USE & MODE");
+    addField("School Code", order.schoolCode);
+    addField("School Name (Office)", order.schoolNameOffice);
+    addField("Place", order.placeOffice);
+    addField("Mode of Order", order.modeOfOrder);
+    addField("Mode of Supply", order.modeOfSupply);
+    addField("School Order Copy", order.hasSchoolOrderCopy ? "Yes" : "No");
+    addField("Distributor Order Copy", order.hasDistributorOrderCopy ? "Yes" : "No");
+    yPos += 5;
+
+    // 2. School Information
+    addSection("SCHOOL INFORMATION");
+    addField("School Name", order.schoolName);
+    addField("Trust Name", order.trustName);
+    addField("Board", order.board);
+    addField("School Type", order.schoolType);
+    addField("Address", order.address);
+    addField("Pincode", order.pincode);
+    addField("State", order.state);
+    addField("Email", order.emailId);
+    addField("Phone", order.schoolPhone);
+    yPos += 5;
+
+    // 3. Contact Details
+    addSection("CONTACT DETAILS");
+    addField("Correspondent", order.correspondentName);
+    addField("Correspondent Mobile", order.correspondentMobile);
+    addField("Principal", order.principalName);
+    addField("Principal Mobile", order.principalMobile);
+    addField("Accounts", order.accountsName);
+    addField("Accounts Mobile", order.accountsMobile);
+    addField("Programme In Charge", order.programmeInChargeName);
+    addField("Programme In Charge Mobile", order.programmeInChargeMobile);
+    yPos += 5;
+
+    // 4. Dispatch Details
+    addSection("DISPATCH DETAILS");
+    addField("Delivery Date", order.deliveryDate ? format(new Date(order.deliveryDate), "dd MMM yyyy") : "-");
+    addField("Transport 1", order.preferredTransport1);
+    addField("Transport 2", order.preferredTransport2);
+    yPos += 10;
+
+    // 5-11. Items Tables
     const items = order.items as Record<string, any>;
-    const tableData = Object.entries(items)
-      .filter(([key]) => !key.endsWith("-discount"))
-      .map(([key, value]) => {
-        const [category, product] = key.split("-");
-        return [category, product, value.price, value.qty, (value.price * parseInt(value.qty || "0")).toFixed(2)];
-      });
+    CATEGORIES.forEach(category => {
+      const categoryItems = Object.entries(items)
+        .filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"))
+        .map(([key, value]) => {
+          const productName = key.substring(category.length + 1);
+          return [productName, value.price, value.qty, (value.price * parseInt(value.qty || "0")).toFixed(2)];
+        });
 
-    (doc as any).autoTable({
-      startY: 65,
-      head: [["Category", "Product", "Price", "Qty", "Total"]],
-      body: tableData,
+      if (categoryItems.length > 0) {
+        if (yPos > 220) {
+          doc.addPage();
+          yPos = 20;
+        }
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.text(category.toUpperCase(), margin, yPos);
+        yPos += 5;
+
+        (doc as any).autoTable({
+          startY: yPos,
+          head: [["Product", "Price", "Qty", "Total"]],
+          body: categoryItems,
+          margin: { left: margin },
+          theme: 'striped',
+          styles: { fontSize: 8 },
+          headStyles: { fillColor: [71, 85, 105] }
+        });
+        yPos = (doc as any).lastAutoTable.finalY + 10;
+      }
     });
 
-    const finalY = (doc as any).lastAutoTable.finalY + 10;
-    doc.text(`Total Amount: ${order.totalAmount}`, 140, finalY);
-    doc.text(`Total Discount: ${order.totalDiscount}`, 140, finalY + 5);
-    doc.text(`Net Amount: ${order.netAmount}`, 140, finalY + 10);
+    // 12. Totals
+    if (yPos > 240) {
+      doc.addPage();
+      yPos = 20;
+    }
+    addSection("ESTIMATED INVOICE SUMMARY");
+    addField("Gross Total", order.totalAmount);
+    addField("Total Discount", order.totalDiscount);
+    doc.setFont("helvetica", "bold");
+    addField("NET AMOUNT", order.netAmount);
+    doc.setFont("helvetica", "normal");
+    yPos += 5;
+    addField("Advance Payment", order.advancePayment);
+    addField("First Instalment", order.firstInstalment);
+    addField("Second Instalment", order.secondInstalment);
 
     doc.save(`order-${order.schoolName}-${order.id}.pdf`);
   };
@@ -99,56 +203,162 @@ export default function AdminOrders() {
       </Card>
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
-        <DialogContent className="max-w-3xl overflow-y-auto max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle>Order Details - {selectedOrder?.schoolName}</DialogTitle>
+        <DialogContent className="max-w-4xl overflow-y-auto max-h-[95vh] p-0">
+          <DialogHeader className="p-6 pb-0">
+            <DialogTitle className="text-2xl font-black text-slate-800 border-b pb-4 flex justify-between items-center">
+              <span>ORDER DETAILS - {selectedOrder?.schoolName}</span>
+              {selectedOrder && (
+                <Button variant="outline" size="sm" onClick={() => downloadPDF(selectedOrder)}>
+                  <Download className="w-4 h-4 mr-2" /> PDF
+                </Button>
+              )}
+            </DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-6">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <h4 className="font-bold border-b mb-2">School Info</h4>
-                  <p>Trust: {selectedOrder.trustName || "-"}</p>
-                  <p>Board: {selectedOrder.board || "-"}</p>
-                  <p>Type: {selectedOrder.schoolType || "-"}</p>
-                  <p>Address: {selectedOrder.address || "-"}</p>
+            <div className="p-6 space-y-8">
+              {/* Page 1: Office Use */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-2 p-4 rounded-lg bg-slate-50">
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Office Use Only</h4>
+                  <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
+                  <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
+                  <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
                 </div>
-                <div>
-                  <h4 className="font-bold border-b mb-2">Contact Info</h4>
-                  <p>Principal: {selectedOrder.principalName || "-"}</p>
-                  <p>Mobile: {selectedOrder.principalMobile || "-"}</p>
-                  <p>Email: {selectedOrder.emailId || "-"}</p>
+                <div className="space-y-2">
+                  <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>
+                  <p className="text-sm">Order: <span className="font-medium">{selectedOrder.modeOfOrder || "-"}</span></p>
+                  <p className="text-sm">Supply: <span className="font-medium">{selectedOrder.modeOfSupply || "-"}</span></p>
+                  <div className="flex gap-4 mt-2">
+                    <div className="flex items-center gap-1 text-xs">
+                      {selectedOrder.hasSchoolOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} School Copy
+                    </div>
+                    <div className="flex items-center gap-1 text-xs">
+                      {selectedOrder.hasDistributorOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} Distributor Copy
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div>
-                <h4 className="font-bold border-b mb-2">Order Items</h4>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Product</TableHead>
-                      <TableHead>Price</TableHead>
-                      <TableHead>Qty</TableHead>
-                      <TableHead className="text-right">Total</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Object.entries(selectedOrder.items as Record<string, any>)
-                      .filter(([key]) => !key.endsWith("-discount"))
-                      .map(([key, value]) => (
-                        <TableRow key={key}>
-                          <TableCell>{key.split("-")[1]}</TableCell>
-                          <TableCell>{value.price}</TableCell>
-                          <TableCell>{value.qty}</TableCell>
-                          <TableCell className="text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+
+              {/* Page 2: School Info */}
+              <div className="space-y-4 border-2 p-4 rounded-lg">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">School Information</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <p>Trust Name: <span className="font-medium">{selectedOrder.trustName || "-"}</span></p>
+                  <p>Board: <span className="font-medium">{selectedOrder.board || "-"}</span></p>
+                  <p>School Type: <span className="font-medium">{selectedOrder.schoolType || "-"}</span></p>
+                  <p>Email: <span className="font-medium">{selectedOrder.emailId || "-"}</span></p>
+                  <p className="md:col-span-2">Address: <span className="font-medium">{selectedOrder.address || "-"}</span></p>
+                  <p>Pincode: <span className="font-medium">{selectedOrder.pincode || "-"}</span></p>
+                  <p>State: <span className="font-medium">{selectedOrder.state || "-"}</span></p>
+                  <p>School Phone: <span className="font-medium">{selectedOrder.schoolPhone || "-"}</span></p>
+                </div>
               </div>
-              <div className="flex justify-end gap-4 font-bold border-t pt-4">
-                <p>Total: {selectedOrder.totalAmount}</p>
-                <p>Discount: {selectedOrder.totalDiscount}</p>
-                <p className="text-primary">Net: {selectedOrder.netAmount}</p>
+
+              {/* Page 3: Contact Details */}
+              <div className="space-y-4 border-2 p-4 rounded-lg">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Contact Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase">Correspondent</p>
+                    <p className="font-medium">{selectedOrder.correspondentName || "-"}</p>
+                    <p className="text-xs">{selectedOrder.correspondentMobile || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase">Principal</p>
+                    <p className="font-medium">{selectedOrder.principalName || "-"}</p>
+                    <p className="text-xs">{selectedOrder.principalMobile || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase">Accounts</p>
+                    <p className="font-medium">{selectedOrder.accountsName || "-"}</p>
+                    <p className="text-xs">{selectedOrder.accountsMobile || "-"}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-muted-foreground uppercase">Programme In Charge</p>
+                    <p className="font-medium">{selectedOrder.programmeInChargeName || "-"}</p>
+                    <p className="text-xs">{selectedOrder.programmeInChargeMobile || "-"}</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Page 4: Dispatch */}
+              <div className="space-y-4 border-2 p-4 rounded-lg">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Dispatch Details</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <p>Delivery Date: <span className="font-medium">{selectedOrder.deliveryDate ? format(new Date(selectedOrder.deliveryDate), "dd MMM yyyy") : "-"}</span></p>
+                  <p>Transport 1: <span className="font-medium">{selectedOrder.preferredTransport1 || "-"}</span></p>
+                  <p>Transport 2: <span className="font-medium">{selectedOrder.preferredTransport2 || "-"}</span></p>
+                </div>
+              </div>
+
+              {/* Pages 5-11: Items */}
+              <div className="space-y-6">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Book Order Details</h4>
+                {CATEGORIES.map(category => {
+                  const items = selectedOrder.items as Record<string, any>;
+                  const categoryItems = Object.entries(items).filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"));
+                  
+                  if (categoryItems.length === 0) return null;
+
+                  return (
+                    <div key={category} className="space-y-2">
+                      <h5 className="text-sm font-bold text-slate-600">{category}</h5>
+                      <Table>
+                        <TableHeader>
+                          <TableRow className="bg-slate-50">
+                            <TableHead className="h-8">Product</TableHead>
+                            <TableHead className="h-8 w-24">Price</TableHead>
+                            <TableHead className="h-8 w-24">Qty</TableHead>
+                            <TableHead className="h-8 w-24 text-right">Total</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {categoryItems.map(([key, value]) => (
+                            <TableRow key={key}>
+                              <TableCell className="py-2">{key.substring(category.length + 1)}</TableCell>
+                              <TableCell className="py-2">{value.price}</TableCell>
+                              <TableCell className="py-2">{value.qty}</TableCell>
+                              <TableCell className="py-2 text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Page 12: Estimated Invoice Summary */}
+              <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
+                <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Estimated Invoice Summary</h4>
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <span className="text-slate-400">Gross Total:</span>
+                    <span className="font-mono">INR {selectedOrder.totalAmount}</span>
+                  </div>
+                  <div className="flex justify-between text-red-400">
+                    <span>Total Discount:</span>
+                    <span className="font-mono">- INR {selectedOrder.totalDiscount}</span>
+                  </div>
+                  <div className="flex justify-between text-2xl border-t border-white/20 pt-4 font-black">
+                    <span className="text-primary">NET AMOUNT:</span>
+                    <span className="text-primary">INR {selectedOrder.netAmount}</span>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 gap-4 text-[10px] mt-4 pt-4 border-t border-white/10 uppercase tracking-tighter">
+                  <div className="text-center border-r border-white/10">
+                    <p className="text-slate-500">Advance</p>
+                    <p className="font-bold text-sm">INR {selectedOrder.advancePayment || "0.00"}</p>
+                  </div>
+                  <div className="text-center border-r border-white/10">
+                    <p className="text-slate-500">1st Inst.</p>
+                    <p className="font-bold text-sm">INR {selectedOrder.firstInstalment || "0.00"}</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-slate-500">2nd Inst.</p>
+                    <p className="font-bold text-sm">INR {selectedOrder.secondInstalment || "0.00"}</p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
