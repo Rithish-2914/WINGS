@@ -171,7 +171,13 @@ export default function OrderHistory() {
     addField("First Instalment", order.firstInstalment);
     addField("Second Instalment", order.secondInstalment);
 
-    doc.save(`order-${order.schoolName}-${order.id}.pdf`);
+    try {
+      doc.save(`order-${order.schoolName.replace(/[^a-z0-9]/gi, '_')}-${order.id}.pdf`);
+    } catch (err) {
+      console.error("PDF Save Error:", err);
+      // Fallback: open in new tab if save fails
+      window.open(doc.output('bloburl'), '_blank');
+    }
   };
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading orders...</div>;
