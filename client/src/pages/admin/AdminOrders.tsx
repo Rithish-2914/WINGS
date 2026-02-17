@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
-export default function OrderHistory() {
+export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
@@ -62,11 +62,8 @@ export default function OrderHistory() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
-            <FileText className="w-6 h-6" /> Order History
+            <FileText className="w-6 h-6" /> All Orders
           </CardTitle>
-          <Link href="/orders/new">
-            <Button>New Order</Button>
-          </Link>
         </CardHeader>
         <CardContent>
           <Table>
@@ -74,6 +71,7 @@ export default function OrderHistory() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>School Name</TableHead>
+                <TableHead>Executive ID</TableHead>
                 <TableHead>Total Amount</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -83,6 +81,7 @@ export default function OrderHistory() {
                 <TableRow key={order.id}>
                   <TableCell>{order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}</TableCell>
                   <TableCell className="font-medium">{order.schoolName}</TableCell>
+                  <TableCell>{order.userId}</TableCell>
                   <TableCell>{order.netAmount || order.totalAmount || "0.00"}</TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
@@ -94,13 +93,6 @@ export default function OrderHistory() {
                   </TableCell>
                 </TableRow>
               ))}
-              {orders?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No orders found.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </CardContent>
@@ -120,34 +112,19 @@ export default function OrderHistory() {
                   <p>Board: {selectedOrder.board || "-"}</p>
                   <p>Type: {selectedOrder.schoolType || "-"}</p>
                   <p>Address: {selectedOrder.address || "-"}</p>
-                  <p>Pincode: {selectedOrder.pincode || "-"}</p>
-                  <p>State: {selectedOrder.state || "-"}</p>
                 </div>
                 <div>
                   <h4 className="font-bold border-b mb-2">Contact Info</h4>
-                  <p>Correspondent: {selectedOrder.correspondentName || "-"}</p>
-                  <p>Correspondent Mobile: {selectedOrder.correspondentMobile || "-"}</p>
                   <p>Principal: {selectedOrder.principalName || "-"}</p>
-                  <p>Principal Mobile: {selectedOrder.principalMobile || "-"}</p>
+                  <p>Mobile: {selectedOrder.principalMobile || "-"}</p>
                   <p>Email: {selectedOrder.emailId || "-"}</p>
                 </div>
               </div>
-              
-              <div>
-                <h4 className="font-bold border-b mb-2">Dispatch Details</h4>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <p>Delivery Date: {selectedOrder.deliveryDate ? format(new Date(selectedOrder.deliveryDate), "dd MMM yyyy") : "-"}</p>
-                  <p>Transport 1: {selectedOrder.preferredTransport1 || "-"}</p>
-                  <p>Transport 2: {selectedOrder.preferredTransport2 || "-"}</p>
-                </div>
-              </div>
-
               <div>
                 <h4 className="font-bold border-b mb-2">Order Items</h4>
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Category</TableHead>
                       <TableHead>Product</TableHead>
                       <TableHead>Price</TableHead>
                       <TableHead>Qty</TableHead>
@@ -157,49 +134,21 @@ export default function OrderHistory() {
                   <TableBody>
                     {Object.entries(selectedOrder.items as Record<string, any>)
                       .filter(([key]) => !key.endsWith("-discount"))
-                      .map(([key, value]) => {
-                        const [category, product] = key.split("-");
-                        return (
-                          <TableRow key={key}>
-                            <TableCell>{category}</TableCell>
-                            <TableCell>{product}</TableCell>
-                            <TableCell>{value.price}</TableCell>
-                            <TableCell>{value.qty}</TableCell>
-                            <TableCell className="text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
-                          </TableRow>
-                        );
-                      })}
+                      .map(([key, value]) => (
+                        <TableRow key={key}>
+                          <TableCell>{key.split("-")[1]}</TableCell>
+                          <TableCell>{value.price}</TableCell>
+                          <TableCell>{value.qty}</TableCell>
+                          <TableCell className="text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </div>
-
-              <div className="bg-slate-50 p-4 rounded-lg space-y-2 border-2">
-                <div className="flex justify-between font-bold">
-                  <span>Gross Total:</span>
-                  <span>{selectedOrder.totalAmount}</span>
-                </div>
-                <div className="flex justify-between text-destructive">
-                  <span>Total Discount:</span>
-                  <span>{selectedOrder.totalDiscount}</span>
-                </div>
-                <div className="flex justify-between text-xl border-t pt-2 text-primary">
-                  <span>Net Amount:</span>
-                  <span>{selectedOrder.netAmount}</span>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-xs mt-4 pt-4 border-t border-dashed">
-                  <div>
-                    <p className="text-muted-foreground uppercase">Advance</p>
-                    <p className="font-bold">{selectedOrder.advancePayment || "0.00"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground uppercase">1st Inst.</p>
-                    <p className="font-bold">{selectedOrder.firstInstalment || "0.00"}</p>
-                  </div>
-                  <div>
-                    <p className="text-muted-foreground uppercase">2nd Inst.</p>
-                    <p className="font-bold">{selectedOrder.secondInstalment || "0.00"}</p>
-                  </div>
-                </div>
+              <div className="flex justify-end gap-4 font-bold border-t pt-4">
+                <p>Total: {selectedOrder.totalAmount}</p>
+                <p>Discount: {selectedOrder.totalDiscount}</p>
+                <p className="text-primary">Net: {selectedOrder.netAmount}</p>
               </div>
             </div>
           )}

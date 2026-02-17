@@ -15,6 +15,7 @@ import LeaveApplication from "@/pages/executive/LeaveApplication";
 import SampleSubmission from "@/pages/executive/SampleSubmission";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminLeaves from "@/pages/admin/AdminLeaves";
+import AdminOrders from "@/pages/admin/AdminOrders";
 import NotFound from "@/pages/not-found";
 
 import OrderForm from "@/pages/OrderForm";
@@ -77,6 +78,11 @@ function Router() {
           <ProtectedRoute 
             path="/admin/leaves" 
             component={AdminLeaves} 
+            roles={['admin']} 
+          />
+          <ProtectedRoute 
+            path="/admin/orders" 
+            component={AdminOrders} 
             roles={['admin']} 
           />
           

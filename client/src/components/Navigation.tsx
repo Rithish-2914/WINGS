@@ -31,6 +31,7 @@ export function Navigation() {
   const links = isAdmin
     ? [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/orders", label: "Orders", icon: FileText },
         { href: "/admin/leaves", label: "Leaves", icon: Calendar },
       ]
     : [
