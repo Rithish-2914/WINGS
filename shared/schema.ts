@@ -159,9 +159,9 @@ export const orders = pgTable("orders", {
   items: jsonb("items").notNull(),
 
   // Totals
-  totalAmount: text("total_amount"),
-  totalDiscount: text("total_discount"),
-  netAmount: text("net_amount"),
+  totalAmount: text("total_amount").default("0"),
+  totalDiscount: text("total_discount").default("0"),
+  netAmount: text("net_amount").default("0"),
   advancePayment: text("advance_payment"),
   firstInstalment: text("first_instalment"),
   secondInstalment: text("second_instalment"),
@@ -169,7 +169,10 @@ export const orders = pgTable("orders", {
 
 export const insertOrderSchema = createInsertSchema(orders, {
   deliveryDate: z.coerce.date().optional().nullable(),
-  items: z.any(),
+  items: z.record(z.any()),
+  totalAmount: z.string().optional(),
+  totalDiscount: z.string().optional(),
+  netAmount: z.string().optional(),
 }).omit({
   id: true,
   createdAt: true,
