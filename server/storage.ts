@@ -2,12 +2,13 @@
 import { db, pool } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
-  users, visits, targets, sampleSubmissions, leaves,
+  users, visits, targets, sampleSubmissions, leaves, orders,
   type User, type InsertUser, 
   type Visit, type InsertVisit,
   type Target, type InsertTarget,
   type SampleSubmission, type InsertSampleSubmission,
-  type Leave, type InsertLeave
+  type Leave, type InsertLeave,
+  type Order, type InsertOrder
 } from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
@@ -39,6 +40,11 @@ export interface IStorage {
   createLeave(leave: InsertLeave & { userId: number }): Promise<Leave>;
   listLeaves(filter?: { userId?: number }): Promise<Leave[]>;
 
+  // Orders
+  createOrder(order: InsertOrder & { userId: number }): Promise<Order>;
+  listOrders(filter?: { userId?: number }): Promise<Order[]>;
+  getOrder(id: number): Promise<Order | undefined>;
+
   // Session Store
   sessionStore: session.Store;
 }
@@ -51,6 +57,31 @@ export class DatabaseStorage implements IStorage {
       pool,
       createTableIfMissing: true,
     });
+  }
+
+  async createOrder(order: InsertOrder & { userId: number }): Promise<Order> {
+    const { items, ...rest } = order;
+    const [newOrder] = await db.insert(orders).values([{
+      ...rest,
+      items: items || {},
+    }]).returning();
+    return newOrder;
+  }
+
+  async listOrders(filter?: { userId?: number }): Promise<Order[]> {
+    let conditions = [];
+    if (filter?.userId) {
+      conditions.push(eq(orders.userId, filter.userId));
+    }
+    return await db.select()
+      .from(orders)
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(orders.createdAt));
+  }
+
+  async getOrder(id: number): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.id, id));
+    return order;
   }
 
   async updateUserPassword(id: number, password: string): Promise<User> {

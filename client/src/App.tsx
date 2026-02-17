@@ -17,6 +17,11 @@ import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminLeaves from "@/pages/admin/AdminLeaves";
 import NotFound from "@/pages/not-found";
 
+import OrderForm from "@/pages/OrderForm";
+import OrderHistory from "@/pages/executive/OrderHistory";
+
+// ... existing imports ...
+
 function Router() {
   return (
     <div className="min-h-screen bg-background font-sans antialiased">
@@ -32,10 +37,21 @@ function Router() {
             roles={['executive', 'admin']} 
           />
           <ProtectedRoute 
+            path="/orders/new" 
+            component={OrderForm} 
+            roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/orders" 
+            component={OrderHistory} 
+            roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
             path="/visits/new" 
             component={VisitForm} 
             roles={['executive', 'admin']} 
           />
+// ... rest of the routes ...
           <ProtectedRoute 
             path="/visits/history" 
             component={History} 

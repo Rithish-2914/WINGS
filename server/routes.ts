@@ -4,7 +4,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions, leaves, insertLeaveSchema } from "../shared/schema.js";
+import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions, leaves, insertLeaveSchema, orders, insertOrderSchema } from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
@@ -91,6 +91,45 @@ export async function registerRoutes(
   
   // Serve uploaded files statically
   app.use("/uploads", express.static(finalUploadDir));
+
+  // --- Order Routes ---
+  app.post("/api/orders", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const data = insertOrderSchema.parse(req.body);
+      const order = await storage.createOrder({
+        ...data,
+        userId: (req.user as any).id
+      });
+      res.status(201).json(order);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/orders", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    let userIdFilter = user.role === 'admin' ? undefined : user.id;
+    const ordersList = await storage.listOrders({ userId: userIdFilter });
+    res.json(ordersList);
+  });
+
+  app.get("/api/orders/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const order = await storage.getOrder(Number(req.params.id));
+    if (!order) return res.status(404).json({ message: "Order not found" });
+    
+    const user = req.user as any;
+    if (user.role !== 'admin' && order.userId !== user.id) {
+      return res.sendStatus(403);
+    }
+    res.json(order);
+  });
 
   // --- Auth Setup ---
   passport.use(new LocalStrategy(async (username, password, done) => {

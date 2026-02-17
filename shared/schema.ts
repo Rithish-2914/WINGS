@@ -113,6 +113,72 @@ export const insertLeaveSchema = createInsertSchema(leaves, {
 export type Leave = typeof leaves.$inferSelect;
 export type InsertLeave = z.infer<typeof insertLeaveSchema>;
 
+export const orders = pgTable("orders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+
+  // Office Use Only
+  schoolCode: text("school_code"),
+  schoolNameOffice: text("school_name_office"),
+  placeOffice: text("place_office"),
+
+  // Order & Supply Details
+  modeOfOrder: text("mode_of_order"), // 'SCHOOL' or 'DISTRIBUTOR'
+  modeOfSupply: text("mode_of_supply"), // 'SCHOOL' or 'DISTRIBUTOR'
+  hasSchoolOrderCopy: boolean("has_school_order_copy").default(false),
+  hasDistributorOrderCopy: boolean("has_distributor_order_copy").default(false),
+
+  // School Information
+  schoolName: text("school_name").notNull(),
+  trustName: text("trust_name"),
+  board: text("board"),
+  schoolType: text("school_type"),
+  address: text("address"),
+  pincode: text("pincode"),
+  state: text("state"),
+  emailId: text("email_id"),
+  schoolPhone: text("school_phone"),
+
+  // Contact Details
+  correspondentName: text("correspondent_name"),
+  correspondentMobile: text("correspondent_mobile"),
+  principalName: text("principal_name"),
+  principalMobile: text("principal_mobile"),
+  accountsName: text("accounts_name"),
+  accountsMobile: text("accounts_mobile"),
+  programmeInChargeName: text("programme_in_charge_name"),
+  programmeInChargeMobile: text("programme_in_charge_mobile"),
+
+  // Dispatch Details
+  deliveryDate: timestamp("delivery_date"),
+  preferredTransport1: text("preferred_transport_1"),
+  preferredTransport2: text("preferred_transport_2"),
+
+  // Book Order Data
+  items: jsonb("items").notNull(),
+
+  // Totals
+  totalAmount: text("total_amount"),
+  totalDiscount: text("total_discount"),
+  netAmount: text("net_amount"),
+  advancePayment: text("advance_payment"),
+  firstInstalment: text("first_instalment"),
+  secondInstalment: text("second_instalment"),
+});
+
+export const insertOrderSchema = createInsertSchema(orders, {
+  deliveryDate: z.coerce.date().optional().nullable(),
+  items: z.any(),
+}).omit({
+  id: true,
+  createdAt: true,
+  userId: true,
+});
+
+export type Order = typeof orders.$inferSelect;
+export type InsertOrder = z.infer<typeof insertOrderSchema>;
+
 // Schemas
 export const insertUserSchema = createInsertSchema(users);
 export const insertVisitSchema = createInsertSchema(visits, {

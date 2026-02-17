@@ -35,6 +35,7 @@ export function Navigation() {
       ]
     : [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/orders", label: "Orders", icon: FileText },
         { href: "/visits/new", label: "New Visit", icon: PlusCircle },
         { href: "/visits/history", label: "My History", icon: MapPin },
         { href: "/leaves", label: "Apply Leave", icon: Calendar },
