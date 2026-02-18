@@ -9,7 +9,7 @@ import { Link } from "wouter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const CATEGORIES = [
   "Kinder Box 1.0",
@@ -29,139 +29,139 @@ export default function AdminOrders() {
   });
 
   const downloadPDF = (order: Order) => {
-    const doc = new jsPDF();
-    const margin = 15;
-    let yPos = 20;
+    try {
+      const doc = new jsPDF();
+      const margin = 15;
+      let yPos = 20;
 
-    // Helper for sections
-    const addSection = (title: string) => {
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.text(title, margin, yPos);
-      yPos += 7;
-      doc.line(margin, yPos - 5, 195, yPos - 5);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
-    };
-
-    const addField = (label: string, value: string | null | undefined) => {
-      doc.text(`${label}: ${value || "-"}`, margin, yPos);
-      yPos += 6;
-    };
-
-    // Header
-    doc.setFontSize(22);
-    doc.setFont("helvetica", "bold");
-    doc.setTextColor(30, 41, 59);
-    doc.text("MASTER BRAINS", 105, 15, { align: "center" });
-    doc.setFontSize(10);
-    doc.setTextColor(100);
-    doc.text(`Order ID: ${order.id} | Date: ${order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}`, 105, 22, { align: "center" });
-    doc.setTextColor(0);
-    yPos = 35;
-
-    // 1. Office Use & Mode
-    addSection("OFFICE USE & MODE");
-    addField("School Code", order.schoolCode);
-    addField("School Name (Office)", order.schoolNameOffice);
-    addField("Place", order.placeOffice);
-    addField("Mode of Order", order.modeOfOrder);
-    addField("Mode of Supply", order.modeOfSupply);
-    addField("School Order Copy", order.hasSchoolOrderCopy ? "Yes" : "No");
-    addField("Distributor Order Copy", order.hasDistributorOrderCopy ? "Yes" : "No");
-    yPos += 5;
-
-    // 2. School Information
-    addSection("SCHOOL INFORMATION");
-    addField("School Name", order.schoolName);
-    addField("Trust Name", order.trustName);
-    addField("Board", order.board);
-    addField("School Type", order.schoolType);
-    addField("Address", order.address);
-    addField("Pincode", order.pincode);
-    addField("State", order.state);
-    addField("Email", order.emailId);
-    addField("Phone", order.schoolPhone);
-    yPos += 5;
-
-    // 3. Contact Details
-    addSection("CONTACT DETAILS");
-    addField("Correspondent", order.correspondentName);
-    addField("Correspondent Mobile", order.correspondentMobile);
-    addField("Principal", order.principalName);
-    addField("Principal Mobile", order.principalMobile);
-    addField("Accounts", order.accountsName);
-    addField("Accounts Mobile", order.accountsMobile);
-    addField("Programme In Charge", order.programmeInChargeName);
-    addField("Programme In Charge Mobile", order.programmeInChargeMobile);
-    yPos += 5;
-
-    // 4. Dispatch Details
-    addSection("DISPATCH DETAILS");
-    addField("Delivery Date", order.deliveryDate ? format(new Date(order.deliveryDate), "dd MMM yyyy") : "-");
-    addField("Transport 1", order.preferredTransport1);
-    addField("Transport 2", order.preferredTransport2);
-    yPos += 10;
-
-    // 5-11. Items Tables
-    const items = order.items as Record<string, any>;
-    CATEGORIES.forEach(category => {
-      const categoryItems = Object.entries(items)
-        .filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"))
-        .map(([key, value]) => {
-          const productName = key.substring(category.length + 1);
-          return [productName, value.price, value.qty, (value.price * parseInt(value.qty || "0")).toFixed(2)];
-        });
-
-      if (categoryItems.length > 0) {
-        if (yPos > 220) {
+      // Helper for sections
+      const addSection = (title: string) => {
+        if (yPos > 270) {
           doc.addPage();
           yPos = 20;
         }
-        doc.setFontSize(11);
+        doc.setFontSize(12);
         doc.setFont("helvetica", "bold");
-        doc.text(category.toUpperCase(), margin, yPos);
-        yPos += 5;
+        doc.text(title, margin, yPos);
+        yPos += 7;
+        doc.line(margin, yPos - 5, 195, yPos - 5);
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(10);
+      };
 
-        (doc as any).autoTable({
-          startY: yPos,
-          head: [["Product", "Price", "Qty", "Total"]],
-          body: categoryItems,
-          margin: { left: margin },
-          theme: 'striped',
-          styles: { fontSize: 8 },
-          headStyles: { fillColor: [71, 85, 105] }
-        });
-        yPos = (doc as any).lastAutoTable.finalY + 10;
+      const addField = (label: string, value: any) => {
+        const textValue = String(value || "-");
+        doc.text(`${label}: ${textValue}`, margin, yPos);
+        yPos += 6;
+      };
+
+      // Header
+      doc.setFontSize(22);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(30, 41, 59);
+      doc.text("MASTER BRAINS", 105, 15, { align: "center" });
+      doc.setFontSize(10);
+      doc.setTextColor(100);
+      doc.text(`Order ID: ${order.id} | Date: ${order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}`, 105, 22, { align: "center" });
+      doc.setTextColor(0);
+      yPos = 35;
+
+      // 1. Office Use & Mode
+      addSection("OFFICE USE & MODE");
+      addField("School Code", order.schoolCode);
+      addField("School Name (Office)", order.schoolNameOffice);
+      addField("Place", order.placeOffice);
+      addField("Mode of Order", order.modeOfOrder);
+      addField("Mode of Supply", order.modeOfSupply);
+      addField("School Order Copy", order.hasSchoolOrderCopy ? "Yes" : "No");
+      addField("Distributor Order Copy", order.hasDistributorOrderCopy ? "Yes" : "No");
+      yPos += 5;
+
+      // 2. School Information
+      addSection("SCHOOL INFORMATION");
+      addField("School Name", order.schoolName);
+      addField("Trust Name", order.trustName);
+      addField("Board", order.board);
+      addField("School Type", order.schoolType);
+      addField("Address", order.address);
+      addField("Pincode", order.pincode);
+      addField("State", order.state);
+      addField("Email", order.emailId);
+      addField("Phone", order.schoolPhone);
+      yPos += 5;
+
+      // 3. Contact Details
+      addSection("CONTACT DETAILS");
+      addField("Correspondent", order.correspondentName);
+      addField("Correspondent Mobile", order.correspondentMobile);
+      addField("Principal", order.principalName);
+      addField("Principal Mobile", order.principalMobile);
+      addField("Accounts", order.accountsName);
+      addField("Accounts Mobile", order.accountsMobile);
+      addField("Programme In Charge", order.programmeInChargeName);
+      addField("Programme In Charge Mobile", order.programmeInChargeMobile);
+      yPos += 5;
+
+      // 4. Dispatch Details
+      addSection("DISPATCH DETAILS");
+      addField("Delivery Date", order.deliveryDate ? format(new Date(order.deliveryDate), "dd MMM yyyy") : "-");
+      addField("Transport 1", order.preferredTransport1);
+      addField("Transport 2", order.preferredTransport2);
+      yPos += 10;
+
+      // 5-11. Items Tables
+      const items = (order.items || {}) as Record<string, any>;
+      CATEGORIES.forEach(category => {
+        const categoryItems = Object.entries(items)
+          .filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"))
+          .map(([key, value]) => {
+            const productName = key.substring(category.length + 1);
+            return [productName, String(value.price || "0"), String(value.qty || "0"), (Number(value.price || 0) * Number(value.qty || 0)).toFixed(2)];
+          });
+
+        if (categoryItems.length > 0) {
+          if (yPos > 240) {
+            doc.addPage();
+            yPos = 20;
+          }
+          doc.setFontSize(11);
+          doc.setFont("helvetica", "bold");
+          doc.text(category.toUpperCase(), margin, yPos);
+          yPos += 5;
+
+          autoTable(doc, {
+            startY: yPos,
+            head: [["Product", "Price", "Qty", "Total"]],
+            body: categoryItems,
+            margin: { left: margin },
+            theme: 'striped',
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [71, 85, 105] }
+          });
+          yPos = (doc as any).lastAutoTable.finalY + 10;
+        }
+      });
+
+      // 12. Totals
+      if (yPos > 230) {
+        doc.addPage();
+        yPos = 20;
       }
-    });
+      addSection("ESTIMATED INVOICE SUMMARY");
+      addField("Gross Total", order.totalAmount);
+      addField("Total Discount", order.totalDiscount);
+      doc.setFont("helvetica", "bold");
+      addField("NET AMOUNT", order.netAmount);
+      doc.setFont("helvetica", "normal");
+      yPos += 5;
+      addField("Advance Payment", order.advancePayment);
+      addField("First Instalment", order.firstInstalment);
+      addField("Second Instalment", order.secondInstalment);
 
-    // 12. Totals
-    if (yPos > 240) {
-      doc.addPage();
-      yPos = 20;
-    }
-    addSection("ESTIMATED INVOICE SUMMARY");
-    addField("Gross Total", order.totalAmount);
-    addField("Total Discount", order.totalDiscount);
-    doc.setFont("helvetica", "bold");
-    addField("NET AMOUNT", order.netAmount);
-    doc.setFont("helvetica", "normal");
-    yPos += 5;
-    addField("Advance Payment", order.advancePayment);
-    addField("First Instalment", order.firstInstalment);
-    addField("Second Instalment", order.secondInstalment);
-
-    try {
-      doc.save(`order-${order.schoolName.replace(/[^a-z0-9]/gi, '_')}-${order.id}.pdf`);
+      doc.save(`order-${(order.schoolName || 'order').replace(/[^a-z0-9]/gi, '_')}-${order.id}.pdf`);
     } catch (err) {
-      console.error("PDF Save Error:", err);
-      // Fallback: open in new tab if save fails
-      window.open(doc.output('bloburl'), '_blank');
+      console.error("PDF Generation Error:", err);
+      alert("Failed to generate PDF. Please check the console for details.");
     }
   };
 
