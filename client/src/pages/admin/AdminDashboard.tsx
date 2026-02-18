@@ -747,71 +747,7 @@ export default function AdminDashboard() {
         </CardContent>
       </Card>
 
-      {/* Orders Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Package className="h-5 w-5 text-primary" />
-            Book Orders
-          </CardTitle>
-          <CardDescription>Orders submitted by sales executives</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Executive</TableHead>
-                  <TableHead>School Name</TableHead>
-                  <TableHead>Total Amount</TableHead>
-                  <TableHead>Net Amount</TableHead>
-                  <TableHead className="text-right">Action</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {ordersLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24">Loading orders...</TableCell>
-                  </TableRow>
-                ) : !orders || orders.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center h-24 text-muted-foreground">No orders found.</TableCell>
-                  </TableRow>
-                ) : (
-                  orders.map((order) => {
-                    const exec = users?.find(u => u.id === order.userId);
-                    return (
-                      <TableRow key={order.id}>
-                        <TableCell>{format(new Date(order.createdAt!), "MMM d, yyyy")}</TableCell>
-                        <TableCell>
-                          <div className="flex flex-col">
-                            <span className="font-medium text-sm">{exec?.name || "Unknown"}</span>
-                            <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell>{order.schoolName}</TableCell>
-                        <TableCell>₹{order.totalAmount}</TableCell>
-                        <TableCell className="font-bold text-primary">₹{order.netAmount}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" onClick={() => {
-                            toast({ title: "Order Details", description: "Full order details view pending implementation." });
-                          }}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Table */}
+      {/* Recent Visits Table */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
