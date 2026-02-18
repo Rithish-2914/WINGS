@@ -42,7 +42,7 @@ export interface IStorage {
 
   // Orders
   createOrder(order: InsertOrder & { userId: number }): Promise<Order>;
-  listOrders(filter?: { userId?: number }): Promise<Order[]>;
+  listOrders(filter?: { userId?: number }): Promise<(Order & { userName?: string })[]>;
   getOrder(id: number): Promise<Order | undefined>;
 
   // Session Store
@@ -69,15 +69,25 @@ export class DatabaseStorage implements IStorage {
     return newOrder;
   }
 
-  async listOrders(filter?: { userId?: number }): Promise<Order[]> {
+  async listOrders(filter?: { userId?: number }): Promise<(Order & { userName?: string })[]> {
     let conditions = [];
     if (filter?.userId) {
       conditions.push(eq(orders.userId, filter.userId));
     }
-    return await db.select()
+    
+    const results = await db.select({
+      order: orders,
+      userName: users.name
+    })
       .from(orders)
+      .leftJoin(users, eq(orders.userId, users.id))
       .where(conditions.length ? and(...conditions) : undefined)
       .orderBy(desc(orders.createdAt));
+
+    return results.map(r => ({
+      ...r.order,
+      userName: r.userName || undefined
+    }));
   }
 
   async getOrder(id: number): Promise<Order | undefined> {

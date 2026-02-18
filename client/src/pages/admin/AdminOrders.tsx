@@ -68,6 +68,7 @@ export default function AdminOrders() {
 
       // 1. Office Use & Mode
       addSection("OFFICE USE & MODE");
+      addField("Executive", order.userName || `ID: ${order.userId}`);
       addField("School Code", order.schoolCode);
       addField("School Name (Office)", order.schoolNameOffice);
       addField("Place", order.placeOffice);
@@ -181,7 +182,7 @@ export default function AdminOrders() {
               <TableRow>
                 <TableHead>Date</TableHead>
                 <TableHead>School Name</TableHead>
-                <TableHead>Executive ID</TableHead>
+                <TableHead>Executive</TableHead>
                 <TableHead>Total Amount</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -191,7 +192,7 @@ export default function AdminOrders() {
                 <TableRow key={order.id}>
                   <TableCell>{order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}</TableCell>
                   <TableCell className="font-medium">{order.schoolName}</TableCell>
-                  <TableCell>{order.userId}</TableCell>
+                  <TableCell>{order.userName || `ID: ${order.userId}`}</TableCell>
                   <TableCell>{order.netAmount || order.totalAmount || "0.00"}</TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
@@ -229,6 +230,7 @@ export default function AdminOrders() {
                   <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
                   <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
                   <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
+                  <p className="text-sm">Executive: <span className="font-medium">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
                 </div>
                 <div className="space-y-2">
                   <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>

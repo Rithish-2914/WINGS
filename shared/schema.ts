@@ -179,7 +179,7 @@ export const insertOrderSchema = createInsertSchema(orders, {
   userId: true,
 });
 
-export type Order = typeof orders.$inferSelect;
+export type Order = typeof orders.$inferSelect & { userName?: string };
 export type InsertOrder = z.infer<typeof insertOrderSchema>;
 
 // Schemas
