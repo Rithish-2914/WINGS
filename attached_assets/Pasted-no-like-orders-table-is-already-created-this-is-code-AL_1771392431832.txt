@@ -1,0 +1,72 @@
+no like orders table is already created this is code
+ALTER TABLE orders ADD COLUMN user_id INTEGER REFERENCES users(id);   
+-- Users table for authentication and roles
+CREATE TABLE IF NOT EXISTS users (
+  id SERIAL PRIMARY KEY,
+  username TEXT NOT NULL UNIQUE,
+  password TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'executive' -- 'admin' or 'executive'
+);
+
+-- Orders table capturing all 7 pages of the physical form
+CREATE TABLE IF NOT EXISTS orders (
+  id SERIAL PRIMARY KEY,
+  user_id INTEGER NOT NULL REFERENCES users(id),
+  
+  -- Page 1: Office Use & Mode
+  school_code TEXT,
+  school_name_office TEXT,
+  place_office TEXT,
+  mode_of_order TEXT, -- 'SCHOOL' or 'DISTRIBUTOR'
+  mode_of_supply TEXT, -- 'SCHOOL' or 'DISTRIBUTOR'
+  has_school_order_copy BOOLEAN DEFAULT FALSE,
+  has_distributor_order_copy BOOLEAN DEFAULT FALSE,
+  
+  -- Page 2: School Information
+  school_name TEXT NOT NULL,
+  trust_name TEXT,
+  board TEXT,
+  school_type TEXT,
+  address TEXT,
+  pincode TEXT,
+  state TEXT,
+  email_id TEXT,
+  school_phone TEXT,
+  
+  -- Page 3: Contact Details
+  correspondent_name TEXT,
+  correspondent_mobile TEXT,
+  principal_name TEXT,
+  principal_mobile TEXT,
+  accounts_name TEXT,
+  accounts_mobile TEXT,
+  programme_in_charge_name TEXT,
+  programme_in_charge_mobile TEXT,
+  
+  -- Page 4: Dispatch Details
+  delivery_date TIMESTAMP,
+  preferred_transport_1 TEXT,
+  preferred_transport_2 TEXT,
+  
+  -- Book Order Data (Pages 5-11 stored as JSONB for flexibility)
+  items JSONB NOT NULL DEFAULT '{}',
+  
+  -- Page 12: Estimated Invoice & Totals
+  total_amount TEXT DEFAULT '0',
+  total_discount TEXT DEFAULT '0',
+  net_amount TEXT DEFAULT '0',
+  advance_payment TEXT,
+  first_instalment TEXT,
+  second_instalment TEXT,
+  
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Indexes for performance
+CREATE INDEX IF NOT EXISTS idx_orders_user_id ON orders(user_id);
+CREATE INDEX IF NOT EXISTS idx_orders_school_name ON orders(school_name);
+-- Assign existing orders a user_id if null (e.g., default admin = 1)
+UPDATE orders SET user_id = 1 WHERE user_id IS NULL;
+
+-- Then enforce NOT NULL
+ALTER TABLE orders ALTER COLUMN user_id SET NOT NULL;   

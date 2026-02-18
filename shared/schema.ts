@@ -115,21 +115,18 @@ export type InsertLeave = z.infer<typeof insertLeaveSchema>;
 
 export const orders = pgTable("orders", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull(),
-  createdAt: timestamp("created_at").defaultNow(),
-
-  // Office Use Only
+  userId: integer("user_id").notNull().references(() => users.id),
+  
+  // Page 1: Office Use & Mode
   schoolCode: text("school_code"),
   schoolNameOffice: text("school_name_office"),
   placeOffice: text("place_office"),
-
-  // Order & Supply Details
   modeOfOrder: text("mode_of_order"), // 'SCHOOL' or 'DISTRIBUTOR'
   modeOfSupply: text("mode_of_supply"), // 'SCHOOL' or 'DISTRIBUTOR'
   hasSchoolOrderCopy: boolean("has_school_order_copy").default(false),
   hasDistributorOrderCopy: boolean("has_distributor_order_copy").default(false),
-
-  // School Information
+  
+  // Page 2: School Information
   schoolName: text("school_name").notNull(),
   trustName: text("trust_name"),
   board: text("board"),
@@ -139,8 +136,8 @@ export const orders = pgTable("orders", {
   state: text("state"),
   emailId: text("email_id"),
   schoolPhone: text("school_phone"),
-
-  // Contact Details
+  
+  // Page 3: Contact Details
   correspondentName: text("correspondent_name"),
   correspondentMobile: text("correspondent_mobile"),
   principalName: text("principal_name"),
@@ -149,22 +146,24 @@ export const orders = pgTable("orders", {
   accountsMobile: text("accounts_mobile"),
   programmeInChargeName: text("programme_in_charge_name"),
   programmeInChargeMobile: text("programme_in_charge_mobile"),
-
-  // Dispatch Details
+  
+  // Page 4: Dispatch Details
   deliveryDate: timestamp("delivery_date"),
   preferredTransport1: text("preferred_transport_1"),
   preferredTransport2: text("preferred_transport_2"),
-
-  // Book Order Data
-  items: jsonb("items").notNull(),
-
-  // Totals
+  
+  // Book Order Data (Pages 5-11 stored as JSONB for flexibility)
+  items: jsonb("items").notNull().default({}),
+  
+  // Page 12: Estimated Invoice & Totals
   totalAmount: text("total_amount").default("0"),
   totalDiscount: text("total_discount").default("0"),
   netAmount: text("net_amount").default("0"),
   advancePayment: text("advance_payment"),
   firstInstalment: text("first_instalment"),
   secondInstalment: text("second_instalment"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 export const insertOrderSchema = createInsertSchema(orders, {
