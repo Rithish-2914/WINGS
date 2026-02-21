@@ -184,8 +184,6 @@ export default function PublicOrderForm() {
     </div>
   );
 
-  const getBookData = (category: string) => (BOOK_DATA as any)[category] || [];
-
   const renderBookTable = (category: string, title: string) => (
     <div className="space-y-4">
       <h3 className="text-lg font-bold border-b pb-2">{title}</h3>
