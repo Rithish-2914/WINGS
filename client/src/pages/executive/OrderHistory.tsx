@@ -3,7 +3,7 @@ import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2 } from "lucide-react";
+import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -45,6 +45,22 @@ export default function OrderHistory() {
   const { toast } = useToast();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
+  });
+
+  const createShareLinkMutation = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/orders/share", {});
+      return res.json();
+    },
+    onSuccess: (order: Order) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      const link = `${window.location.origin}/orders/public/${order.shareToken}`;
+      navigator.clipboard.writeText(link);
+      toast({ title: "Link Generated!", description: "Empty order link copied to clipboard. Share it with the school." });
+    },
+    onError: (error: Error) => {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
   });
 
   const updateStatusMutation = useMutation({
@@ -218,9 +234,18 @@ export default function OrderHistory() {
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
             <FileText className="w-6 h-6" /> Order History
           </CardTitle>
-          <Link href="/orders/new">
-            <Button>New Order</Button>
-          </Link>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              onClick={() => createShareLinkMutation.mutate()}
+              disabled={createShareLinkMutation.isPending}
+            >
+              <LinkIcon className="w-4 h-4 mr-2" /> Share Link
+            </Button>
+            <Link href="/orders/new">
+              <Button>New Order</Button>
+            </Link>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>

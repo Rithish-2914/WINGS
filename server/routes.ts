@@ -150,6 +150,24 @@ export async function registerRoutes(
     }
   });
 
+  app.post("/api/orders/share", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const token = Math.random().toString(36).substring(2, 15);
+      const order = await storage.createOrder({
+        userId: (req.user as any).id,
+        schoolName: "Pending Link Order",
+        items: {},
+        shareToken: token,
+        isPublicFilled: false
+      });
+      res.status(201).json(order);
+    } catch (err) {
+      console.error("Error creating share link:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get("/api/orders/public/:token", async (req, res) => {
     try {
       const order = await storage.getOrderByToken(req.params.token);
