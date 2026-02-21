@@ -188,7 +188,7 @@ export const insertVisitSchema = createInsertSchema(visits, {
   followUpDate: z.coerce.date().optional().nullable(),
   booksSubmitted: z.array(z.string()).optional().nullable(),
   products: z.array(z.string()).optional().nullable(),
-  photoUrl: z.string().min(1, "Visit photo is required"),
+  photoUrl: z.string().min(1, "Visit photo is required").default(""),
   samplePhotoUrl: z.string().optional().nullable(),
   visitCount: z.number().min(1).default(1),
   contactMobile: z.string().min(10, "Mobile number must be at least 10 digits"),

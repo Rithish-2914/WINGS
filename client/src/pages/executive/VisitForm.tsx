@@ -124,11 +124,19 @@ export default function VisitForm() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    // Optional: Add basic client-side compression or resizing here if needed
+    // For now, we just ensure we don't block the UI unnecessarily
+
     try {
-      const coords = await getGeolocation();
+      // Start geolocation and photo preview immediately
+      const geoPromise = getGeolocation();
       const objectUrl = URL.createObjectURL(file);
       setPhotoPreview(objectUrl);
 
+      // Upload in background without waiting for geolocation if possible, 
+      // but schema requires metadata which needs coords.
+      const coords = await geoPromise;
+      
       const { url } = await uploadPhoto.mutateAsync(file);
       form.setValue("photoUrl", url);
       form.setValue("photoMetadata", {
@@ -136,8 +144,16 @@ export default function VisitForm() {
         lat: coords.lat,
         lng: coords.lng
       });
+      
+      // Clear manual error if any
+      form.clearErrors("photoUrl");
     } catch (error) {
       console.error("Capture failed", error);
+      toast({ 
+        variant: "destructive", 
+        title: "Upload Failed", 
+        description: "Failed to process photo or location. Please try again." 
+      });
     }
   };
 
