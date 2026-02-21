@@ -1,13 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Check } from "lucide-react";
+import { Download, Eye, FileText, Check, Truck, Package } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 
@@ -24,9 +27,35 @@ const CATEGORIES = [
 
 export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [dispatchId, setDispatchId] = useState("");
+  const { toast } = useToast();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
   });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status, dispatchId }: { id: number, status: string, dispatchId?: string }) => {
+      const res = await apiRequest("PATCH", `/api/orders/${id}/status`, { status, dispatchId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "Success", description: "Order status updated" });
+      setSelectedOrder(null);
+      setDispatchId("");
+    },
+    onError: (error: Error) => {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  });
+
+  const handleDispatch = (orderId: number) => {
+    if (!dispatchId) {
+      toast({ variant: "destructive", title: "Required", description: "Please enter a Dispatch ID" });
+      return;
+    }
+    updateStatusMutation.mutate({ id: orderId, status: "dispatched", dispatchId });
+  };
 
   const downloadPDF = (order: Order) => {
     try {
@@ -184,6 +213,7 @@ export default function AdminOrders() {
                 <TableHead>School Name</TableHead>
                 <TableHead>Executive</TableHead>
                 <TableHead>Total Amount</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -194,6 +224,16 @@ export default function AdminOrders() {
                   <TableCell className="font-medium">{order.schoolName}</TableCell>
                   <TableCell>{order.userName || `ID: ${order.userId}`}</TableCell>
                   <TableCell>{order.netAmount || order.totalAmount || "0.00"}</TableCell>
+                  <TableCell>
+                    <span className={cn(
+                      "px-2 py-1 rounded-full text-xs font-medium uppercase",
+                      order.status === 'delivered' ? "bg-green-100 text-green-700" :
+                      order.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                      "bg-yellow-100 text-yellow-700"
+                    )}>
+                      {order.status || 'pending'}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
                       <Eye className="w-4 h-4" />
@@ -290,6 +330,49 @@ export default function AdminOrders() {
               </div>
 
               {/* Page 4: Dispatch */}
+              <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                  <Truck className="w-4 h-4" /> Tracking Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                  <div className="space-y-4">
+                    <p className="text-sm">Status: 
+                      <span className={cn(
+                        "ml-2 px-2 py-1 rounded-full text-xs font-bold uppercase",
+                        selectedOrder.status === 'delivered' ? "bg-green-100 text-green-700" :
+                        selectedOrder.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                        "bg-yellow-100 text-yellow-700"
+                      )}>
+                        {selectedOrder.status || 'pending'}
+                      </span>
+                    </p>
+                    {selectedOrder.dispatchId && (
+                      <p className="text-sm">Dispatch ID: <span className="font-bold">{selectedOrder.dispatchId}</span></p>
+                    )}
+                  </div>
+                  
+                  {selectedOrder.status === 'pending' && (
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Input 
+                          placeholder="Enter Dispatch ID" 
+                          value={dispatchId}
+                          onChange={(e) => setDispatchId(e.target.value)}
+                          className="bg-white"
+                        />
+                      </div>
+                      <Button 
+                        onClick={() => handleDispatch(selectedOrder.id)}
+                        disabled={updateStatusMutation.isPending}
+                      >
+                        Mark Dispatched
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Page 4: Dispatch Details Original */}
               <div className="space-y-4 border-2 p-4 rounded-lg">
                 <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Dispatch Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">

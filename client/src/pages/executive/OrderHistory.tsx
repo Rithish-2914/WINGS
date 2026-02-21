@@ -1,13 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Check } from "lucide-react";
+import { Download, Eye, FileText, Check, Truck, PackageCheck } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 
@@ -39,8 +42,24 @@ const CATEGORIES = [
 
 export default function OrderHistory() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const { toast } = useToast();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number, status: string }) => {
+      const res = await apiRequest("PATCH", `/api/orders/${id}/status`, { status });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "Success", description: "Order marked as delivered" });
+      setSelectedOrder(null);
+    },
+    onError: (error: Error) => {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
   });
 
   const downloadPDF = (order: Order) => {
@@ -200,6 +219,7 @@ export default function OrderHistory() {
                 <TableHead>Date</TableHead>
                 <TableHead>School Name</TableHead>
                 <TableHead>Total Amount</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -209,6 +229,16 @@ export default function OrderHistory() {
                   <TableCell>{order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}</TableCell>
                   <TableCell className="font-medium">{order.schoolName}</TableCell>
                   <TableCell>{order.netAmount || order.totalAmount || "0.00"}</TableCell>
+                  <TableCell>
+                    <span className={cn(
+                      "px-2 py-1 rounded-full text-xs font-medium uppercase",
+                      order.status === 'delivered' ? "bg-green-100 text-green-700" :
+                      order.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                      "bg-yellow-100 text-yellow-700"
+                    )}>
+                      {order.status || 'pending'}
+                    </span>
+                  </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
                       <Eye className="w-4 h-4" />
@@ -310,7 +340,44 @@ export default function OrderHistory() {
                 </div>
               </div>
 
-              {/* Page 4: Dispatch */}
+              {/* Page 4: Dispatch Tracking */}
+              <div className="space-y-4 border-2 p-4 rounded-lg bg-slate-50">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                  <Truck className="w-4 h-4" /> Tracking Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">Status: 
+                      <span className={cn(
+                        "ml-2 px-2 py-1 rounded-full text-xs font-bold uppercase",
+                        selectedOrder.status === 'delivered' ? "bg-green-100 text-green-700" :
+                        selectedOrder.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                        "bg-yellow-100 text-yellow-700"
+                      )}>
+                        {selectedOrder.status || 'pending'}
+                      </span>
+                    </p>
+                    {selectedOrder.dispatchId && (
+                      <p className="text-sm">Dispatch ID: <span className="font-bold">{selectedOrder.dispatchId}</span></p>
+                    )}
+                  </div>
+                  
+                  {selectedOrder.status === 'dispatched' && (
+                    <div className="flex items-center justify-end">
+                      <Button 
+                        onClick={() => updateStatusMutation.mutate({ id: selectedOrder.id, status: 'delivered' })}
+                        disabled={updateStatusMutation.isPending}
+                        className="bg-green-600 hover:bg-green-700 text-white"
+                      >
+                        <PackageCheck className="mr-2 h-4 w-4" />
+                        Mark as Delivered
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Page 4: Dispatch Details Original */}
               <div className="space-y-4 border-2 p-4 rounded-lg">
                 <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Dispatch Details</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
