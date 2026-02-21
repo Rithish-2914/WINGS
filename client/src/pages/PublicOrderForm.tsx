@@ -182,6 +182,18 @@ export default function PublicOrderForm() {
               </TableCell>
             </TableRow>
           ))}
+          <TableRow>
+            <TableCell colSpan={3} className="text-right font-medium text-muted-foreground">Discount (Executive only):</TableCell>
+            <TableCell>
+              <Input 
+                type="text" 
+                className="h-8 bg-slate-50"
+                disabled
+                placeholder="-"
+                value={items[`${category}-discount`]?.value ? `${items[`${category}-discount`].value}%` : ""}
+              />
+            </TableCell>
+          </TableRow>
         </TableBody>
       </Table>
     </div>
