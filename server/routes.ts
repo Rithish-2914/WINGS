@@ -150,6 +150,33 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/orders/public/:token", async (req, res) => {
+    try {
+      const order = await storage.getOrderByToken(req.params.token);
+      if (!order) return res.status(404).json({ message: "Order link invalid or expired" });
+      res.json(order);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  app.post("/api/orders/public/:token", async (req, res) => {
+    try {
+      const order = await storage.getOrderByToken(req.params.token);
+      if (!order) return res.status(404).json({ message: "Order link invalid or expired" });
+      
+      const data = insertOrderSchema.parse(req.body);
+      const updated = await storage.updateOrderPublic(order.id, data);
+      res.json(updated);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
   app.get("/api/orders", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const user = req.user as any;

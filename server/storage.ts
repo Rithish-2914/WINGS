@@ -45,6 +45,8 @@ export interface IStorage {
   listOrders(filter?: { userId?: number }): Promise<(Order & { userName?: string })[]>;
   getOrder(id: number): Promise<Order | undefined>;
   updateOrderStatus(id: number, status: string, dispatchId?: string): Promise<Order>;
+  updateOrderPublic(id: number, data: Partial<Order>): Promise<Order>;
+  getOrderByToken(token: string): Promise<Order | undefined>;
 
   // Session Store
   sessionStore: session.Store;
@@ -66,6 +68,7 @@ export class DatabaseStorage implements IStorage {
       ...rest,
       userId: order.userId,
       items: items || {},
+      shareToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
     }]).returning();
     return newOrder;
   }
@@ -108,6 +111,21 @@ export class DatabaseStorage implements IStorage {
       .returning();
     if (!updatedOrder) throw new Error("Order not found");
     return updatedOrder;
+  }
+
+  async updateOrderPublic(id: number, data: Partial<Order>): Promise<Order> {
+    const [updatedOrder] = await db
+      .update(orders)
+      .set({ ...data, isPublicFilled: true })
+      .where(eq(orders.id, id))
+      .returning();
+    if (!updatedOrder) throw new Error("Order not found");
+    return updatedOrder;
+  }
+
+  async getOrderByToken(token: string): Promise<Order | undefined> {
+    const [order] = await db.select().from(orders).where(eq(orders.shareToken, token));
+    return order;
   }
 
   async updateUserPassword(id: number, password: string): Promise<User> {

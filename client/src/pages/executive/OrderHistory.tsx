@@ -3,7 +3,7 @@ import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Check, Truck, PackageCheck } from "lucide-react";
+import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2 } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -199,6 +199,16 @@ export default function OrderHistory() {
     }
   };
 
+  const copyShareLink = (order: Order) => {
+    if (!order.shareToken) {
+      toast({ variant: "destructive", title: "Error", description: "Share link not available for this order" });
+      return;
+    }
+    const link = `${window.location.origin}/orders/public/${order.shareToken}`;
+    navigator.clipboard.writeText(link);
+    toast({ title: "Copied!", description: "Shareable link copied to clipboard" });
+  };
+
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading orders...</div>;
 
   return (
@@ -240,6 +250,9 @@ export default function OrderHistory() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
+                    <Button variant="outline" size="sm" onClick={() => copyShareLink(order)} title="Copy Share Link">
+                      <Share2 className="w-4 h-4" />
+                    </Button>
                     <Button variant="ghost" size="sm" onClick={() => setSelectedOrder(order)}>
                       <Eye className="w-4 h-4" />
                     </Button>

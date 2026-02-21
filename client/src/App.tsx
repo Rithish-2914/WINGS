@@ -19,6 +19,7 @@ import AdminOrders from "@/pages/admin/AdminOrders";
 import NotFound from "@/pages/not-found";
 
 import OrderForm from "@/pages/OrderForm";
+import PublicOrderForm from "@/pages/PublicOrderForm";
 import OrderHistory from "@/pages/executive/OrderHistory";
 
 // ... existing imports ...
@@ -30,6 +31,7 @@ function Router() {
       <main>
         <Switch>
           <Route path="/" component={LoginPage} />
+          <Route path="/orders/public/:token" component={PublicOrderForm} />
           
           {/* Executive Routes */}
           <ProtectedRoute 

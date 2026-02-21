@@ -166,6 +166,10 @@ export const orders = pgTable("orders", {
   // Dispatch & Tracking
   dispatchId: text("dispatch_id"),
   status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
+  
+  // Shareable Link
+  shareToken: text("share_token").unique(),
+  isPublicFilled: boolean("is_public_filled").default(false),
 
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -178,6 +182,8 @@ export const insertOrderSchema = createInsertSchema(orders, {
   netAmount: z.string().optional(),
   dispatchId: z.string().optional().nullable(),
   status: z.string().optional().nullable(),
+  shareToken: z.string().optional().nullable(),
+  isPublicFilled: z.boolean().optional(),
 }).omit({
   id: true,
   createdAt: true,
