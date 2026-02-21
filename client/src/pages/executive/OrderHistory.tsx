@@ -292,8 +292,8 @@ export default function OrderHistory() {
                           });
                           
                           let total = 0;
-                          Object.values(newItems).forEach((value: any) => {
-                            if (value.qty && value.price) {
+                          Object.entries(newItems).forEach(([key, value]: [string, any]) => {
+                            if (value && value.qty && value.price && !key.endsWith("-discount")) {
                               total += parseInt(value.qty) * value.price;
                             }
                           });
@@ -302,7 +302,7 @@ export default function OrderHistory() {
 
                           apiRequest("PATCH", `/api/orders/${order.id}`, { 
                             items: newItems,
-                            totalAmount: total.toString(),
+                            totalAmount: total.toFixed(2),
                             totalDiscount: discountAmt,
                             netAmount: net
                           }).then(() => {

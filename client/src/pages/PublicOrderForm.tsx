@@ -126,18 +126,21 @@ export default function PublicOrderForm() {
     Object.keys(BOOK_DATA).forEach(category => {
       const books = getBookData(category);
       books.forEach((book: any) => {
-        const qty = parseInt(items[`${category}-${book.product}`]?.qty || "0");
+        const itemKey = `${category}-${book.product}`;
+        const qty = parseInt(items[itemKey]?.qty || "0");
         if (qty > 0) {
           total += qty * book.price;
         }
       });
     });
 
-    const overallDiscount = parseFloat(form.getValues("totalDiscount") || "0");
-    const net = total - overallDiscount;
+    const overallDiscountPerc = parseFloat(Object.values(items).find((v: any) => v && v.value && !v.qty)?.value || "0");
+    const discountAmt = (total * overallDiscountPerc / 100);
+    const net = total - discountAmt;
     
-    form.setValue("totalAmount", total.toString());
-    form.setValue("netAmount", net.toString());
+    form.setValue("totalAmount", total.toFixed(2));
+    form.setValue("totalDiscount", discountAmt.toFixed(2));
+    form.setValue("netAmount", net.toFixed(2));
   }, [items, form]);
 
   const mutation = useMutation({
