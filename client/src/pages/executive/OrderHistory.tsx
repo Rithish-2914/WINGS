@@ -3,6 +3,7 @@ import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
@@ -275,6 +276,42 @@ export default function OrderHistory() {
                     </span>
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
+                    <div className="flex items-center gap-1 border rounded-md px-2 bg-slate-50">
+                      <span className="text-[10px] font-bold text-slate-500 uppercase">Disc %:</span>
+                      <Input 
+                        type="number" 
+                        className="h-7 w-12 border-none bg-transparent p-0 text-center text-xs font-bold"
+                        placeholder="0"
+                        defaultValue={Object.entries(order.items as Record<string, any>).find(([k]) => k.endsWith("-discount"))?.[1]?.value || ""}
+                        onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
+                          const val = e.target.value;
+                          const newItems = { ...(order.items as Record<string, any>) };
+                          const categories = ["Kinder Box 1.0", "Kinder Box Plus 2.0", "Special Edition", "Kinder Play", "Little Steps", "Young Minds", "General Books"];
+                          categories.forEach(cat => {
+                            newItems[`${cat}-discount`] = { value: val };
+                          });
+                          
+                          let total = 0;
+                          Object.values(newItems).forEach((value: any) => {
+                            if (value.qty && value.price) {
+                              total += parseInt(value.qty) * value.price;
+                            }
+                          });
+                          const discountAmt = (total * (parseFloat(val) || 0) / 100).toFixed(2);
+                          const net = (total - parseFloat(discountAmt)).toFixed(2);
+
+                          apiRequest("PATCH", `/api/orders/${order.id}`, { 
+                            items: newItems,
+                            totalAmount: total.toString(),
+                            totalDiscount: discountAmt,
+                            netAmount: net
+                          }).then(() => {
+                            queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+                            toast({ title: "Updated", description: "Discount applied and total recalculated" });
+                          });
+                        }}
+                      />
+                    </div>
                     <Button variant="outline" size="sm" onClick={() => copyShareLink(order)} title="Copy Share Link">
                       <Share2 className="w-4 h-4" />
                     </Button>

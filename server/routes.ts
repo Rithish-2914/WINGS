@@ -203,6 +203,24 @@ export async function registerRoutes(
     res.json(ordersList);
   });
 
+  app.patch("/api/orders/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const order = await storage.getOrder(Number(req.params.id));
+      if (!order) return res.status(404).json({ message: "Order not found" });
+
+      const user = req.user as any;
+      if (user.role !== 'admin' && order.userId !== user.id) {
+        return res.sendStatus(403);
+      }
+
+      const updated = await storage.updateOrderPublic(order.id, req.body);
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get("/api/orders/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const order = await storage.getOrder(Number(req.params.id));

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertOrderSchema, type InsertOrder, type Order } from "@shared/schema";
@@ -120,6 +120,25 @@ export default function PublicOrderForm() {
   });
 
   const items = useWatch({ control: form.control, name: "items" }) as Record<string, any> || {};
+
+  useEffect(() => {
+    let total = 0;
+    Object.keys(BOOK_DATA).forEach(category => {
+      const books = getBookData(category);
+      books.forEach((book: any) => {
+        const qty = parseInt(items[`${category}-${book.product}`]?.qty || "0");
+        if (qty > 0) {
+          total += qty * book.price;
+        }
+      });
+    });
+
+    const overallDiscount = parseFloat(form.getValues("totalDiscount") || "0");
+    const net = total - overallDiscount;
+    
+    form.setValue("totalAmount", total.toString());
+    form.setValue("netAmount", net.toString());
+  }, [items, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: InsertOrder) => {
