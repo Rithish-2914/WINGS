@@ -96,16 +96,30 @@ export default function PublicOrderForm() {
 
   const form = useForm<InsertOrder>({
     resolver: zodResolver(insertOrderSchema),
-    defaultValues: order || {
-      schoolName: "",
-      items: {},
-      totalAmount: "0",
-      totalDiscount: "0",
-      netAmount: "0",
+    defaultValues: {
+      schoolName: order?.schoolName || "",
+      items: (order?.items as Record<string, any>) || {},
+      totalAmount: order?.totalAmount || "0",
+      totalDiscount: order?.totalDiscount || "0",
+      netAmount: order?.netAmount || "0",
+      schoolCode: order?.schoolCode || "",
+      schoolNameOffice: order?.schoolNameOffice || "",
+      placeOffice: order?.placeOffice || "",
+      trustName: order?.trustName || "",
+      board: order?.board || "",
+      schoolType: order?.schoolType || "",
+      address: order?.address || "",
+      pincode: order?.pincode || "",
+      state: order?.state || "",
+      emailId: order?.emailId || "",
+      schoolPhone: order?.schoolPhone || "",
+      principalName: order?.principalName || "",
+      principalMobile: order?.principalMobile || "",
+      deliveryDate: order?.deliveryDate ? new Date(order?.deliveryDate) : undefined,
     }
   });
 
-  const items = useWatch({ control: form.control, name: "items" }) || {};
+  const items = useWatch({ control: form.control, name: "items" }) as Record<string, any> || {};
 
   const mutation = useMutation({
     mutationFn: async (data: InsertOrder) => {
