@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useRoute } from "wouter";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { Loader2, CheckCircle2, AlertCircle } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const PAGES = [
@@ -90,36 +90,53 @@ export default function PublicOrderForm() {
   const { toast } = useToast();
 
   const { data: order, isLoading: orderLoading, error } = useQuery<Order>({
-    queryKey: [`/api/orders/public/${token}`],
+    queryKey: ["api", "orders", "public", token],
     enabled: !!token,
+    retry: false,
   });
 
   const form = useForm<InsertOrder>({
     resolver: zodResolver(insertOrderSchema),
     defaultValues: {
-      schoolName: order?.schoolName || "",
-      items: (order?.items as Record<string, any>) || {},
-      totalAmount: order?.totalAmount || "0",
-      totalDiscount: order?.totalDiscount || "0",
-      netAmount: order?.netAmount || "0",
-      schoolCode: order?.schoolCode || "",
-      schoolNameOffice: order?.schoolNameOffice || "",
-      placeOffice: order?.placeOffice || "",
-      trustName: order?.trustName || "",
-      board: order?.board || "",
-      schoolType: order?.schoolType || "",
-      address: order?.address || "",
-      pincode: order?.pincode || "",
-      state: order?.state || "",
-      emailId: order?.emailId || "",
-      schoolPhone: order?.schoolPhone || "",
-      principalName: order?.principalName || "",
-      principalMobile: order?.principalMobile || "",
-      deliveryDate: order?.deliveryDate ? new Date(order?.deliveryDate) : undefined,
+      schoolName: "",
+      items: {},
+      totalAmount: "0",
+      totalDiscount: "0",
+      netAmount: "0",
     }
   });
 
+  // Update form when order data is loaded
+  useEffect(() => {
+    if (order) {
+      console.log("Order data loaded, resetting form:", order);
+      form.reset({
+        schoolName: order.schoolName || "",
+        items: (order.items as Record<string, any>) || {},
+        totalAmount: order.totalAmount || "0",
+        totalDiscount: order.totalDiscount || "0",
+        netAmount: order.netAmount || "0",
+        schoolCode: order.schoolCode || "",
+        schoolNameOffice: order.schoolNameOffice || "",
+        placeOffice: order.placeOffice || "",
+        trustName: order.trustName || "",
+        board: order.board || "",
+        schoolType: order.schoolType || "",
+        address: order.address || "",
+        pincode: order.pincode || "",
+        state: order.state || "",
+        emailId: order.emailId || "",
+        schoolPhone: order.schoolPhone || "",
+        principalName: order.principalName || "",
+        principalMobile: order.principalMobile || "",
+        deliveryDate: order.deliveryDate ? new Date(order.deliveryDate) : undefined,
+      });
+    }
+  }, [order, form.reset]);
+
   const items = useWatch({ control: form.control, name: "items" }) as Record<string, any> || {};
+
+  const getBookData = (category: string) => (BOOK_DATA as any)[category] || [];
 
   useEffect(() => {
     let total = 0;

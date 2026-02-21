@@ -31,7 +31,9 @@ function Router() {
       <main>
         <Switch>
           <Route path="/" component={LoginPage} />
-          <Route path="/orders/public/:token" component={PublicOrderForm} />
+          <Route path="/orders/public/:token">
+            {(params) => <PublicOrderForm />}
+          </Route>
           
           {/* Executive Routes */}
           <ProtectedRoute 

@@ -170,10 +170,15 @@ export async function registerRoutes(
 
   app.get("/api/orders/public/:token", async (req, res) => {
     try {
+      console.log("Fetching public order for token:", req.params.token);
       const order = await storage.getOrderByToken(req.params.token);
-      if (!order) return res.status(404).json({ message: "Order link invalid or expired" });
+      if (!order) {
+        console.log("Order not found for token:", req.params.token);
+        return res.status(404).json({ message: "Order link invalid or expired" });
+      }
       res.json(order);
     } catch (err) {
+      console.error("Error fetching public order:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   });
