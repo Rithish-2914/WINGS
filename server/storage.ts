@@ -44,6 +44,7 @@ export interface IStorage {
   createOrder(order: InsertOrder & { userId: number }): Promise<Order>;
   listOrders(filter?: { userId?: number }): Promise<(Order & { userName?: string })[]>;
   getOrder(id: number): Promise<Order | undefined>;
+  updateOrderStatus(id: number, status: string, dispatchId?: string): Promise<Order>;
 
   // Session Store
   sessionStore: session.Store;
@@ -93,6 +94,20 @@ export class DatabaseStorage implements IStorage {
   async getOrder(id: number): Promise<Order | undefined> {
     const [order] = await db.select().from(orders).where(eq(orders.id, id));
     return order;
+  }
+
+  async updateOrderStatus(id: number, status: string, dispatchId?: string): Promise<Order> {
+    const updateData: any = { status };
+    if (dispatchId !== undefined) {
+      updateData.dispatchId = dispatchId;
+    }
+    const [updatedOrder] = await db
+      .update(orders)
+      .set(updateData)
+      .where(eq(orders.id, id))
+      .returning();
+    if (!updatedOrder) throw new Error("Order not found");
+    return updatedOrder;
   }
 
   async updateUserPassword(id: number, password: string): Promise<User> {

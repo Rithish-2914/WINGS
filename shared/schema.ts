@@ -163,6 +163,10 @@ export const orders = pgTable("orders", {
   firstInstalment: text("first_instalment"),
   secondInstalment: text("second_instalment"),
   
+  // Dispatch & Tracking
+  dispatchId: text("dispatch_id"),
+  status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
+
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -172,6 +176,8 @@ export const insertOrderSchema = createInsertSchema(orders, {
   totalAmount: z.string().optional(),
   totalDiscount: z.string().optional(),
   netAmount: z.string().optional(),
+  dispatchId: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
 }).omit({
   id: true,
   createdAt: true,

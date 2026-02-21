@@ -170,6 +170,33 @@ export async function registerRoutes(
     res.json(order);
   });
 
+  app.patch("/api/orders/:id/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const { status, dispatchId } = req.body;
+      const order = await storage.getOrder(Number(req.params.id));
+      if (!order) return res.status(404).json({ message: "Order not found" });
+
+      const user = req.user as any;
+      // Admin can update status and dispatchId
+      // Executive can only update to 'delivered' if currently 'dispatched'
+      if (user.role === 'admin') {
+        const updated = await storage.updateOrderStatus(order.id, status, dispatchId);
+        return res.json(updated);
+      } else if (user.role === 'executive' && order.userId === user.id) {
+        if (status === 'delivered') {
+          const updated = await storage.updateOrderStatus(order.id, 'delivered');
+          return res.json(updated);
+        }
+        return res.sendStatus(403);
+      }
+      return res.sendStatus(403);
+    } catch (err) {
+      console.error("Error updating order status:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Auth Routes ---
   app.post(api.auth.login.path, passport.authenticate("local"), (req, res) => {
     res.json(req.user);
