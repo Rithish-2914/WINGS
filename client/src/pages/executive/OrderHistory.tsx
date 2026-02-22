@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon, LifeBuoy } from "lucide-react";
+import { Loader2, Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon, LifeBuoy, Calculator } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -503,9 +503,76 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                {/* Book Order Details */}
-                <div className="space-y-6">
-                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Book Order Details</h4>
+                {/* Estimated Invoice Summary */}
+                <div className="space-y-4 border-2 p-4 rounded-lg bg-slate-50">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <Calculator className="w-4 h-4" /> Estimated Invoice Summary
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div className="space-y-3">
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground font-medium uppercase">Gross Total</span>
+                        <span className="font-bold">₹{selectedOrder.totalAmount}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground font-medium uppercase">Discount (%)</span>
+                        <span className="font-bold">{selectedOrder.discount}%</span>
+                      </div>
+                      <div className="flex justify-between items-center text-sm">
+                        <span className="text-muted-foreground font-medium uppercase">Total Discount</span>
+                        <span className="font-bold text-red-600">- ₹{selectedOrder.totalDiscount}</span>
+                      </div>
+                      <div className="flex justify-between items-center pt-2 border-t-2 border-slate-200">
+                        <span className="font-black text-slate-900 uppercase">Net Amount</span>
+                        <span className="font-black text-blue-700 text-lg">₹{selectedOrder.netAmount}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase">Advance Payment</label>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
+                          <Input 
+                            type="text"
+                            className="h-8 pl-5 text-sm font-bold border-2 focus:border-blue-400"
+                            defaultValue={selectedOrder.advancePayment || ""}
+                            onBlur={(e) => updateOrderMutation.mutate({ id: selectedOrder.id, advancePayment: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase">1st Instalment</label>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
+                          <Input 
+                            type="text"
+                            className="h-8 pl-5 text-sm font-bold border-2 focus:border-blue-400"
+                            defaultValue={selectedOrder.firstInstalment || ""}
+                            onBlur={(e) => updateOrderMutation.mutate({ id: selectedOrder.id, firstInstalment: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[10px] font-black text-slate-500 uppercase">2nd Instalment</label>
+                        <div className="relative">
+                          <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs">₹</span>
+                          <Input 
+                            type="text"
+                            className="h-8 pl-5 text-sm font-bold border-2 focus:border-blue-400"
+                            defaultValue={selectedOrder.secondInstalment || ""}
+                            onBlur={(e) => updateOrderMutation.mutate({ id: selectedOrder.id, secondInstalment: e.target.value })}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {/* Order Items */}
+                <div className="space-y-6 border-2 p-4 rounded-lg">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <PackageCheck className="w-4 h-4" /> Order Items
+                  </h4>
                   {CATEGORIES.map(category => {
                     const items = selectedOrder.items as Record<string, any>;
                     const categoryItems = Object.entries(items).filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"));
@@ -598,18 +665,48 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/10">
-                  <div>
-                    <p className="text-[10px] text-slate-400 uppercase">Advance</p>
-                    <p className="font-bold font-mono">₹{selectedOrder.advancePayment || "0"}</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6 pt-6 border-t border-white/10">
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">Advance Payment</p>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₹</span>
+                      <Input 
+                        type="text"
+                        className="h-10 pl-6 bg-white/5 border-white/10 text-white font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={selectedOrder.advancePayment || ""}
+                        onChange={(e) => setSelectedOrder({...selectedOrder, advancePayment: e.target.value})}
+                        onBlur={() => updateOrderMutation.mutate({ id: selectedOrder.id, advancePayment: selectedOrder.advancePayment })}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-slate-400 uppercase">1st Inst.</p>
-                    <p className="font-bold font-mono">₹{selectedOrder.firstInstalment || "0"}</p>
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">1st Instalment</p>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₹</span>
+                      <Input 
+                        type="text"
+                        className="h-10 pl-6 bg-white/5 border-white/10 text-white font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={selectedOrder.firstInstalment || ""}
+                        onChange={(e) => setSelectedOrder({...selectedOrder, firstInstalment: e.target.value})}
+                        onBlur={() => updateOrderMutation.mutate({ id: selectedOrder.id, firstInstalment: selectedOrder.firstInstalment })}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-[10px] text-slate-400 uppercase">2nd Inst.</p>
-                    <p className="font-bold font-mono">₹{selectedOrder.secondInstalment || "0"}</p>
+                  <div className="space-y-2">
+                    <p className="text-[10px] text-slate-400 uppercase font-black tracking-widest">2nd Instalment</p>
+                    <div className="relative">
+                      <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₹</span>
+                      <Input 
+                        type="text"
+                        className="h-10 pl-6 bg-white/5 border-white/10 text-white font-mono text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                        value={selectedOrder.secondInstalment || ""}
+                        onChange={(e) => setSelectedOrder({...selectedOrder, secondInstalment: e.target.value})}
+                        onBlur={() => updateOrderMutation.mutate({ id: selectedOrder.id, secondInstalment: selectedOrder.secondInstalment })}
+                        placeholder="0"
+                      />
+                    </div>
                   </div>
                 </div>
               </div>

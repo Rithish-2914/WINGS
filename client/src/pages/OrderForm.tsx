@@ -487,8 +487,8 @@ export default function OrderForm() {
                       <FormField control={form.control} name="totalAmount" render={({ field }) => (
                         <FormItem><FormLabel className="font-black text-slate-600">SUB TOTAL AMOUNT</FormLabel><FormControl><Input {...field} value={field.value ?? "0"} readOnly className="font-bold bg-white text-lg h-12 border-2" /></FormControl></FormItem>
                       )} />
-                      <FormField control={form.control} name="totalDiscount" render={({ field }) => (
-                        <FormItem><FormLabel className="font-black text-slate-600">OVERALL DISCOUNT</FormLabel><FormControl><Input {...field} value={field.value ?? "0"} className="font-bold bg-white text-lg h-12 border-2" /></FormControl></FormItem>
+                      <FormField control={form.control} name="discount" render={({ field }) => (
+                        <FormItem><FormLabel className="font-black text-slate-600">OVERALL DISCOUNT (₹)</FormLabel><FormControl><Input {...field} value={field.value ?? "0"} className="font-bold bg-white text-lg h-12 border-2" onChange={(e) => field.onChange(e.target.value)} /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="netAmount" render={({ field }) => (
                         <FormItem><FormLabel className="font-black text-slate-900 text-lg">NET AMOUNT</FormLabel><FormControl><Input {...field} value={field.value ?? "0"} readOnly className="font-black bg-blue-50 text-blue-900 text-2xl h-16 border-4 border-blue-200" /></FormControl></FormItem>
