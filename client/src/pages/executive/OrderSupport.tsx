@@ -282,6 +282,12 @@ function AdminSupportView() {
                     defaultValue={req.dispatchId}
                     onBlur={(e) => updateStatusMutation.mutate({ id: req.id, dispatchId: e.target.value })}
                   />
+                  <Input 
+                    placeholder="Courier Mode" 
+                    className="w-[140px]"
+                    defaultValue={req.courierMode}
+                    onBlur={(e) => updateStatusMutation.mutate({ id: req.id, courierMode: e.target.value })}
+                  />
                   <Select 
                     defaultValue={req.status}
                     onValueChange={(val) => updateStatusMutation.mutate({ id: req.id, status: val })}

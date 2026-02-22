@@ -189,6 +189,7 @@ export const supportRequests = pgTable("support_requests", {
   remarks: text("remarks"), // max 250 words
   adminResponse: text("admin_response"),
   dispatchId: text("dispatch_id"), // Dispatch ID from Admin
+  courierMode: text("courier_mode"), // Added courier mode (e.g., 'DTDC', 'Professional')
   status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
   
   // Added Dispatch Info for Executive
@@ -203,6 +204,8 @@ export const dispatches = pgTable("dispatches", {
   adminId: integer("admin_id").notNull().references(() => users.id),
   executiveId: integer("executive_id").notNull().references(() => users.id),
   dispatchDate: timestamp("dispatch_date").notNull(),
+  dispatchLocation: text("dispatch_location"), // Added location for dispatch
+  courierMode: text("courier_mode"), // Added courier mode
   bookType: text("book_type").notNull(), // 'Sales' / 'Sample'
   modeOfParcel: text("mode_of_parcel").notNull(), // e.g., 'SINDHU PARCEL SERVICE'
   lrNo: text("lr_no").notNull(),

@@ -86,6 +86,8 @@ export default function CreateDispatch() {
     const dispatchData: any = {
       executiveId: Number(formData.executiveId),
       dispatchDate: formData.dispatchDate || new Date(),
+      dispatchLocation: formData.dispatchLocation || null,
+      courierMode: formData.courierMode || null,
       bookType: formData.bookType || "Sales",
       modeOfParcel: formData.modeOfParcel || "",
       lrNo: formData.lrNo,
@@ -166,7 +168,25 @@ export default function CreateDispatch() {
               </div>
 
               <div className="space-y-2">
+                <label className="text-sm font-medium">Dispatch Location</label>
+                <Input 
+                  placeholder="e.g. Warehouse A"
+                  value={formData.dispatchLocation || ""} 
+                  onChange={(e) => setFormData({ ...formData, dispatchLocation: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <label className="text-sm font-medium">Mode of Courier</label>
+                <Input 
+                  placeholder="e.g. DTDC / Professional"
+                  value={formData.courierMode || ""} 
+                  onChange={(e) => setFormData({ ...formData, courierMode: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Mode of Parcel</label>
                 <Input 
                   placeholder="e.g. SINDHU PARCEL SERVICE"
                   value={formData.modeOfParcel} 
