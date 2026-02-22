@@ -104,7 +104,7 @@ export default function AdminOrders() {
 
       // 1. Office Use & Mode
       addSection("OFFICE USE & MODE");
-      addField("Executive", order.userName || `ID: ${order.userId}`);
+      addField("Executive", order.userName || "N/A");
       addField("School Code", order.schoolCode);
       addField("School Name (Office)", order.schoolNameOffice);
       addField("Place", order.placeOffice);
