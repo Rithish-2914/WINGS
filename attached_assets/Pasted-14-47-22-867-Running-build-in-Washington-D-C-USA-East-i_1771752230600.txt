@@ -1,0 +1,160 @@
+14:47:22.867 Running build in Washington, D.C., USA (East) – iad1
+14:47:22.867 Build machine configuration: 2 cores, 8 GB
+14:47:22.878 Cloning github.com/Rithish-2914/WINGS (Branch: main, Commit: f799b7d)
+14:47:22.879 Skipping build cache, deployment was triggered without cache.
+14:47:23.399 Cloning completed: 521.000ms
+14:47:25.330 Running "vercel build"
+14:47:26.000 Vercel CLI 50.22.0
+14:47:26.151 WARN! Due to `builds` existing in your configuration file, the Build and Development Settings defined in your Project Settings will not apply. Learn More: https://vercel.link/unused-build-settings
+14:47:26.780 Installing dependencies...
+14:47:37.480 
+14:47:37.481 added 524 packages in 10s
+14:47:37.482 
+14:47:37.482 79 packages are looking for funding
+14:47:37.482   run `npm fund` for details
+14:47:37.557 Running "npm run build"
+14:47:37.654 
+14:47:37.654 > rest-express@1.0.0 build
+14:47:37.655 > tsx script/build.ts
+14:47:37.655 
+14:47:38.538 building client...
+14:47:38.620 [36mvite v7.3.0 [32mbuilding client environment for production...[36m[39m
+14:47:38.881 transforming...
+14:47:40.491 [32m✓[39m 18 modules transformed.
+14:47:40.493 [31m✗[39m Build failed in 1.65s
+14:47:40.495 [31m[vite:esbuild] Transform failed with 1 error:
+14:47:40.495 /vercel/path0/client/src/pages/executive/OrderHistory.tsx:620:20: ERROR: Unterminated regular expression[39m
+14:47:40.498 file: [36m/vercel/path0/client/src/pages/executive/OrderHistory.tsx:620:20[39m
+14:47:40.498 [33m
+14:47:40.498 [33mUnterminated regular expression[33m
+14:47:40.498 618 |                    </div>
+14:47:40.498 619 |                  </div>
+14:47:40.499 620 |                </div>
+14:47:40.499     |                      ^
+14:47:40.499 621 |              </div>
+14:47:40.499 622 |            )}
+14:47:40.499 [39m
+14:47:40.499     at failureErrorWithLog (/vercel/path0/node_modules/vite/node_modules/esbuild/lib/main.js:1467:15)
+14:47:40.499     at /vercel/path0/node_modules/vite/node_modules/esbuild/lib/main.js:736:50
+14:47:40.499     at responseCallbacks.<computed> (/vercel/path0/node_modules/vite/node_modules/esbuild/lib/main.js:603:9)
+14:47:40.499     at handleIncomingPacket (/vercel/path0/node_modules/vite/node_modules/esbuild/lib/main.js:658:12)
+14:47:40.499     at Socket.readFromStdout (/vercel/path0/node_modules/vite/node_modules/esbuild/lib/main.js:581:7)
+14:47:40.500     at Socket.emit (node:events:508:28)
+14:47:40.500     at addChunk (node:internal/streams/readable:559:12)
+14:47:40.500     at readableAddChunkPushByteMode (node:internal/streams/readable:510:3)
+14:47:40.500     at Readable.push (node:internal/streams/readable:390:5)
+14:47:40.500     at Pipe.onStreamRead (node:internal/stream_base_commons:189:23) {
+14:47:40.500   errors: [Getter/Setter],
+14:47:40.500   warnings: [Getter/Setter],
+14:47:40.500   frame: '\n' +
+14:47:40.500     '\x1B[33mUnterminated regular expression\x1B[39m\n' +
+14:47:40.500     '618 |                    </div>\n' +
+14:47:40.500     '619 |                  </div>\n' +
+14:47:40.500     '620 |                </div>\n' +
+14:47:40.500     '    |                      ^\n' +
+14:47:40.500     '621 |              </div>\n' +
+14:47:40.501     '622 |            )}\n',
+14:47:40.501   loc: {
+14:47:40.501     column: 20,
+14:47:40.501     file: '/vercel/path0/client/src/pages/executive/OrderHistory.tsx',
+14:47:40.501     length: 0,
+14:47:40.501     line: 620,
+14:47:40.501     lineText: '              </div>',
+14:47:40.501     namespace: '',
+14:47:40.501     suggestion: ''
+14:47:40.501   },
+14:47:40.501   code: 'PLUGIN_ERROR',
+14:47:40.501   plugin: 'vite:esbuild',
+14:47:40.501   hook: 'transform',
+14:47:40.501   id: '/vercel/path0/client/src/pages/executive/OrderHistory.tsx',
+14:47:40.501   watchFiles: [
+14:47:40.502     '/vercel/path0/client/index.html',
+14:47:40.502     '/vercel/path0/client/src/main.tsx',
+14:47:40.502     '/vercel/path0/package.json',
+14:47:40.502     '/vercel/path0/node_modules/react/jsx-runtime.js',
+14:47:40.502     '/vercel/path0/node_modules/react-dom/client.js',
+14:47:40.502     '/vercel/path0/client/src/App.tsx',
+14:47:40.502     '/vercel/path0/client/src/index.css',
+14:47:40.502     '/vercel/path0/client/src/hooks/use-toast.ts',
+14:47:40.502     '/vercel/path0/client/src/hooks/use-visits.ts',
+14:47:40.502     '/vercel/path0/client/src/lib/queryClient.ts',
+14:47:40.502     '/vercel/path0/client/src/lib/utils.ts',
+14:47:40.502     '/vercel/path0/client/src/components/Navigation.tsx',
+14:47:40.502     '/vercel/path0/client/src/components/ProtectedRoute.tsx',
+14:47:40.502     '/vercel/path0/client/src/components/StatCard.tsx',
+14:47:40.502     '/vercel/path0/client/src/components/ui/accordion.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/alert-dialog.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/alert.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/aspect-ratio.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/avatar.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/badge.tsx',
+14:47:40.503     '/vercel/path0/client/src/components/ui/breadcrumb.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/button.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/calendar.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/card.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/carousel.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/chart.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/checkbox.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/collapsible.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/command.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/context-menu.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/dialog.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/drawer.tsx',
+14:47:40.506     '/vercel/path0/client/src/components/ui/dropdown-menu.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/form.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/hover-card.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/input-otp.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/input.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/label.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/menubar.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/navigation-menu.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/pagination.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/popover.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/progress.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/radio-group.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/resizable.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/scroll-area.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/select.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/separator.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/sheet.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/sidebar.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/skeleton.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/slider.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/switch.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/table.tsx',
+14:47:40.507     '/vercel/path0/client/src/components/ui/tabs.tsx',
+14:47:40.512     '/vercel/path0/client/src/components/ui/textarea.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/ui/toast.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/ui/toaster.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/ui/toggle-group.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/ui/toggle.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/ui/tooltip.tsx',
+14:47:40.513     '/vercel/path0/client/src/components/visit/VisitDetailsDialog.tsx',
+14:47:40.513     '/vercel/path0/client/src/hooks/use-auth.tsx',
+14:47:40.513     '/vercel/path0/client/src/hooks/use-mobile.tsx',
+14:47:40.513     '/vercel/path0/client/src/pages/LoginPage.tsx',
+14:47:40.513     '/vercel/path0/client/src/pages/OrderForm.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/PublicOrderForm.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/admin/AdminDashboard.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/admin/AdminLeaves.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/admin/AdminOrders.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/admin/CreateDispatch.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/executive/Dashboard.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/executive/DispatchInfo.tsx',
+14:47:40.514     '/vercel/path0/client/src/pages/executive/History.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/executive/LeaveApplication.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/executive/OrderHistory.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/executive/OrderSupport.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/executive/SampleSubmission.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/executive/VisitForm.tsx',
+14:47:40.515     '/vercel/path0/client/src/pages/not-found.tsx',
+14:47:40.515     '/vercel/path0/tailwind.config.ts',
+14:47:40.515     '/vercel/path0/node_modules/react-dom/index.js',
+14:47:40.515     '/vercel/path0/node_modules/react/cjs/react-jsx-runtime.production.min.js',
+14:47:40.515     '/vercel/path0/node_modules/wouter/esm/index.js',
+14:47:40.515     '/vercel/path0/node_modules/@tanstack/react-query/build/modern/index.js',
+14:47:40.515     '/vercel/path0/node_modules/react/index.js',
+14:47:40.516     '/vercel/path0/node_modules/react-dom/cjs/react-dom.production.min.js'
+14:47:40.516   ]
+14:47:40.516 }
+14:47:40.546 Error: Command "npm run build" exited with 1

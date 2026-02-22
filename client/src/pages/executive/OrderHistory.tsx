@@ -601,20 +601,18 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                    <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/10">
-                      <div>
-                        <p className="text-[10px] text-slate-400 uppercase">Advance</p>
-                        <p className="font-bold font-mono">₹{selectedOrder.advancePayment || "0"}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 uppercase">1st Inst.</p>
-                        <p className="font-bold font-mono">₹{selectedOrder.firstInstalment || "0"}</p>
-                      </div>
-                      <div>
-                        <p className="text-[10px] text-slate-400 uppercase">2nd Inst.</p>
-                        <p className="font-bold font-mono">₹{selectedOrder.secondInstalment || "0"}</p>
-                      </div>
-                    </div>
+                <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/10">
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase">Advance</p>
+                    <p className="font-bold font-mono">₹{selectedOrder.advancePayment || "0"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase">1st Inst.</p>
+                    <p className="font-bold font-mono">₹{selectedOrder.firstInstalment || "0"}</p>
+                  </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase">2nd Inst.</p>
+                    <p className="font-bold font-mono">₹{selectedOrder.secondInstalment || "0"}</p>
                   </div>
                 </div>
               </div>
