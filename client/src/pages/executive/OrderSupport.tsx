@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Loader2, MessageSquare } from "lucide-react";
+import { Loader2, MessageSquare, CheckCircle2, Clock, AlertCircle } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -17,6 +17,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export default function OrderSupport() {
   const [, setLocation] = useLocation();
