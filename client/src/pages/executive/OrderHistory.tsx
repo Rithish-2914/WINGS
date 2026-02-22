@@ -4,9 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon } from "lucide-react";
+import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon, LifeBuoy, Package } from "lucide-react";
 import { format } from "date-fns";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -44,6 +44,7 @@ const CATEGORIES = [
 export default function OrderHistory() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
   });
@@ -312,6 +313,12 @@ export default function OrderHistory() {
                         }}
                       />
                     </div>
+                    <Button variant="outline" size="sm" onClick={() => setLocation(`/orders/support/${order.id}`)} title="Order Support">
+                      <LifeBuoy className="w-4 h-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => setLocation(`/orders/dispatch/${order.id}`)} title="Dispatch Info">
+                      <Package className="w-4 h-4" />
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => copyShareLink(order)} title="Copy Share Link">
                       <Share2 className="w-4 h-4" />
                     </Button>

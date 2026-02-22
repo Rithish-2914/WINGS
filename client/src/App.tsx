@@ -21,6 +21,9 @@ import NotFound from "@/pages/not-found";
 import OrderForm from "@/pages/OrderForm";
 import PublicOrderForm from "@/pages/PublicOrderForm";
 import OrderHistory from "@/pages/executive/OrderHistory";
+import OrderSupport from "@/pages/executive/OrderSupport";
+import CreateDispatch from "@/pages/admin/CreateDispatch";
+import DispatchInfo from "@/pages/executive/DispatchInfo";
 
 // ... existing imports ...
 
@@ -50,6 +53,21 @@ function Router() {
             path="/orders" 
             component={OrderHistory} 
             roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/orders/support/:id" 
+            component={OrderSupport} 
+            roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/orders/dispatch/:id" 
+            component={DispatchInfo} 
+            roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/admin/dispatch/new" 
+            component={CreateDispatch} 
+            roles={['admin']} 
           />
           <ProtectedRoute 
             path="/visits/new" 

@@ -4,7 +4,14 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage.js";
 import { db } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
-import { users, visits, insertVisitSchema, targets, insertSampleSubmissionSchema, sampleSubmissions, leaves, insertLeaveSchema, orders, insertOrderSchema } from "../shared/schema.js";
+import { 
+  users, visits, insertVisitSchema, targets, 
+  insertSampleSubmissionSchema, sampleSubmissions, leaves, 
+  insertLeaveSchema, orders, insertOrderSchema,
+  supportRequests, insertSupportRequestSchema,
+  dispatches, insertDispatchSchema,
+  packingLists, insertPackingListSchema
+} from "../shared/schema.js";
 import { api } from "../shared/routes.js";
 import { z } from "zod";
 import passport from "passport";
@@ -176,6 +183,7 @@ export async function registerRoutes(
         console.log("Order not found for token:", req.params.token);
         return res.status(404).json({ message: "Order link invalid or expired" });
       }
+      // Return order without requiring authentication
       res.json(order);
     } catch (err) {
       console.error("Error fetching public order:", err);

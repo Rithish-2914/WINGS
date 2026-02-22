@@ -3,12 +3,16 @@ import { db, pool } from "./db.js";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 import { 
   users, visits, targets, sampleSubmissions, leaves, orders,
+  supportRequests, dispatches, packingLists,
   type User, type InsertUser, 
   type Visit, type InsertVisit,
   type Target, type InsertTarget,
   type SampleSubmission, type InsertSampleSubmission,
   type Leave, type InsertLeave,
-  type Order, type InsertOrder
+  type Order, type InsertOrder,
+  type SupportRequest, type InsertSupportRequest,
+  type Dispatch, type InsertDispatch,
+  type PackingList, type InsertPackingList
 } from "../shared/schema.js";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
