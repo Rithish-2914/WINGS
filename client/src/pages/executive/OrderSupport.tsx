@@ -2,7 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLocation } from "wouter";
-import { Loader2, CheckCircle2, MessageSquare } from "lucide-react";
+import { Loader2, MessageSquare } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -31,13 +31,16 @@ export default function OrderSupport() {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/support", data);
+      const res = await apiRequest("POST", "/api/support", {
+        ...data,
+        items: items.map((item, index) => ({ id: index + 1, name: item.name, qty: item.qty }))
+      });
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/support"] });
       toast({ title: "Success", description: "Request sent to admin" });
-      setLocation("/orders"); // Go to order history to see status
+      setLocation("/orders"); 
     },
     onError: (error: Error) => {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -55,7 +58,6 @@ export default function OrderSupport() {
     }
     mutation.mutate({
       subject,
-      items: items.map((item, index) => ({ id: index + 1, ...item })),
       remarks,
       status: "pending"
     });
@@ -131,13 +133,12 @@ export default function OrderSupport() {
           </div>
           
           <div className="space-y-2">
-            <label className="text-sm font-medium">Remarks (Max 250 words)</label>
+            <label className="text-sm font-medium">Remarks</label>
             <Textarea 
               className="min-h-[120px]"
               placeholder="Describe your requirements in detail..."
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
-              maxLength={1500}
             />
           </div>
 
