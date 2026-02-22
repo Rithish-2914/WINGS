@@ -313,12 +313,6 @@ export default function OrderHistory() {
                         }}
                       />
                     </div>
-                    <Button variant="outline" size="sm" onClick={() => setLocation(`/orders/support/${order.id}`)} title="Order Support">
-                      <LifeBuoy className="w-4 h-4" />
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => setLocation(`/orders/dispatch/${order.id}`)} title="Dispatch Info">
-                      <Package className="w-4 h-4" />
-                    </Button>
                     <Button variant="outline" size="sm" onClick={() => copyShareLink(order)} title="Copy Share Link">
                       <Share2 className="w-4 h-4" />
                     </Button>

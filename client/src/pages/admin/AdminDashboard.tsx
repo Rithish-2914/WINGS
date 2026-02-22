@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { useVisits } from "@/hooks/use-visits";
 import { format, subDays, isSameDay } from "date-fns";
+import { useLocation } from "wouter";
 import { 
   BarChart, 
   Bar, 
@@ -44,7 +45,7 @@ import {
   DialogTrigger,
   DialogFooter
 } from "@/components/ui/dialog";
-import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2, Package, CheckCircle2 } from "lucide-react";
+import { Download, Search, FileText, Users, School, Eye, User as UserIcon, Target as TargetIcon, Plus, UserPlus, Loader2, Trash2, Package, CheckCircle2, MessageSquare } from "lucide-react";
 import { StatCard } from "@/components/StatCard";
 import { VisitDetailsDialog } from "@/components/visit/VisitDetailsDialog";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -63,6 +64,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export default function AdminDashboard() {
+  const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedUserId, setSelectedUserId] = useState<string>("all");
   const [selectedVisit, setSelectedVisit] = useState<Visit | null>(null);
@@ -514,6 +516,10 @@ export default function AdminDashboard() {
               ))}
             </SelectContent>
           </Select>
+          <Button onClick={() => setLocation("/support")} className="gap-2">
+            <MessageSquare className="h-4 w-4" />
+            Internal Requests
+          </Button>
           <Button onClick={handleExport} className="gap-2">
             <Download className="h-4 w-4" />
             Export CSV

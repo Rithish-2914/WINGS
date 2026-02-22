@@ -86,7 +86,8 @@ export class DatabaseStorage implements IStorage {
       ...rest,
       userId: order.userId,
       items: items || {},
-      shareToken: Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15),
+      shareToken: order.shareToken || (Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)),
+      isPublicFilled: order.isPublicFilled ?? false
     }]).returning();
     return newOrder;
   }

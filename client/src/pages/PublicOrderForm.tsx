@@ -90,7 +90,7 @@ export default function PublicOrderForm() {
   const { toast } = useToast();
 
   const { data: order, isLoading: orderLoading, error } = useQuery<Order>({
-    queryKey: ["api", "orders", "public", token],
+    queryKey: [`/api/orders/public/${token}`],
     enabled: !!token,
     retry: false,
   });
