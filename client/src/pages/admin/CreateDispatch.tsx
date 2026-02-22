@@ -52,7 +52,7 @@ export default function CreateDispatch() {
   });
 
   const { data: packingLists } = useQuery<any[]>({
-    queryKey: ["/api/packing-lists"],
+    queryKey: ["/api/packing-lists", { dispatchId: selectedDispatch?.id }],
     enabled: !!selectedDispatch,
   });
 
@@ -495,7 +495,7 @@ export default function CreateDispatch() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {packingLists?.filter((pl: any) => pl.dispatchId === selectedDispatch.id).map((pl: any) => (
+                    {packingLists?.map((pl: any) => (
                       pl.items.map((item: any, idx: number) => (
                         <TableRow key={`${pl.id}-${idx}`}>
                           <TableCell>{item.category}</TableCell>
@@ -503,7 +503,7 @@ export default function CreateDispatch() {
                         </TableRow>
                       ))
                     ))}
-                    {(!packingLists || packingLists.filter((pl: any) => pl.dispatchId === selectedDispatch.id).length === 0) && (
+                    {(!packingLists || packingLists.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={2} className="text-center py-4 text-muted-foreground">
                           No packing items found for this dispatch.
@@ -513,11 +513,11 @@ export default function CreateDispatch() {
                   </TableBody>
                 </Table>
                 
-                {packingLists?.filter((pl: any) => pl.dispatchId === selectedDispatch.id)[0]?.remarks && (
+                {packingLists && packingLists.length > 0 && packingLists[0].remarks && (
                   <div className="mt-4">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-1">Packing Remarks</h3>
                     <p className="text-base bg-muted p-2 rounded whitespace-pre-wrap">
-                      {packingLists.filter((pl: any) => pl.dispatchId === selectedDispatch.id)[0].remarks}
+                      {packingLists[0].remarks}
                     </p>
                   </div>
                 )}

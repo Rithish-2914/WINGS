@@ -65,6 +65,7 @@ export interface IStorage {
   // Packing Lists
   createPackingList(list: InsertPackingList): Promise<PackingList>;
   getPackingListByDispatch(dispatchId: number): Promise<PackingList | undefined>;
+  listPackingLists(): Promise<PackingList[]>;
 
   // Session Store
   sessionStore: session.Store;
@@ -257,6 +258,10 @@ export class DatabaseStorage implements IStorage {
   async getPackingListByDispatch(dispatchId: number): Promise<PackingList | undefined> {
     const [list] = await db.select().from(packingLists).where(eq(packingLists.dispatchId, dispatchId));
     return list;
+  }
+
+  async listPackingLists(): Promise<PackingList[]> {
+    return await db.select().from(packingLists);
   }
 
   async updateUserPassword(id: number, password: string): Promise<User> {

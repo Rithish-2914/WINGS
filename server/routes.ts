@@ -335,6 +335,17 @@ export async function registerRoutes(
     }
   });
 
+  app.get("/api/packing-lists", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const dispatchId = req.query.dispatchId ? Number(req.query.dispatchId) : undefined;
+    if (dispatchId) {
+      const list = await storage.getPackingListByDispatch(dispatchId);
+      return res.json(list ? [list] : []);
+    }
+    const allLists = await storage.listPackingLists?.() || [];
+    res.json(allLists);
+  });
+
   app.get("/api/packing-lists/:dispatchId", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const list = await storage.getPackingListByDispatch(Number(req.params.dispatchId));
