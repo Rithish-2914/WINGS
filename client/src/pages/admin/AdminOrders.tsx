@@ -490,7 +490,7 @@ export default function AdminOrders() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Discount:</span>
-                      <span className="font-mono text-yellow-400">INR {selectedOrder.discount || "0"}</span>
+                      <span className="font-mono text-blue-400">{selectedOrder.discount}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Total Discount:</span>

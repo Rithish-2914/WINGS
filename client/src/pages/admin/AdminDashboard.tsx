@@ -516,9 +516,9 @@ export default function AdminDashboard() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={() => setLocation("/support")} className="gap-2">
+          <Button onClick={() => setLocation("/api/support" as any)} className="gap-2">
             <MessageSquare className="h-4 w-4" />
-            Internal Requests
+            View All Internal Requests
           </Button>
           <Button onClick={handleExport} className="gap-2">
             <Download className="h-4 w-4" />
