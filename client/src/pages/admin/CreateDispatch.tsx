@@ -44,6 +44,10 @@ export default function CreateDispatch() {
     queryKey: ["/api/users"],
   });
 
+  const { data: dispatches, isLoading: isLoadingDispatches } = useQuery<any[]>({
+    queryKey: ["/api/dispatches"],
+  });
+
   const dispatchMutation = useMutation({
     mutationFn: async (data: { dispatch: InsertDispatch, packingList: InsertPackingList }) => {
       const dispatchRes = await apiRequest("POST", "/api/dispatches", data.dispatch);
@@ -60,7 +64,7 @@ export default function CreateDispatch() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/dispatches"] });
       toast({ title: "Success", description: "Dispatch and Packing List created successfully" });
-      setLocation("/admin/dashboard");
+      setLocation("/admin");
     },
     onError: (error: Error) => {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -317,7 +321,7 @@ export default function CreateDispatch() {
       </div>
 
       <div className="flex justify-end gap-4 mt-6">
-        <Button variant="outline" onClick={() => setLocation("/admin/dashboard")}>Cancel</Button>
+        <Button variant="outline" onClick={() => setLocation("/admin")}>Cancel</Button>
         <Button 
           onClick={handleCreate} 
           disabled={dispatchMutation.isPending}
@@ -330,6 +334,58 @@ export default function CreateDispatch() {
           )}
         </Button>
       </div>
+
+      <Card className="mt-8">
+        <CardHeader>
+          <CardTitle>Recent Dispatches</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Executive</TableHead>
+                  <TableHead>LR No</TableHead>
+                  <TableHead>Status</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoadingDispatches ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                    </TableCell>
+                  </TableRow>
+                ) : !dispatches || dispatches.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                      No dispatches found.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  dispatches.slice(0, 10).map((dispatch: any) => (
+                    <TableRow key={dispatch.id}>
+                      <TableCell>{new Date(dispatch.dispatchDate).toLocaleDateString()}</TableCell>
+                      <TableCell>{dispatch.executiveName || "N/A"}</TableCell>
+                      <TableCell>{dispatch.lrNo}</TableCell>
+                      <TableCell>
+                        <span className={`px-2 py-1 rounded-full text-xs ${
+                          dispatch.status === 'Received' 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {dispatch.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
