@@ -261,6 +261,18 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/support/:id/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const { status } = req.body;
+      const updated = await storage.updateSupportRequest(Number(req.params.id), { status });
+      res.json(updated);
+    } catch (err) {
+      console.error("Error updating support status:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   // --- Dispatch & Packing List Routes ---
   app.post("/api/dispatches", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);

@@ -496,13 +496,13 @@ export default function OrderForm() {
                     </div>
                     <div className="space-y-4">
                       <FormField control={form.control} name="advancePayment" render={({ field }) => (
-                        <FormItem><FormLabel className="font-black text-slate-600">ADVANCE PAYMENT</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-black text-slate-600 uppercase">Advance Payment (₹)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" placeholder="0" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="firstInstalment" render={({ field }) => (
-                        <FormItem><FormLabel className="font-black text-slate-600">1ST INSTALMENT</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-black text-slate-600 uppercase">1st Instalment (₹)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" placeholder="0" /></FormControl></FormItem>
                       )} />
                       <FormField control={form.control} name="secondInstalment" render={({ field }) => (
-                        <FormItem><FormLabel className="font-black text-slate-600">2ND INSTALMENT</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" /></FormControl></FormItem>
+                        <FormItem><FormLabel className="font-black text-slate-600 uppercase">2nd Instalment (₹)</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="font-bold bg-white text-lg h-12 border-2" placeholder="0" /></FormControl></FormItem>
                       )} />
                     </div>
                   </div>

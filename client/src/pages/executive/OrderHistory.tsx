@@ -13,7 +13,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import jsPDF from "jspdf";
-import "jspdf-autotable";
+import autoTable from "jspdf-autotable";
 
 const CATEGORIES = [
   "Kinder Box 1.0",
@@ -77,7 +77,7 @@ export default function OrderHistory() {
 
   const updateSupportStatusMutation = useMutation({
     mutationFn: async ({ id, status }: { id: number, status: string }) => {
-      const res = await apiRequest("PATCH", `/api/support/${id}`, { status });
+      const res = await apiRequest("PATCH", `/api/support/${id}/status`, { status });
       return res.json();
     },
     onSuccess: () => {
@@ -91,9 +91,6 @@ export default function OrderHistory() {
       const doc = new jsPDF();
       const margin = 15;
       let yPos = 20;
-
-      // Register autoTable plugin
-      const table = (doc as any).autoTable || autoTable;
 
       // Helper for sections
       const addSection = (title: string) => {
@@ -196,7 +193,7 @@ export default function OrderHistory() {
           doc.text(category.toUpperCase(), margin, yPos);
           yPos += 5;
 
-          table(doc, {
+          autoTable(doc, {
             startY: yPos,
             head: [["Product", "Price", "Qty", "Total"]],
             body: categoryItems,
