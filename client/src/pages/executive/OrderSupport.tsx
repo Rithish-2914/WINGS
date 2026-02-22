@@ -9,6 +9,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
 
 export default function OrderSupport() {
   const [, setLocation] = useLocation();
@@ -83,81 +91,175 @@ export default function OrderSupport() {
 
   return (
     <div className="container mx-auto p-4 space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" onClick={() => setLocation("/")}>Back</Button>
-        <h1 className="text-3xl font-bold">Internal Request</h1>
+      <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button variant="ghost" onClick={() => setLocation("/")}>Back</Button>
+          <h1 className="text-3xl font-bold">{user?.role === 'admin' ? "All Internal Requests" : "Internal Request"}</h1>
+        </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
-            New Request to Admin
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Subject</label>
-            <Input 
-              placeholder="What is this request about?" 
-              value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-            />
-          </div>
-
-          <div className="space-y-4">
-            <label className="text-sm font-medium">Items & Quantities</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {itemsList.map((itemName) => {
-                const selected = items.find(i => i.name === itemName);
-                return (
-                  <div key={itemName} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
-                    <span className="text-sm font-medium">{itemName}</span>
-                    <div className="flex items-center gap-2">
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={() => updateItemQty(itemName, (selected?.qty || 0) - 1)}
-                      >
-                        -
-                      </Button>
-                      <span className="w-8 text-center font-bold">{selected?.qty || 0}</span>
-                      <Button 
-                        variant="outline" 
-                        size="icon" 
-                        className="h-8 w-8"
-                        onClick={() => updateItemQty(itemName, (selected?.qty || 0) + 1)}
-                      >
-                        +
-                      </Button>
-                    </div>
-                  </div>
-                );
-              })}
+      {user?.role === 'admin' ? (
+        <AdminSupportView />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              New Request to Admin
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Subject</label>
+              <Input 
+                placeholder="What is this request about?" 
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+              />
             </div>
-          </div>
-          
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Remarks</label>
-            <Textarea 
-              className="min-h-[120px]"
-              placeholder="Describe your requirements in detail..."
-              value={remarks}
-              onChange={(e) => setRemarks(e.target.value)}
-            />
-          </div>
 
-          <Button 
-            className="w-full" 
-            onClick={handleSubmit}
-            disabled={mutation.isPending}
-          >
-            {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-            Submit Request to Admin
-          </Button>
-        </CardContent>
-      </Card>
+            <div className="space-y-4">
+              <label className="text-sm font-medium">Items & Quantities</label>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {itemsList.map((itemName) => {
+                  const selected = items.find(i => i.name === itemName);
+                  return (
+                    <div key={itemName} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                      <span className="text-sm font-medium">{itemName}</span>
+                      <div className="flex items-center gap-2">
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => updateItemQty(itemName, (selected?.qty || 0) - 1)}
+                        >
+                          -
+                        </Button>
+                        <span className="w-8 text-center font-bold">{selected?.qty || 0}</span>
+                        <Button 
+                          variant="outline" 
+                          size="icon" 
+                          className="h-8 w-8"
+                          onClick={() => updateItemQty(itemName, (selected?.qty || 0) + 1)}
+                        >
+                          +
+                        </Button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Remarks</label>
+              <Textarea 
+                className="min-h-[120px]"
+                placeholder="Describe your requirements in detail..."
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+              />
+            </div>
+
+            <Button 
+              className="w-full" 
+              onClick={handleSubmit}
+              disabled={mutation.isPending}
+            >
+              {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+              Submit Request to Admin
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+function AdminSupportView() {
+  const { data: requests, isLoading } = useQuery<any[]>({
+    queryKey: ["/api/support"],
+  });
+  const { toast } = useToast();
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status, adminResponse, dispatchId }: any) => {
+      const res = await apiRequest("PATCH", `/api/support/${id}`, { status, adminResponse, dispatchId });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/support"] });
+      toast({ title: "Success", description: "Request updated" });
+    }
+  });
+
+  if (isLoading) return <div className="p-8 text-center">Loading requests...</div>;
+
+  return (
+    <div className="space-y-4">
+      {requests?.map((req) => (
+        <Card key={req.id}>
+          <CardHeader>
+            <div className="flex justify-between items-start">
+              <CardTitle className="text-lg">{req.subject}</CardTitle>
+              <Badge variant={req.status === 'delivered' ? 'default' : 'secondary'}>
+                {req.status}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground">From User ID: {req.userId}</p>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="bg-slate-50 p-3 rounded-md">
+              <p className="text-sm font-bold mb-2">Requested Items:</p>
+              <ul className="text-sm space-y-1">
+                {req.items?.map((item: any, i: number) => (
+                  <li key={i}>{item.name}: {item.qty}</li>
+                ))}
+              </ul>
+            </div>
+            {req.remarks && (
+              <div>
+                <p className="text-xs font-bold uppercase text-muted-foreground">Remarks</p>
+                <p className="text-sm">{req.remarks}</p>
+              </div>
+            )}
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase">Admin Response</label>
+                <Textarea 
+                  placeholder="Enter response..." 
+                  defaultValue={req.adminResponse}
+                  onBlur={(e) => updateStatusMutation.mutate({ id: req.id, adminResponse: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase">Dispatch ID</label>
+                <div className="flex gap-2">
+                  <Input 
+                    placeholder="Enter Dispatch ID" 
+                    defaultValue={req.dispatchId}
+                    onBlur={(e) => updateStatusMutation.mutate({ id: req.id, dispatchId: e.target.value })}
+                  />
+                  <Select 
+                    defaultValue={req.status}
+                    onValueChange={(val) => updateStatusMutation.mutate({ id: req.id, status: val })}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="dispatched">Dispatched</SelectItem>
+                      <SelectItem value="delivered">Delivered</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }

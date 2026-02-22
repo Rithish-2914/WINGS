@@ -138,6 +138,8 @@ export default function AdminOrders() {
       addField("Delivery Date", order.deliveryDate ? format(new Date(order.deliveryDate), "dd MMM yyyy") : "-");
       addField("Transport 1", order.preferredTransport1);
       addField("Transport 2", order.preferredTransport2);
+      addField("Status", order.status || "pending");
+      addField("Dispatch ID", order.dispatchId);
       yPos += 10;
 
       // 5-11. Items Tables
