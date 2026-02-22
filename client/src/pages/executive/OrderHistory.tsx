@@ -229,8 +229,26 @@ export default function OrderHistory() {
 
   if (isLoading) return <div className="p-8 text-center text-muted-foreground">Loading orders...</div>;
 
+  const { data: supportRequests } = useQuery<any[]>({
+    queryKey: ["/api/support"],
+  });
+
+  const updateSupportStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: number, status: string }) => {
+      const res = await apiRequest("PATCH", `/api/support/${id}`, { status });
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/support"] });
+      toast({ title: "Success", description: "Request marked as delivered" });
+    },
+    onError: (error: Error) => {
+      toast({ variant: "destructive", title: "Error", description: error.message });
+    }
+  });
+
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 space-y-8">
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle className="text-2xl font-bold flex items-center gap-2">
@@ -275,44 +293,10 @@ export default function OrderHistory() {
                     )}>
                       {order.status || 'pending'}
                     </span>
+                    {order.dispatchId && <div className="text-[10px] mt-1 font-bold text-blue-600">ID: {order.dispatchId}</div>}
                   </TableCell>
                   <TableCell className="text-right flex justify-end gap-2">
-                    <div className="flex items-center gap-1 border rounded-md px-2 bg-slate-50">
-                      <span className="text-[10px] font-bold text-slate-500 uppercase">Disc %:</span>
-                      <Input 
-                        type="number" 
-                        className="h-7 w-12 border-none bg-transparent p-0 text-center text-xs font-bold"
-                        placeholder="0"
-                        defaultValue={Object.entries(order.items as Record<string, any>).find(([k]) => k.endsWith("-discount"))?.[1]?.value || ""}
-                        onBlur={(e: React.FocusEvent<HTMLInputElement>) => {
-                          const val = e.target.value;
-                          const newItems = { ...(order.items as Record<string, any>) };
-                          const categories = ["Kinder Box 1.0", "Kinder Box Plus 2.0", "Special Edition", "Kinder Play", "Little Steps", "Young Minds", "General Books"];
-                          categories.forEach(cat => {
-                            newItems[`${cat}-discount`] = { value: val };
-                          });
-                          
-                          let total = 0;
-                          Object.entries(newItems).forEach(([key, value]: [string, any]) => {
-                            if (value && value.qty && value.price && !key.endsWith("-discount")) {
-                              total += parseInt(value.qty) * value.price;
-                            }
-                          });
-                          const discountAmt = (total * (parseFloat(val) || 0) / 100).toFixed(2);
-                          const net = (total - parseFloat(discountAmt)).toFixed(2);
-
-                          apiRequest("PATCH", `/api/orders/${order.id}`, { 
-                            items: newItems,
-                            totalAmount: total.toFixed(2),
-                            totalDiscount: discountAmt,
-                            netAmount: net
-                          }).then(() => {
-                            queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
-                            toast({ title: "Updated", description: "Discount applied and total recalculated" });
-                          });
-                        }}
-                      />
-                    </div>
+                    {/* ... existing buttons ... */}
                     <Button variant="outline" size="sm" onClick={() => copyShareLink(order)} title="Copy Share Link">
                       <Share2 className="w-4 h-4" />
                     </Button>
@@ -325,17 +309,84 @@ export default function OrderHistory() {
                   </TableCell>
                 </TableRow>
               ))}
-              {orders?.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                    No orders found.
-                  </TableCell>
-                </TableRow>
-              )}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+
+      {/* Internal Requests Section */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-2xl font-bold flex items-center gap-2">
+            <LifeBuoy className="w-6 h-6" /> Internal Requests
+          </CardTitle>
+          <Link href="/support">
+            <Button variant="outline">New Request</Button>
+          </Link>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>Subject</TableHead>
+                <TableHead>Items</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {supportRequests?.map((req) => (
+                <TableRow key={req.id}>
+                  <TableCell>{req.createdAt ? format(new Date(req.createdAt), "dd MMM yyyy") : "-"}</TableCell>
+                  <TableCell className="font-medium">{req.subject}</TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap gap-1">
+                      {req.items?.map((item: any, idx: number) => (
+                        <span key={idx} className="bg-slate-100 px-1.5 py-0.5 rounded text-[10px] font-medium">
+                          {item.name} ({item.qty})
+                        </span>
+                      ))}
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-col gap-1">
+                      <span className={cn(
+                        "px-2 py-1 rounded-full text-xs font-medium uppercase inline-block w-fit",
+                        req.status === 'delivered' ? "bg-green-100 text-green-700" :
+                        req.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                        "bg-yellow-100 text-yellow-700"
+                      )}>
+                        {req.status || 'pending'}
+                      </span>
+                      {req.dispatchId && (
+                        <span className="text-[10px] font-bold text-blue-600">
+                          Dispatch ID: {req.dispatchId}
+                        </span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {req.status === 'dispatched' && (
+                      <Button 
+                        size="sm" 
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => updateSupportStatusMutation.mutate({ id: req.id, status: 'delivered' })}
+                        disabled={updateSupportStatusMutation.isPending}
+                      >
+                        <Check className="w-4 h-4 mr-1" /> Delivered
+                      </Button>
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+      {/* ... selectedOrder dialog ... */}
+    </div>
+  );
 
       <Dialog open={!!selectedOrder} onOpenChange={() => setSelectedOrder(null)}>
         <DialogContent className="max-w-4xl overflow-y-auto max-h-[95vh] p-0">

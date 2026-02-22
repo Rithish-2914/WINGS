@@ -16,7 +16,7 @@ export default function OrderSupport() {
   const { toast } = useToast();
   const [subject, setSubject] = useState("");
   const [remarks, setRemarks] = useState("");
-  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [items, setItems] = useState<{ name: string; qty: number }[]>([]);
 
   const itemsList = [
     "Kinder Box 1.0",
@@ -37,7 +37,7 @@ export default function OrderSupport() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/support"] });
       toast({ title: "Success", description: "Request sent to admin" });
-      setLocation("/");
+      setLocation("/orders"); // Go to order history to see status
     },
     onError: (error: Error) => {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -49,18 +49,28 @@ export default function OrderSupport() {
       toast({ variant: "destructive", title: "Required", description: "Please enter a subject" });
       return;
     }
+    if (items.length === 0) {
+      toast({ variant: "destructive", title: "Required", description: "Please add at least one item" });
+      return;
+    }
     mutation.mutate({
       subject,
-      items: selectedItems,
+      items: items.map((item, index) => ({ id: index + 1, ...item })),
       remarks,
       status: "pending"
     });
   };
 
-  const toggleItem = (item: string) => {
-    setSelectedItems(prev => 
-      prev.includes(item) ? prev.filter(i => i !== item) : [...prev, item]
-    );
+  const updateItemQty = (name: string, qty: number) => {
+    setItems(prev => {
+      const existing = prev.find(i => i.name === name);
+      if (existing) {
+        if (qty <= 0) return prev.filter(i => i.name !== name);
+        return prev.map(i => i.name === name ? { ...i, qty } : i);
+      }
+      if (qty <= 0) return prev;
+      return [...prev, { name, qty }];
+    });
   };
 
   return (
@@ -87,28 +97,43 @@ export default function OrderSupport() {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Select Items/Products (Optional)</label>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-              {itemsList.map((item) => (
-                <div 
-                  key={item} 
-                  onClick={() => toggleItem(item)}
-                  className={`flex items-center space-x-2 border p-3 rounded-md cursor-pointer transition-colors ${
-                    selectedItems.includes(item) ? "bg-primary/10 border-primary" : "hover:bg-accent"
-                  }`}
-                >
-                  <CheckCircle2 className={`h-5 w-5 ${selectedItems.includes(item) ? "text-primary" : "text-muted-foreground"}`} />
-                  <span className="text-sm">{item}</span>
-                </div>
-              ))}
+          <div className="space-y-4">
+            <label className="text-sm font-medium">Items & Quantities</label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {itemsList.map((itemName) => {
+                const selected = items.find(i => i.name === itemName);
+                return (
+                  <div key={itemName} className="flex items-center justify-between p-3 border rounded-lg bg-slate-50">
+                    <span className="text-sm font-medium">{itemName}</span>
+                    <div className="flex items-center gap-2">
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => updateItemQty(itemName, (selected?.qty || 0) - 1)}
+                      >
+                        -
+                      </Button>
+                      <span className="w-8 text-center font-bold">{selected?.qty || 0}</span>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="h-8 w-8"
+                        onClick={() => updateItemQty(itemName, (selected?.qty || 0) + 1)}
+                      >
+                        +
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
           
           <div className="space-y-2">
             <label className="text-sm font-medium">Remarks (Max 250 words)</label>
             <Textarea 
-              className="min-h-[150px]"
+              className="min-h-[120px]"
               placeholder="Describe your requirements in detail..."
               value={remarks}
               onChange={(e) => setRemarks(e.target.value)}
