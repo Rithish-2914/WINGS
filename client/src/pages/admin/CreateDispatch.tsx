@@ -51,9 +51,14 @@ export default function CreateDispatch() {
     queryKey: ["/api/dispatches"],
   });
 
-  const { data: packingLists } = useQuery<any[]>({
-    queryKey: ["/api/packing-lists", { dispatchId: selectedDispatch?.id }],
-    enabled: !!selectedDispatch,
+  const { data: packingLists } = useQuery<any>({
+    queryKey: ["/api/packing-lists", selectedDispatch?.id],
+    queryFn: async () => {
+      const res = await fetch(`/api/packing-lists/${selectedDispatch.id}`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!selectedDispatch?.id,
   });
 
   const dispatchMutation = useMutation({
@@ -495,15 +500,13 @@ export default function CreateDispatch() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {packingLists?.map((pl: any) => (
-                      pl.items.map((item: any, idx: number) => (
-                        <TableRow key={`${pl.id}-${idx}`}>
-                          <TableCell>{item.category}</TableCell>
-                          <TableCell>{item.qty}</TableCell>
-                        </TableRow>
-                      ))
+                    {packingLists?.items?.map((item: any, idx: number) => (
+                      <TableRow key={`${packingLists.id}-${idx}`}>
+                        <TableCell>{item.category}</TableCell>
+                        <TableCell>{item.qty}</TableCell>
+                      </TableRow>
                     ))}
-                    {(!packingLists || packingLists.length === 0) && (
+                    {(!packingLists || !packingLists.items || packingLists.items.length === 0) && (
                       <TableRow>
                         <TableCell colSpan={2} className="text-center py-4 text-muted-foreground">
                           No packing items found for this dispatch.
@@ -513,11 +516,11 @@ export default function CreateDispatch() {
                   </TableBody>
                 </Table>
                 
-                {packingLists && packingLists.length > 0 && packingLists[0].remarks && (
+                {packingLists?.remarks && (
                   <div className="mt-4">
                     <h3 className="text-sm font-semibold text-muted-foreground mb-1">Packing Remarks</h3>
                     <p className="text-base bg-muted p-2 rounded whitespace-pre-wrap">
-                      {packingLists[0].remarks}
+                      {packingLists.remarks}
                     </p>
                   </div>
                 )}

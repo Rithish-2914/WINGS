@@ -132,6 +132,11 @@ export default function ExecutiveDispatches() {
 function PackingListDialog({ dispatchId }: { dispatchId: number }) {
   const { data: packingList, isLoading } = useQuery<PackingList>({
     queryKey: [`/api/packing-lists/${dispatchId}`],
+    queryFn: async () => {
+      const res = await fetch(`/api/packing-lists/${dispatchId}`);
+      if (!res.ok) throw new Error("Failed to fetch packing list");
+      return res.json();
+    }
   });
 
   return (
