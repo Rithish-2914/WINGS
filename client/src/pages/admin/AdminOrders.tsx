@@ -241,7 +241,7 @@ export default function AdminOrders() {
                 <TableRow key={order.id}>
                   <TableCell>{order.createdAt ? format(new Date(order.createdAt), "dd MMM yyyy") : "-"}</TableCell>
                   <TableCell className="font-medium">{order.schoolName}</TableCell>
-                  <TableCell>{order.userName || `ID: ${order.userId}`}</TableCell>
+                  <TableCell>{order.userName || "N/A"}</TableCell>
                   <TableCell>{order.netAmount || order.totalAmount || "0.00"}</TableCell>
                   <TableCell>
                     <span className={cn(
@@ -342,7 +342,7 @@ export default function AdminOrders() {
                     <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
                     <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
                     <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
-                    <p className="text-sm">Executive: <span className="font-bold text-blue-600">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
+                    <p className="text-sm">Executive: <span className="font-bold text-blue-600">{selectedOrder.userName || "N/A"}</span></p>
                   </div>
                   <div className="space-y-2">
                     <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>

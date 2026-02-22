@@ -169,10 +169,23 @@ export class DatabaseStorage implements IStorage {
     return newRequest;
   }
 
-  async listSupportRequests(filter?: { userId?: number }): Promise<SupportRequest[]> {
+  async listSupportRequests(filter?: { userId?: number }): Promise<any[]> {
     let conditions = [];
     if (filter?.userId) conditions.push(eq(supportRequests.userId, filter.userId));
-    return await db.select().from(supportRequests).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(supportRequests.createdAt));
+    
+    const results = await db.select({
+      request: supportRequests,
+      userName: users.name
+    })
+      .from(supportRequests)
+      .leftJoin(users, eq(supportRequests.userId, users.id))
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(supportRequests.createdAt));
+
+    return results.map(r => ({
+      ...r.request,
+      userName: r.userName || "N/A"
+    }));
   }
 
   async updateSupportRequest(id: number, data: Partial<SupportRequest>): Promise<SupportRequest> {
@@ -191,7 +204,7 @@ export class DatabaseStorage implements IStorage {
     return newDispatch;
   }
 
-  async listDispatches(filter?: { executiveId?: number; date?: Date }): Promise<Dispatch[]> {
+  async listDispatches(filter?: { executiveId?: number; date?: Date }): Promise<any[]> {
     let conditions = [];
     if (filter?.executiveId) conditions.push(eq(dispatches.executiveId, filter.executiveId));
     if (filter?.date) {
@@ -201,7 +214,20 @@ export class DatabaseStorage implements IStorage {
       end.setHours(23, 59, 59, 999);
       conditions.push(and(gte(dispatches.dispatchDate, start), lte(dispatches.dispatchDate, end)));
     }
-    return await db.select().from(dispatches).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(dispatches.dispatchDate));
+    
+    const results = await db.select({
+      dispatch: dispatches,
+      executiveName: users.name
+    })
+      .from(dispatches)
+      .leftJoin(users, eq(dispatches.executiveId, users.id))
+      .where(conditions.length ? and(...conditions) : undefined)
+      .orderBy(desc(dispatches.dispatchDate));
+
+    return results.map(r => ({
+      ...r.dispatch,
+      executiveName: r.executiveName || "N/A"
+    }));
   }
 
   async updateDispatchStatus(id: number, status: string): Promise<Dispatch> {
