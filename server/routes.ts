@@ -208,6 +208,99 @@ export async function registerRoutes(
     res.json(ordersList);
   });
 
+  // --- Support Routes ---
+  app.post("/api/support", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const data = insertSupportRequestSchema.parse(req.body);
+      const request = await storage.createSupportRequest({
+        ...data,
+        userId: (req.user as any).id
+      });
+      res.status(201).json(request);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/support", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    const filter = user.role === 'admin' ? {} : { userId: user.id };
+    const requests = await storage.listSupportRequests(filter);
+    res.json(requests);
+  });
+
+  app.patch("/api/support/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    try {
+      const updated = await storage.updateSupportRequest(Number(req.params.id), req.body);
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
+  // --- Dispatch & Packing List Routes ---
+  app.post("/api/dispatches", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    try {
+      const data = insertDispatchSchema.parse(req.body);
+      const dispatch = await storage.createDispatch({
+        ...data,
+        adminId: user.id
+      });
+      res.status(201).json(dispatch);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/dispatches", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    const executiveId = user.role === 'executive' ? user.id : (req.query.executiveId ? Number(req.query.executiveId) : undefined);
+    const date = req.query.date ? new Date(req.query.date as string) : undefined;
+    const dispatches = await storage.listDispatches({ executiveId, date });
+    res.json(dispatches);
+  });
+
+  app.post("/api/packing-lists", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const user = req.user as any;
+    if (user.role !== 'admin') return res.sendStatus(403);
+    try {
+      const data = insertPackingListSchema.parse(req.body);
+      const list = await storage.createPackingList(data);
+      res.status(201).json(list);
+    } catch (err) {
+      if (err instanceof z.ZodError) {
+        res.status(400).json({ message: err.errors[0].message });
+      } else {
+        res.status(500).json({ message: "Internal server error" });
+      }
+    }
+  });
+
+  app.get("/api/packing-lists/:dispatchId", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    const list = await storage.getPackingListByDispatch(Number(req.params.dispatchId));
+    if (!list) return res.status(404).json({ message: "Packing list not found" });
+    res.json(list);
+  });
+
   app.patch("/api/orders/:id", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {

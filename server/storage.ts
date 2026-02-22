@@ -48,6 +48,20 @@ export interface IStorage {
   updateOrderPublic(id: number, data: Partial<Order>): Promise<Order>;
   getOrderByToken(token: string): Promise<Order | undefined>;
 
+  // Support Requests
+  createSupportRequest(request: InsertSupportRequest & { userId: number }): Promise<SupportRequest>;
+  listSupportRequests(filter?: { userId?: number; orderId?: number }): Promise<SupportRequest[]>;
+  updateSupportRequest(id: number, data: Partial<SupportRequest>): Promise<SupportRequest>;
+
+  // Dispatches
+  createDispatch(dispatch: InsertDispatch & { adminId: number }): Promise<Dispatch>;
+  listDispatches(filter?: { executiveId?: number; date?: Date }): Promise<Dispatch[]>;
+  updateDispatchStatus(id: number, status: string): Promise<Dispatch>;
+
+  // Packing Lists
+  createPackingList(list: InsertPackingList): Promise<PackingList>;
+  getPackingListByDispatch(dispatchId: number): Promise<PackingList | undefined>;
+
   // Session Store
   sessionStore: session.Store;
 }
@@ -126,6 +140,67 @@ export class DatabaseStorage implements IStorage {
   async getOrderByToken(token: string): Promise<Order | undefined> {
     const [order] = await db.select().from(orders).where(eq(orders.shareToken, token));
     return order;
+  }
+
+  // Support Requests
+  async createSupportRequest(request: InsertSupportRequest & { userId: number }): Promise<SupportRequest> {
+    const [newRequest] = await db.insert(supportRequests).values({
+      ...request,
+      userId: request.userId,
+    }).returning();
+    return newRequest;
+  }
+
+  async listSupportRequests(filter?: { userId?: number; orderId?: number }): Promise<SupportRequest[]> {
+    let conditions = [];
+    if (filter?.userId) conditions.push(eq(supportRequests.userId, filter.userId));
+    if (filter?.orderId) conditions.push(eq(supportRequests.orderId, filter.orderId));
+    return await db.select().from(supportRequests).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(supportRequests.createdAt));
+  }
+
+  async updateSupportRequest(id: number, data: Partial<SupportRequest>): Promise<SupportRequest> {
+    const [updated] = await db.update(supportRequests).set(data).where(eq(supportRequests.id, id)).returning();
+    if (!updated) throw new Error("Support request not found");
+    return updated;
+  }
+
+  // Dispatches
+  async createDispatch(dispatch: InsertDispatch & { adminId: number }): Promise<Dispatch> {
+    const [newDispatch] = await db.insert(dispatches).values({
+      ...dispatch,
+      adminId: dispatch.adminId,
+    }).returning();
+    return newDispatch;
+  }
+
+  async listDispatches(filter?: { executiveId?: number; date?: Date }): Promise<Dispatch[]> {
+    let conditions = [];
+    if (filter?.executiveId) conditions.push(eq(dispatches.executiveId, filter.executiveId));
+    if (filter?.date) {
+      const start = new Date(filter.date);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(filter.date);
+      end.setHours(23, 59, 59, 999);
+      conditions.push(and(gte(dispatches.dispatchDate, start), lte(dispatches.dispatchDate, end)));
+    }
+    return await db.select().from(dispatches).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(dispatches.dispatchDate));
+  }
+
+  async updateDispatchStatus(id: number, status: string): Promise<Dispatch> {
+    const [updated] = await db.update(dispatches).set({ status }).where(eq(dispatches.id, id)).returning();
+    if (!updated) throw new Error("Dispatch not found");
+    return updated;
+  }
+
+  // Packing Lists
+  async createPackingList(list: InsertPackingList): Promise<PackingList> {
+    const [newList] = await db.insert(packingLists).values(list).returning();
+    return newList;
+  }
+
+  async getPackingListByDispatch(dispatchId: number): Promise<PackingList | undefined> {
+    const [list] = await db.select().from(packingLists).where(eq(packingLists.dispatchId, dispatchId));
+    return list;
   }
 
   async updateUserPassword(id: number, password: string): Promise<User> {

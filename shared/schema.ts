@@ -174,6 +174,60 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const supportRequests = pgTable("support_requests", {
+  id: serial("id").primaryKey(),
+  orderId: integer("order_id").notNull().references(() => orders.id),
+  userId: integer("user_id").notNull().references(() => users.id),
+  items: jsonb("items").notNull().default([]), // Selected items
+  remarks: text("remarks"), // max 250 words
+  adminResponse: text("admin_response"),
+  status: text("status").default("pending"), // 'pending', 'resolved'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const dispatches = pgTable("dispatches", {
+  id: serial("id").primaryKey(),
+  adminId: integer("admin_id").notNull().references(() => users.id),
+  executiveId: integer("executive_id").notNull().references(() => users.id),
+  dispatchDate: timestamp("dispatch_date").notNull(),
+  bookType: text("book_type").notNull(), // 'Sales' / 'Sample'
+  modeOfParcel: text("mode_of_parcel").notNull(), // e.g., 'SINDHU PARCEL SERVICE'
+  lrNo: text("lr_no").notNull(),
+  noOfBox: integer("no_of_box").notNull(),
+  ref: text("ref"),
+  remarks: text("remarks"), // max 200 words
+  status: text("status").default("Not Delivered"), // 'Received' / 'Not Delivered'
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const packingLists = pgTable("packing_lists", {
+  id: serial("id").primaryKey(),
+  dispatchId: integer("dispatch_id").notNull().references(() => dispatches.id),
+  items: jsonb("items").notNull().default([]), // List of items with quantities
+  remarks: text("remarks"), // max 250 words
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const insertSupportRequestSchema = createInsertSchema(supportRequests, {
+  items: z.array(z.any()),
+}).omit({ id: true, createdAt: true, userId: true });
+
+export const insertDispatchSchema = createInsertSchema(dispatches, {
+  dispatchDate: z.coerce.date(),
+}).omit({ id: true, createdAt: true, adminId: true });
+
+export const insertPackingListSchema = createInsertSchema(packingLists, {
+  items: z.array(z.any()),
+}).omit({ id: true, createdAt: true });
+
+export type SupportRequest = typeof supportRequests.$inferSelect;
+export type InsertSupportRequest = z.infer<typeof insertSupportRequestSchema>;
+export type Dispatch = typeof dispatches.$inferSelect;
+export type InsertDispatch = z.infer<typeof insertDispatchSchema>;
+export type PackingList = typeof packingLists.$inferSelect;
+export type InsertPackingList = z.infer<typeof insertPackingListSchema>;
+
+
 export const insertOrderSchema = createInsertSchema(orders, {
   deliveryDate: z.coerce.date().optional().nullable(),
   items: z.record(z.any()),
@@ -187,7 +241,6 @@ export const insertOrderSchema = createInsertSchema(orders, {
 }).omit({
   id: true,
   createdAt: true,
-  userId: true,
 });
 
 export type Order = typeof orders.$inferSelect & { userName?: string };
