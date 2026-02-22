@@ -11,7 +11,8 @@ import {
   Calendar,
   MessageSquare,
   X,
-  LifeBuoy
+  LifeBuoy,
+  Truck
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -41,6 +42,7 @@ export function Navigation() {
     : [
         { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
         { href: "/orders", label: "Orders", icon: FileText },
+        { href: "/dispatches", label: "Dispatches", icon: Truck },
         { href: "/support", label: "Internal Request", icon: LifeBuoy },
         { href: "/visits/new", label: "New Visit", icon: PlusCircle },
         { href: "/visits/history", label: "My History", icon: MapPin },

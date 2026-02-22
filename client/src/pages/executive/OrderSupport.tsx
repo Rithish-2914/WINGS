@@ -206,6 +206,8 @@ function AdminSupportView() {
   });
   const { toast } = useToast();
 
+  const filteredRequests = requests?.filter(req => !req.dispatchId);
+
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, adminResponse, dispatchId }: any) => {
       const res = await apiRequest("PATCH", `/api/support/${id}`, { status, adminResponse, dispatchId });
@@ -221,7 +223,7 @@ function AdminSupportView() {
 
   return (
     <div className="space-y-4">
-      {requests?.map((req) => (
+      {filteredRequests?.map((req) => (
         <Card key={req.id}>
           <CardHeader>
             <div className="flex justify-between items-start">
@@ -230,7 +232,7 @@ function AdminSupportView() {
                 {req.status}
               </Badge>
             </div>
-            <p className="text-sm text-muted-foreground">From User ID: {req.userId}</p>
+            <p className="text-sm text-muted-foreground font-medium">From: {req.userName || "N/A"}</p>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="bg-slate-50 p-3 rounded-md">

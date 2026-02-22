@@ -24,6 +24,7 @@ import OrderHistory from "@/pages/executive/OrderHistory";
 import OrderSupport from "@/pages/executive/OrderSupport";
 import CreateDispatch from "@/pages/admin/CreateDispatch";
 import DispatchInfo from "@/pages/executive/DispatchInfo";
+import ExecutiveDispatches from "@/pages/executive/ExecutiveDispatches";
 
 // ... existing imports ...
 
@@ -58,6 +59,11 @@ function Router() {
             path="/support" 
             component={OrderSupport} 
             roles={['executive', 'admin']} 
+          />
+          <ProtectedRoute 
+            path="/dispatches" 
+            component={ExecutiveDispatches} 
+            roles={['executive']} 
           />
           <ProtectedRoute 
             path="/orders/dispatch/:id" 
