@@ -157,9 +157,11 @@ export class DatabaseStorage implements IStorage {
 
   // Support Requests
   async createSupportRequest(request: InsertSupportRequest & { userId: number }): Promise<SupportRequest> {
+    const { items, ...rest } = request;
     const [newRequest] = await db.insert(supportRequests).values({
-      ...request,
+      ...rest,
       userId: request.userId,
+      items: items || [],
     }).returning();
     return newRequest;
   }

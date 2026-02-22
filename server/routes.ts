@@ -221,7 +221,11 @@ export async function registerRoutes(
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       console.log("Creating support request with body:", JSON.stringify(req.body));
-      const data = insertSupportRequestSchema.parse(req.body);
+      const { items, ...rest } = req.body;
+      const data = insertSupportRequestSchema.parse({
+        ...rest,
+        items: Array.isArray(items) ? items : []
+      });
       const request = await storage.createSupportRequest({
         ...data,
         userId: (req.user as any).id
