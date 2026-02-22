@@ -206,7 +206,7 @@ function AdminSupportView() {
   });
   const { toast } = useToast();
 
-  const filteredRequests = requests?.filter(req => !req.dispatchId);
+  const filteredRequests = requests;
 
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, adminResponse, dispatchId }: any) => {
