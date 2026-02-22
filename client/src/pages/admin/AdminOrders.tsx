@@ -64,6 +64,10 @@ export default function AdminOrders() {
       const margin = 15;
       let yPos = 20;
 
+      // Register autoTable plugin explicitly if needed, though usually it's automatic
+      // In some build environments, it might need to be accessed differently
+      const table = (doc as any).autoTable || autoTable;
+
       // Helper for sections
       const addSection = (title: string) => {
         if (yPos > 270) {
@@ -162,7 +166,7 @@ export default function AdminOrders() {
           doc.text(category.toUpperCase(), margin, yPos);
           yPos += 5;
 
-          autoTable(doc, {
+          table(doc, {
             startY: yPos,
             head: [["Product", "Price", "Qty", "Total"]],
             body: categoryItems,
