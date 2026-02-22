@@ -25,6 +25,8 @@ export default function OrderSupport() {
   const { toast } = useToast();
   const [subject, setSubject] = useState("");
   const [remarks, setRemarks] = useState("");
+  const [dispatchDate, setDispatchDate] = useState("");
+  const [dispatchLocation, setDispatchLocation] = useState("");
   const [items, setItems] = useState<{ name: string; qty: number }[]>([]);
 
   const itemsList = [
@@ -42,6 +44,8 @@ export default function OrderSupport() {
     mutationFn: async (data: any) => {
       const payload = {
         ...data,
+        dispatchDate: dispatchDate || null,
+        dispatchLocation: dispatchLocation || null,
         items: items.map((item, index) => ({ 
           id: index + 1, 
           name: item.name, 
@@ -152,6 +156,25 @@ export default function OrderSupport() {
               </div>
             </div>
             
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Date of Dispatch Needed</label>
+                <Input 
+                  type="date"
+                  value={dispatchDate}
+                  onChange={(e) => setDispatchDate(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Dispatch Location</label>
+                <Input 
+                  placeholder="Enter location" 
+                  value={dispatchLocation}
+                  onChange={(e) => setDispatchLocation(e.target.value)}
+                />
+              </div>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Remarks</label>
               <Textarea 
@@ -222,6 +245,23 @@ function AdminSupportView() {
               <div>
                 <p className="text-xs font-bold uppercase text-muted-foreground">Remarks</p>
                 <p className="text-sm">{req.remarks}</p>
+              </div>
+            )}
+            
+            {(req.dispatchDate || req.dispatchLocation) && (
+              <div className="grid grid-cols-2 gap-4 pt-2 border-t mt-2">
+                {req.dispatchDate && (
+                  <div>
+                    <p className="text-xs font-bold uppercase text-muted-foreground">Dispatch Date</p>
+                    <p className="text-sm">{new Date(req.dispatchDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {req.dispatchLocation && (
+                  <div>
+                    <p className="text-xs font-bold uppercase text-muted-foreground">Dispatch Location</p>
+                    <p className="text-sm">{req.dispatchLocation}</p>
+                  </div>
+                )}
               </div>
             )}
             

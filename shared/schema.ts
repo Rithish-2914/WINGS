@@ -190,6 +190,11 @@ export const supportRequests = pgTable("support_requests", {
   adminResponse: text("admin_response"),
   dispatchId: text("dispatch_id"), // Dispatch ID from Admin
   status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
+  
+  // Added Dispatch Info for Executive
+  dispatchDate: timestamp("dispatch_date"),
+  dispatchLocation: text("dispatch_location"),
+  
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -222,6 +227,8 @@ export const insertSupportRequestSchema = createInsertSchema(supportRequests, {
     name: z.string(),
     qty: z.number().min(1),
   })),
+  dispatchDate: z.coerce.date().optional().nullable(),
+  dispatchLocation: z.string().optional().nullable(),
 }).omit({ id: true, createdAt: true, userId: true });
 
 export const insertDispatchSchema = createInsertSchema(dispatches, {
