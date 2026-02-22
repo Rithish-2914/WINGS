@@ -92,6 +92,9 @@ export default function OrderHistory() {
       const margin = 15;
       let yPos = 20;
 
+      // Register autoTable plugin
+      const table = (doc as any).autoTable || autoTable;
+
       // Helper for sections
       const addSection = (title: string) => {
         if (yPos > 270) {
@@ -166,6 +169,8 @@ export default function OrderHistory() {
       addField("Delivery Date", order.deliveryDate ? format(new Date(order.deliveryDate), "dd MMM yyyy") : "-");
       addField("Transport 1", order.preferredTransport1);
       addField("Transport 2", order.preferredTransport2);
+      addField("Status", order.status || "pending");
+      addField("Dispatch ID", order.dispatchId || "-");
       yPos += 10;
 
       // 5-11. Items Tables
@@ -175,7 +180,10 @@ export default function OrderHistory() {
           .filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"))
           .map(([key, value]) => {
             const productName = key.substring(category.length + 1);
-            return [productName, String(value.price || "0"), String(value.qty || "0"), (Number(value.price || 0) * Number(value.qty || 0)).toFixed(2)];
+            const price = Number(value.price || 0);
+            const qty = Number(value.qty || 0);
+            const total = (price * qty).toFixed(2);
+            return [productName, String(price), String(qty), total];
           });
 
         if (categoryItems.length > 0) {
@@ -188,14 +196,20 @@ export default function OrderHistory() {
           doc.text(category.toUpperCase(), margin, yPos);
           yPos += 5;
 
-          (doc as any).autoTable({
+          table(doc, {
             startY: yPos,
             head: [["Product", "Price", "Qty", "Total"]],
             body: categoryItems,
             margin: { left: margin },
             theme: 'striped',
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [71, 85, 105] }
+            headStyles: { fillColor: [71, 85, 105] },
+            columnStyles: {
+              0: { cellWidth: 'auto' },
+              1: { cellWidth: 25, halign: 'right' },
+              2: { cellWidth: 20, halign: 'center' },
+              3: { cellWidth: 25, halign: 'right' }
+            }
           });
           yPos = (doc as any).lastAutoTable.finalY + 10;
         }
@@ -453,6 +467,82 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
+                {/* Contact Details */}
+                <div className="space-y-4 border-2 p-4 rounded-lg">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Contact Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Correspondent</p>
+                      <p className="font-medium">{selectedOrder.correspondentName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.correspondentMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Principal</p>
+                      <p className="font-medium">{selectedOrder.principalName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.principalMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Accounts</p>
+                      <p className="font-medium">{selectedOrder.accountsName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.accountsMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Programme In Charge</p>
+                      <p className="font-medium">{selectedOrder.programmeInChargeName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.programmeInChargeMobile || "-"}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Dispatch Details */}
+                <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <Truck className="w-4 h-4" /> Dispatch Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <p>Delivery Date: <span className="font-medium">{selectedOrder.deliveryDate ? format(new Date(selectedOrder.deliveryDate), "dd MMM yyyy") : "-"}</span></p>
+                    <p>Transport 1: <span className="font-medium">{selectedOrder.preferredTransport1 || "-"}</span></p>
+                    <p>Transport 2: <span className="font-medium">{selectedOrder.preferredTransport2 || "-"}</span></p>
+                  </div>
+                </div>
+
+                {/* Book Order Details */}
+                <div className="space-y-6">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Book Order Details</h4>
+                  {CATEGORIES.map(category => {
+                    const items = selectedOrder.items as Record<string, any>;
+                    const categoryItems = Object.entries(items).filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"));
+                    
+                    if (categoryItems.length === 0) return null;
+
+                    return (
+                      <div key={category} className="space-y-2">
+                        <h5 className="text-sm font-bold text-slate-600">{category}</h5>
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="h-8">Product</TableHead>
+                              <TableHead className="h-8 w-24">Price</TableHead>
+                              <TableHead className="h-8 w-24">Qty</TableHead>
+                              <TableHead className="h-8 w-24 text-right">Total</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            {categoryItems.map(([key, value]) => (
+                              <TableRow key={key}>
+                                <TableCell className="py-2">{key.substring(category.length + 1)}</TableCell>
+                                <TableCell className="py-2">{value.price}</TableCell>
+                                <TableCell className="py-2">{value.qty}</TableCell>
+                                <TableCell className="py-2 text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    );
+                  })}
+                </div>
+
                 {/* Totals */}
                 <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
                   <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Estimated Invoice Summary</h4>
@@ -511,9 +601,21 @@ export default function OrderHistory() {
                   </div>
                 </div>
 
-                <div className="text-center py-4 text-muted-foreground border-2 border-dashed rounded-lg">
-                  <FileText className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                  <p className="text-sm">Full item-wise breakdown available in the generated PDF</p>
+                    <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/10">
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">Advance</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.advancePayment || "0"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">1st Inst.</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.firstInstalment || "0"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">2nd Inst.</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.secondInstalment || "0"}</p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

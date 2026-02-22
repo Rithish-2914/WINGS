@@ -153,7 +153,10 @@ export default function AdminOrders() {
           .filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"))
           .map(([key, value]) => {
             const productName = key.substring(category.length + 1);
-            return [productName, String(value.price || "0"), String(value.qty || "0"), (Number(value.price || 0) * Number(value.qty || 0)).toFixed(2)];
+            const price = Number(value.price || 0);
+            const qty = Number(value.qty || 0);
+            const total = (price * qty).toFixed(2);
+            return [productName, String(price), String(qty), total];
           });
 
         if (categoryItems.length > 0) {
@@ -173,7 +176,13 @@ export default function AdminOrders() {
             margin: { left: margin },
             theme: 'striped',
             styles: { fontSize: 8 },
-            headStyles: { fillColor: [71, 85, 105] }
+            headStyles: { fillColor: [71, 85, 105] },
+            columnStyles: {
+              0: { cellWidth: 'auto' },
+              1: { cellWidth: 25, halign: 'right' },
+              2: { cellWidth: 20, halign: 'center' },
+              3: { cellWidth: 25, halign: 'right' }
+            }
           });
           yPos = (doc as any).lastAutoTable.finalY + 10;
         }
@@ -274,7 +283,7 @@ export default function AdminOrders() {
           {selectedOrder && (
             <div className="p-0">
               <div className="p-6 space-y-8">
-                {/* Status and Actions */}
+                {/* Tracking Information */}
                 <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
                   <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
                     <Truck className="w-4 h-4" /> Tracking Information
@@ -317,176 +326,122 @@ export default function AdminOrders() {
                   </div>
                 </div>
 
-                {/* Full PDF View Placeholder/Note */}
-                <Card className="border-2 border-dashed border-slate-300 bg-slate-50">
-                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-                    <FileText className="w-12 h-12 text-slate-400 mb-4" />
-                    <h3 className="text-lg font-bold text-slate-700">Full Order Document</h3>
-                    <p className="text-sm text-slate-500 max-w-md mb-6">
-                      Click the button above to generate and download the complete 12-page order PDF including all sections.
-                    </p>
-                    <Button variant="outline" className="border-2" onClick={() => downloadPDF(selectedOrder)}>
-                      <Download className="w-4 h-4 mr-2" /> Download Full PDF
-                    </Button>
-                  </CardContent>
-                </Card>
-
-                {/* Page 1: Office Use */}
+                {/* Office Use & Mode */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-2 p-4 rounded-lg bg-slate-50">
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Office Use Only</h4>
-                  <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
-                  <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
-                  <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
-                  <p className="text-sm">Executive: <span className="font-medium">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
-                </div>
-                <div className="space-y-2">
-                  <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>
-                  <p className="text-sm">Order: <span className="font-medium">{selectedOrder.modeOfOrder || "-"}</span></p>
-                  <p className="text-sm">Supply: <span className="font-medium">{selectedOrder.modeOfSupply || "-"}</span></p>
-                  <div className="flex gap-4 mt-2">
-                    <div className="flex items-center gap-1 text-xs">
-                      {selectedOrder.hasSchoolOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} School Copy
-                    </div>
-                    <div className="flex items-center gap-1 text-xs">
-                      {selectedOrder.hasDistributorOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} Distributor Copy
-                    </div>
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Office Use Only</h4>
+                    <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
+                    <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
+                    <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
+                    <p className="text-sm">Executive: <span className="font-medium">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
                   </div>
-                </div>
-              </div>
-
-              {/* Page 2: School Info */}
-              <div className="space-y-4 border-2 p-4 rounded-lg">
-                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">School Information</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <p>Trust Name: <span className="font-medium">{selectedOrder.trustName || "-"}</span></p>
-                  <p>Board: <span className="font-medium">{selectedOrder.board || "-"}</span></p>
-                  <p>School Type: <span className="font-medium">{selectedOrder.schoolType || "-"}</span></p>
-                  <p>Email: <span className="font-medium">{selectedOrder.emailId || "-"}</span></p>
-                  <p className="md:col-span-2">Address: <span className="font-medium">{selectedOrder.address || "-"}</span></p>
-                  <p>Pincode: <span className="font-medium">{selectedOrder.pincode || "-"}</span></p>
-                  <p>State: <span className="font-medium">{selectedOrder.state || "-"}</span></p>
-                  <p>School Phone: <span className="font-medium">{selectedOrder.schoolPhone || "-"}</span></p>
-                </div>
-              </div>
-
-              {/* Page 3: Contact Details */}
-              <div className="space-y-4 border-2 p-4 rounded-lg">
-                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Contact Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase">Correspondent</p>
-                    <p className="font-medium">{selectedOrder.correspondentName || "-"}</p>
-                    <p className="text-xs">{selectedOrder.correspondentMobile || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase">Principal</p>
-                    <p className="font-medium">{selectedOrder.principalName || "-"}</p>
-                    <p className="text-xs">{selectedOrder.principalMobile || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase">Accounts</p>
-                    <p className="font-medium">{selectedOrder.accountsName || "-"}</p>
-                    <p className="text-xs">{selectedOrder.accountsMobile || "-"}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase">Programme In Charge</p>
-                    <p className="font-medium">{selectedOrder.programmeInChargeName || "-"}</p>
-                    <p className="text-xs">{selectedOrder.programmeInChargeMobile || "-"}</p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Page 4: Dispatch */}
-              <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
-                <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
-                  <Truck className="w-4 h-4" /> Tracking Information
-                </h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                  <div className="space-y-4">
-                    <p className="text-sm">Status: 
-                      <span className={cn(
-                        "ml-2 px-2 py-1 rounded-full text-xs font-bold uppercase",
-                        selectedOrder.status === 'delivered' ? "bg-green-100 text-green-700" :
-                        selectedOrder.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
-                        "bg-yellow-100 text-yellow-700"
-                      )}>
-                        {selectedOrder.status || 'pending'}
-                      </span>
-                    </p>
-                    {selectedOrder.dispatchId && (
-                      <p className="text-sm">Dispatch ID: <span className="font-bold">{selectedOrder.dispatchId}</span></p>
-                    )}
-                  </div>
-                  
-                  {selectedOrder.status === 'pending' && (
-                    <div className="flex gap-2">
-                      <div className="flex-1">
-                        <Input 
-                          placeholder="Enter Dispatch ID" 
-                          value={dispatchId}
-                          onChange={(e) => setDispatchId(e.target.value)}
-                          className="bg-white"
-                        />
+                  <div className="space-y-2">
+                    <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>
+                    <p className="text-sm">Order: <span className="font-medium">{selectedOrder.modeOfOrder || "-"}</span></p>
+                    <p className="text-sm">Supply: <span className="font-medium">{selectedOrder.modeOfSupply || "-"}</span></p>
+                    <div className="flex gap-4 mt-2">
+                      <div className="flex items-center gap-1 text-xs">
+                        {selectedOrder.hasSchoolOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} School Copy
                       </div>
-                      <Button 
-                        onClick={() => handleDispatch(selectedOrder.id)}
-                        disabled={updateStatusMutation.isPending}
-                      >
-                        Mark Dispatched
-                      </Button>
+                      <div className="flex items-center gap-1 text-xs">
+                        {selectedOrder.hasDistributorOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} Distributor Copy
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Page 4: Dispatch Details Original */}
-              <div className="space-y-4 border-2 p-4 rounded-lg">
-                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Dispatch Details</h4>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                  <p>Delivery Date: <span className="font-medium">{selectedOrder.deliveryDate ? format(new Date(selectedOrder.deliveryDate), "dd MMM yyyy") : "-"}</span></p>
-                  <p>Transport 1: <span className="font-medium">{selectedOrder.preferredTransport1 || "-"}</span></p>
-                  <p>Transport 2: <span className="font-medium">{selectedOrder.preferredTransport2 || "-"}</span></p>
+                {/* School Information */}
+                <div className="space-y-4 border-2 p-4 rounded-lg">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">School Information</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <p>Trust Name: <span className="font-medium">{selectedOrder.trustName || "-"}</span></p>
+                    <p>Board: <span className="font-medium">{selectedOrder.board || "-"}</span></p>
+                    <p>School Type: <span className="font-medium">{selectedOrder.schoolType || "-"}</span></p>
+                    <p>Email: <span className="font-medium">{selectedOrder.emailId || "-"}</span></p>
+                    <p className="md:col-span-2">Address: <span className="font-medium">{selectedOrder.address || "-"}</span></p>
+                    <p>Pincode: <span className="font-medium">{selectedOrder.pincode || "-"}</span></p>
+                    <p>State: <span className="font-medium">{selectedOrder.state || "-"}</span></p>
+                    <p>School Phone: <span className="font-medium">{selectedOrder.schoolPhone || "-"}</span></p>
+                  </div>
                 </div>
-              </div>
 
-              {/* Pages 5-11: Items */}
-              <div className="space-y-6">
-                <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Book Order Details</h4>
-                {CATEGORIES.map(category => {
-                  const items = selectedOrder.items as Record<string, any>;
-                  const categoryItems = Object.entries(items).filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"));
-                  
-                  if (categoryItems.length === 0) return null;
+                {/* Contact Details */}
+                <div className="space-y-4 border-2 p-4 rounded-lg">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Contact Details</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Correspondent</p>
+                      <p className="font-medium">{selectedOrder.correspondentName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.correspondentMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Principal</p>
+                      <p className="font-medium">{selectedOrder.principalName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.principalMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Accounts</p>
+                      <p className="font-medium">{selectedOrder.accountsName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.accountsMobile || "-"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground uppercase">Programme In Charge</p>
+                      <p className="font-medium">{selectedOrder.programmeInChargeName || "-"}</p>
+                      <p className="text-xs">{selectedOrder.programmeInChargeMobile || "-"}</p>
+                    </div>
+                  </div>
+                </div>
 
-                  return (
-                    <div key={category} className="space-y-2">
-                      <h5 className="text-sm font-bold text-slate-600">{category}</h5>
-                      <Table>
-                        <TableHeader>
-                          <TableRow className="bg-slate-50">
-                            <TableHead className="h-8">Product</TableHead>
-                            <TableHead className="h-8 w-24">Price</TableHead>
-                            <TableHead className="h-8 w-24">Qty</TableHead>
-                            <TableHead className="h-8 w-24 text-right">Total</TableHead>
-                          </TableRow>
-                        </TableHeader>
-                        <TableBody>
-                          {categoryItems.map(([key, value]) => (
-                            <TableRow key={key}>
-                              <TableCell className="py-2">{key.substring(category.length + 1)}</TableCell>
-                              <TableCell className="py-2">{value.price}</TableCell>
-                              <TableCell className="py-2">{value.qty}</TableCell>
-                              <TableCell className="py-2 text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
+                {/* Dispatch Details */}
+                <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <Truck className="w-4 h-4" /> Dispatch Details
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <p>Delivery Date: <span className="font-medium">{selectedOrder.deliveryDate ? format(new Date(selectedOrder.deliveryDate), "dd MMM yyyy") : "-"}</span></p>
+                    <p>Transport 1: <span className="font-medium">{selectedOrder.preferredTransport1 || "-"}</span></p>
+                    <p>Transport 2: <span className="font-medium">{selectedOrder.preferredTransport2 || "-"}</span></p>
+                  </div>
+                </div>
+
+                {/* Book Order Details */}
+                <div className="space-y-6">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2">Book Order Details</h4>
+                  {CATEGORIES.map(category => {
+                    const items = selectedOrder.items as Record<string, any>;
+                    const categoryItems = Object.entries(items).filter(([key]) => key.startsWith(`${category}-`) && !key.endsWith("-discount"));
+                    
+                    if (categoryItems.length === 0) return null;
+
+                    return (
+                      <div key={category} className="space-y-2">
+                        <h5 className="text-sm font-bold text-slate-600">{category}</h5>
+                        <Table>
+                          <TableHeader>
+                            <TableRow className="bg-slate-50">
+                              <TableHead className="h-8">Product</TableHead>
+                              <TableHead className="h-8 w-24">Price</TableHead>
+                              <TableHead className="h-8 w-24">Qty</TableHead>
+                              <TableHead className="h-8 w-24 text-right">Total</TableHead>
                             </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </div>
-                  );
-                })}
-              </div>
+                          </TableHeader>
+                          <TableBody>
+                            {categoryItems.map(([key, value]) => (
+                              <TableRow key={key}>
+                                <TableCell className="py-2">{key.substring(category.length + 1)}</TableCell>
+                                <TableCell className="py-2">{value.price}</TableCell>
+                                <TableCell className="py-2">{value.qty}</TableCell>
+                                <TableCell className="py-2 text-right">{(value.price * parseInt(value.qty || "0")).toFixed(2)}</TableCell>
+                              </TableRow>
+                            ))}
+                          </TableBody>
+                        </Table>
+                      </div>
+                    );
+                  })}
+                </div>
 
+                {/* Totals */}
                 <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
                   <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Estimated Invoice Summary</h4>
                   <div className="space-y-2">
@@ -496,30 +451,30 @@ export default function AdminOrders() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Discount:</span>
-                      <span className="font-mono text-blue-400">{selectedOrder.discount}%</span>
+                      <span className="font-mono text-blue-400">{selectedOrder.discount || "0"}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Total Discount:</span>
                       <span className="font-mono text-red-400">INR {selectedOrder.totalDiscount}</span>
                     </div>
-                    <div className="flex justify-between border-t border-white/20 pt-2 text-xl font-black">
-                      <span>NET AMOUNT:</span>
-                      <span className="text-green-400">INR {selectedOrder.netAmount}</span>
+                    <div className="flex justify-between border-t border-white/20 pt-2 mt-2">
+                      <span className="text-lg font-black uppercase tracking-tighter">Net Amount:</span>
+                      <span className="text-xl font-black font-mono text-green-400 underline decoration-double">INR {selectedOrder.netAmount}</span>
                     </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 gap-4 text-[10px] mt-4 pt-4 border-t border-white/10 uppercase tracking-tighter">
-                  <div className="text-center border-r border-white/10">
-                    <p className="text-slate-500">Advance</p>
-                    <p className="font-bold text-sm">INR {selectedOrder.advancePayment || "0.00"}</p>
-                  </div>
-                  <div className="text-center border-r border-white/10">
-                    <p className="text-slate-500">1st Inst.</p>
-                    <p className="font-bold text-sm">INR {selectedOrder.firstInstalment || "0.00"}</p>
-                  </div>
-                  <div className="text-center">
-                    <p className="text-slate-500">2nd Inst.</p>
-                    <p className="font-bold text-sm">INR {selectedOrder.secondInstalment || "0.00"}</p>
+                    <div className="grid grid-cols-3 gap-4 mt-6 pt-4 border-t border-white/10">
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">Advance</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.advancePayment || "0"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">1st Inst.</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.firstInstalment || "0"}</p>
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-slate-400 uppercase">2nd Inst.</p>
+                        <p className="font-bold font-mono">₹{selectedOrder.secondInstalment || "0"}</p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
