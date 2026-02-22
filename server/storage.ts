@@ -255,8 +255,10 @@ export class DatabaseStorage implements IStorage {
     return newList;
   }
 
-  async getPackingListByDispatch(dispatchId: number): Promise<PackingList | undefined> {
-    const [list] = await db.select().from(packingLists).where(eq(packingLists.dispatchId, dispatchId));
+  async getPackingListByDispatch(dispatchId: number | string): Promise<PackingList | undefined> {
+    const id = typeof dispatchId === 'string' ? parseInt(dispatchId, 10) : dispatchId;
+    if (isNaN(id)) return undefined;
+    const [list] = await db.select().from(packingLists).where(eq(packingLists.dispatchId, id));
     return list;
   }
 
