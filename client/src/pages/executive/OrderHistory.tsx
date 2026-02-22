@@ -3,7 +3,8 @@ import { Order } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon, LifeBuoy } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Loader2, Download, Eye, FileText, Check, Truck, PackageCheck, Share2, Link as LinkIcon, LifeBuoy } from "lucide-react";
 import { format } from "date-fns";
 import { Link } from "wouter";
 import { useState } from "react";
@@ -59,6 +60,18 @@ export default function OrderHistory() {
       queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
       toast({ title: "Success", description: "Order updated" });
       setSelectedOrder(null);
+    }
+  });
+
+  const updateOrderMutation = useMutation({
+    mutationFn: async (data: Partial<Order> & { id: number }) => {
+      const { id, ...payload } = data;
+      const res = await apiRequest("PATCH", `/api/orders/${id}`, payload);
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/orders"] });
+      toast({ title: "Success", description: "Order updated" });
     }
   });
 
@@ -448,9 +461,44 @@ export default function OrderHistory() {
                       <span className="text-slate-400">Gross Total:</span>
                       <span className="font-mono">INR {selectedOrder.totalAmount}</span>
                     </div>
-                    <div className="flex justify-between">
+                    <div className="flex justify-between items-center">
                       <span className="text-slate-400">Discount:</span>
-                      <span className="font-mono text-blue-400">{selectedOrder.discount}%</span>
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="number"
+                          className="w-20 h-8 bg-white/10 border-white/20 text-white text-right font-mono"
+                          value={selectedOrder.discount}
+                          onChange={(e) => {
+                            const newDiscount = e.target.value;
+                            const grossTotal = parseFloat(selectedOrder.totalAmount);
+                            const discountVal = parseFloat(newDiscount) || 0;
+                            const totalDiscount = (grossTotal * discountVal) / 100;
+                            const netAmount = grossTotal - totalDiscount;
+                            
+                            setSelectedOrder({
+                              ...selectedOrder,
+                              discount: newDiscount,
+                              totalDiscount: totalDiscount.toFixed(2),
+                              netAmount: netAmount.toFixed(2)
+                            });
+                          }}
+                        />
+                        <span className="font-mono text-blue-400">%</span>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="h-8 text-[10px] uppercase font-bold border-blue-500 text-blue-400 hover:bg-blue-500 hover:text-white"
+                          onClick={() => updateOrderMutation.mutate({
+                            id: selectedOrder.id,
+                            discount: selectedOrder.discount,
+                            totalDiscount: selectedOrder.totalDiscount,
+                            netAmount: selectedOrder.netAmount
+                          })}
+                          disabled={updateOrderMutation.isPending}
+                        >
+                          {updateOrderMutation.isPending ? "..." : "Save"}
+                        </Button>
+                      </div>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Total Discount:</span>
