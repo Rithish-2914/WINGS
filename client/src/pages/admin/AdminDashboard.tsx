@@ -233,6 +233,10 @@ export default function AdminDashboard() {
     queryKey: ["/api/targets"],
   });
 
+  const { data: dispatches, isLoading: dispatchesLoading } = useQuery<any[]>({
+    queryKey: ["/api/dispatches"],
+  });
+
   const { data: samples, isLoading: samplesLoading } = useQuery<SampleSubmission[]>({
     queryKey: ["/api/samples"],
   });
@@ -241,7 +245,7 @@ export default function AdminDashboard() {
     queryKey: ["/api/orders"],
   });
 
-  const isLoading = visitsLoading || usersLoading || targetsLoading || samplesLoading || ordersLoading;
+  const isLoading = visitsLoading || usersLoading || targetsLoading || samplesLoading || ordersLoading || dispatchesLoading;
 
   // Filter logic
   const filteredVisits = useMemo(() => {
@@ -659,7 +663,7 @@ export default function AdminDashboard() {
                           <span className="font-semibold text-sm">{visit.schoolName}</span>
                           <Badge variant="outline" className="text-[10px] bg-green-100 text-green-800 border-green-200">Completed</Badge>
                         </div>
-                        <p className="text-xs text-muted-foreground mb-1">Executive: {visit.userName || exec?.name}</p>
+                        <p className="text-xs text-muted-foreground mb-1">Executive: {(visit as any).userName || exec?.name}</p>
                         <p className="text-xs text-foreground/80 italic">Remark: "{visit.adminFollowUp}"</p>
                       </div>
                     );
@@ -709,7 +713,7 @@ export default function AdminDashboard() {
                         <TableCell>{format(new Date(sample.createdAt!), "MMM d, yyyy")}</TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm">{sample.executiveName || "Unknown"}</span>
+                            <span className="font-medium text-sm">{(sample as any).executiveName || "Unknown"}</span>
                             <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
                           </div>
                         </TableCell>
@@ -834,7 +838,7 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm">{visit.userName || "Missing User"}</span>
+                            <span className="font-medium text-sm">{(visit as any).userName || "Missing User"}</span>
                             <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
                           </div>
                         </TableCell>
