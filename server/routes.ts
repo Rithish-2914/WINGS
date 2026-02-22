@@ -279,6 +279,7 @@ export async function registerRoutes(
     const user = req.user as any;
     if (user.role !== 'admin') return res.sendStatus(403);
     try {
+      console.log("Creating dispatch with body:", JSON.stringify(req.body));
       const data = insertDispatchSchema.parse(req.body);
       const dispatch = await storage.createDispatch({
         ...data,
@@ -286,10 +287,11 @@ export async function registerRoutes(
       });
       res.status(201).json(dispatch);
     } catch (err) {
+      console.error("Error creating dispatch:", err);
       if (err instanceof z.ZodError) {
-        res.status(400).json({ message: err.errors[0].message });
+        res.status(400).json({ message: err.errors[0].message, errors: err.errors });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: String(err) });
       }
     }
   });
@@ -308,14 +310,16 @@ export async function registerRoutes(
     const user = req.user as any;
     if (user.role !== 'admin') return res.sendStatus(403);
     try {
+      console.log("Creating packing list with body:", JSON.stringify(req.body));
       const data = insertPackingListSchema.parse(req.body);
       const list = await storage.createPackingList(data);
       res.status(201).json(list);
     } catch (err) {
+      console.error("Error creating packing list:", err);
       if (err instanceof z.ZodError) {
-        res.status(400).json({ message: err.errors[0].message });
+        res.status(400).json({ message: err.errors[0].message, errors: err.errors });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: String(err) });
       }
     }
   });
