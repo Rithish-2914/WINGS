@@ -33,6 +33,7 @@ export function Navigation() {
   const links = isAdmin
     ? [
         { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+        { href: "/admin/create-dispatch", label: "Create Dispatch", icon: PlusCircle },
         { href: "/admin/orders", label: "Orders", icon: FileText },
         { href: "/support", label: "Internal Request", icon: LifeBuoy },
         { href: "/admin/leaves", label: "Leaves", icon: Calendar },

@@ -186,6 +186,7 @@ export class DatabaseStorage implements IStorage {
     const [newDispatch] = await db.insert(dispatches).values({
       ...dispatch,
       adminId: dispatch.adminId,
+      status: dispatch.status || "Not Delivered",
     }).returning();
     return newDispatch;
   }

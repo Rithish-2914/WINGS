@@ -204,7 +204,7 @@ export const dispatches = pgTable("dispatches", {
   noOfBox: integer("no_of_box").notNull(),
   ref: text("ref"),
   remarks: text("remarks"), // max 200 words
-  status: text("status").default("dispatched"), // 'dispatched' / 'delivered'
+  status: text("status").default("Not Delivered"), // 'Received' / 'Not Delivered'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
