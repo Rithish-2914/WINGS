@@ -176,9 +176,9 @@ export const orders = pgTable("orders", {
 
 export const supportRequests = pgTable("support_requests", {
   id: serial("id").primaryKey(),
-  orderId: integer("order_id").notNull().references(() => orders.id),
   userId: integer("user_id").notNull().references(() => users.id),
-  items: jsonb("items").notNull().default([]), // Selected items
+  subject: text("subject").notNull(),
+  items: jsonb("items").notNull().default([]), // Selected products/items
   remarks: text("remarks"), // max 250 words
   adminResponse: text("admin_response"),
   status: text("status").default("pending"), // 'pending', 'resolved'

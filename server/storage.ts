@@ -155,10 +155,9 @@ export class DatabaseStorage implements IStorage {
     return newRequest;
   }
 
-  async listSupportRequests(filter?: { userId?: number; orderId?: number }): Promise<SupportRequest[]> {
+  async listSupportRequests(filter?: { userId?: number }): Promise<SupportRequest[]> {
     let conditions = [];
     if (filter?.userId) conditions.push(eq(supportRequests.userId, filter.userId));
-    if (filter?.orderId) conditions.push(eq(supportRequests.orderId, filter.orderId));
     return await db.select().from(supportRequests).where(conditions.length ? and(...conditions) : undefined).orderBy(desc(supportRequests.createdAt));
   }
 

@@ -55,7 +55,7 @@ function Router() {
             roles={['executive', 'admin']} 
           />
           <ProtectedRoute 
-            path="/orders/support/:id" 
+            path="/support" 
             component={OrderSupport} 
             roles={['executive', 'admin']} 
           />
