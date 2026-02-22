@@ -129,6 +129,14 @@ export class DatabaseStorage implements IStorage {
       .where(eq(orders.id, id))
       .returning();
     if (!updatedOrder) throw new Error("Order not found");
+    
+    // If order is dispatched, also update any linked support requests
+    if (status === 'dispatched' && dispatchId) {
+      await db.update(supportRequests)
+        .set({ status: 'dispatched', dispatchId })
+        .where(eq(supportRequests.id, id)); // Assuming 1:1 or linked by ID for this logic
+    }
+    
     return updatedOrder;
   }
 
@@ -193,6 +201,18 @@ export class DatabaseStorage implements IStorage {
   async updateDispatchStatus(id: number, status: string): Promise<Dispatch> {
     const [updated] = await db.update(dispatches).set({ status }).where(eq(dispatches.id, id)).returning();
     if (!updated) throw new Error("Dispatch not found");
+
+    // If dispatch is marked as delivered, update linked orders/requests
+    if (status === 'delivered') {
+      await db.update(orders)
+        .set({ status: 'delivered' })
+        .where(eq(orders.dispatchId, updated.lrNo)); // Using lrNo as the reference
+      
+      await db.update(supportRequests)
+        .set({ status: 'delivered' })
+        .where(eq(supportRequests.dispatchId, updated.lrNo));
+    }
+
     return updated;
   }
 

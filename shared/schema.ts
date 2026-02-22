@@ -178,10 +178,11 @@ export const supportRequests = pgTable("support_requests", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
   subject: text("subject").notNull(),
-  items: jsonb("items").notNull().default([]), // Selected products/items
+  items: jsonb("items").notNull().default([]), // Selected products/items with qty
   remarks: text("remarks"), // max 250 words
   adminResponse: text("admin_response"),
-  status: text("status").default("pending"), // 'pending', 'resolved'
+  dispatchId: text("dispatch_id"), // Dispatch ID from Admin
+  status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -196,7 +197,7 @@ export const dispatches = pgTable("dispatches", {
   noOfBox: integer("no_of_box").notNull(),
   ref: text("ref"),
   remarks: text("remarks"), // max 200 words
-  status: text("status").default("Not Delivered"), // 'Received' / 'Not Delivered'
+  status: text("status").default("dispatched"), // 'dispatched' / 'delivered'
   createdAt: timestamp("created_at").defaultNow(),
 });
 
