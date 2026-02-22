@@ -39,6 +39,9 @@ export default function CreateDispatch() {
 
   const [packingItems, setPackingItems] = useState<{ category: string, qty: string }[]>([]);
   const [packingRemarks, setPackingRemarks] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [selectedDispatch, setSelectedDispatch] = useState<any>(null);
 
   const { data: users, isLoading: isLoadingUsers } = useQuery<User[]>({
     queryKey: ["/api/users"],
@@ -46,6 +49,11 @@ export default function CreateDispatch() {
 
   const { data: dispatches, isLoading: isLoadingDispatches } = useQuery<any[]>({
     queryKey: ["/api/dispatches"],
+  });
+
+  const { data: packingLists } = useQuery<any[]>({
+    queryKey: ["/api/packing-lists"],
+    enabled: !!selectedDispatch,
   });
 
   const dispatchMutation = useMutation({
@@ -336,8 +344,22 @@ export default function CreateDispatch() {
       </div>
 
       <Card className="mt-8">
-        <CardHeader>
-          <CardTitle>Recent Dispatches</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>All Dispatches</CardTitle>
+          <div className="flex gap-4">
+            <Input 
+              placeholder="Search by LR No or Executive..." 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-64"
+            />
+            <Input 
+              type="date"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+              className="w-44"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -348,23 +370,33 @@ export default function CreateDispatch() {
                   <TableHead>Executive</TableHead>
                   <TableHead>LR No</TableHead>
                   <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Action</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoadingDispatches ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-4">
+                    <TableCell colSpan={5} className="text-center py-4">
                       <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                     </TableCell>
                   </TableRow>
                 ) : !dispatches || dispatches.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center py-4 text-muted-foreground">
+                    <TableCell colSpan={5} className="text-center py-4 text-muted-foreground">
                       No dispatches found.
                     </TableCell>
                   </TableRow>
                 ) : (
-                  dispatches.slice(0, 10).map((dispatch: any) => (
+                  dispatches
+                    .filter((d: any) => {
+                      const searchLower = searchTerm.toLowerCase();
+                      const matchesSearch = 
+                        (d.lrNo || "").toLowerCase().includes(searchLower) ||
+                        (d.executiveName || "").toLowerCase().includes(searchLower);
+                      const matchesDate = !dateFilter || new Date(d.dispatchDate).toISOString().split('T')[0] === dateFilter;
+                      return matchesSearch && matchesDate;
+                    })
+                    .map((dispatch: any) => (
                     <TableRow key={dispatch.id}>
                       <TableCell>{new Date(dispatch.dispatchDate).toLocaleDateString()}</TableCell>
                       <TableCell>{dispatch.executiveName || "N/A"}</TableCell>
@@ -378,6 +410,11 @@ export default function CreateDispatch() {
                           {dispatch.status}
                         </span>
                       </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedDispatch(dispatch)}>
+                          View Details
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -386,6 +423,109 @@ export default function CreateDispatch() {
           </div>
         </CardContent>
       </Card>
+
+      {selectedDispatch && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+            <CardHeader className="flex flex-row items-center justify-between sticky top-0 bg-card z-10 border-b">
+              <CardTitle>Dispatch & Packaging Details</CardTitle>
+              <Button variant="ghost" size="sm" onClick={() => setSelectedDispatch(null)}>Close</Button>
+            </CardHeader>
+            <CardContent className="p-6 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Executive</h3>
+                  <p className="text-base">{selectedDispatch.executiveName || "N/A"}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Dispatch Date</h3>
+                  <p className="text-base">{new Date(selectedDispatch.dispatchDate).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Book Type</h3>
+                  <p className="text-base">{selectedDispatch.bookType}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Dispatch Location</h3>
+                  <p className="text-base">{selectedDispatch.dispatchLocation || "N/A"}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Courier Mode</h3>
+                  <p className="text-base">{selectedDispatch.courierMode || "N/A"}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Mode of Parcel</h3>
+                  <p className="text-base">{selectedDispatch.modeOfParcel}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">LR No.</h3>
+                  <p className="text-base">{selectedDispatch.lrNo}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">No. Of Boxes</h3>
+                  <p className="text-base">{selectedDispatch.noOfBox}</p>
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Status</h3>
+                  <p className="text-base">{selectedDispatch.status}</p>
+                </div>
+              </div>
+
+              {selectedDispatch.ref && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Reference</h3>
+                  <p className="text-base bg-muted p-2 rounded">{selectedDispatch.ref}</p>
+                </div>
+              )}
+
+              {selectedDispatch.remarks && (
+                <div>
+                  <h3 className="text-sm font-semibold text-muted-foreground mb-1">Dispatch Remarks</h3>
+                  <p className="text-base bg-muted p-2 rounded whitespace-pre-wrap">{selectedDispatch.remarks}</p>
+                </div>
+              )}
+
+              <div className="border-t pt-6">
+                <h3 className="text-lg font-bold mb-4">Packing List</h3>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Category</TableHead>
+                      <TableHead className="w-32">Quantity</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {packingLists?.filter((pl: any) => pl.dispatchId === selectedDispatch.id).map((pl: any) => (
+                      pl.items.map((item: any, idx: number) => (
+                        <TableRow key={`${pl.id}-${idx}`}>
+                          <TableCell>{item.category}</TableCell>
+                          <TableCell>{item.qty}</TableCell>
+                        </TableRow>
+                      ))
+                    ))}
+                    {(!packingLists || packingLists.filter((pl: any) => pl.dispatchId === selectedDispatch.id).length === 0) && (
+                      <TableRow>
+                        <TableCell colSpan={2} className="text-center py-4 text-muted-foreground">
+                          No packing items found for this dispatch.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+                
+                {packingLists?.filter((pl: any) => pl.dispatchId === selectedDispatch.id)[0]?.remarks && (
+                  <div className="mt-4">
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-1">Packing Remarks</h3>
+                    <p className="text-base bg-muted p-2 rounded whitespace-pre-wrap">
+                      {packingLists.filter((pl: any) => pl.dispatchId === selectedDispatch.id)[0].remarks}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 }
