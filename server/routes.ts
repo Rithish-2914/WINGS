@@ -220,6 +220,7 @@ export async function registerRoutes(
   app.post("/api/support", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
+      console.log("Creating support request with body:", JSON.stringify(req.body));
       const data = insertSupportRequestSchema.parse(req.body);
       const request = await storage.createSupportRequest({
         ...data,
@@ -227,10 +228,11 @@ export async function registerRoutes(
       });
       res.status(201).json(request);
     } catch (err) {
+      console.error("Error creating support request:", err);
       if (err instanceof z.ZodError) {
-        res.status(400).json({ message: err.errors[0].message });
+        res.status(400).json({ message: err.errors[0].message, errors: err.errors });
       } else {
-        res.status(500).json({ message: "Internal server error" });
+        res.status(500).json({ message: "Internal server error", error: String(err) });
       }
     }
   });

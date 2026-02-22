@@ -31,10 +31,16 @@ export default function OrderSupport() {
 
   const mutation = useMutation({
     mutationFn: async (data: any) => {
-      const res = await apiRequest("POST", "/api/support", {
+      const payload = {
         ...data,
-        items: items.map((item, index) => ({ id: index + 1, name: item.name, qty: item.qty }))
-      });
+        items: items.map((item, index) => ({ 
+          id: index + 1, 
+          name: item.name, 
+          qty: item.qty 
+        }))
+      };
+      console.log("Submitting support request payload:", payload);
+      const res = await apiRequest("POST", "/api/support", payload);
       return res.json();
     },
     onSuccess: () => {
