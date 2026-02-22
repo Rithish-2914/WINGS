@@ -180,6 +180,7 @@ export default function AdminOrders() {
       }
       addSection("ESTIMATED INVOICE SUMMARY");
       addField("Gross Total", order.totalAmount);
+      addField("Discount", order.discount || "0");
       addField("Total Discount", order.totalDiscount);
       doc.setFont("helvetica", "bold");
       addField("NET AMOUNT", order.netAmount);
@@ -256,16 +257,76 @@ export default function AdminOrders() {
             <DialogTitle className="text-2xl font-black text-slate-800 border-b pb-4 flex justify-between items-center">
               <span>ORDER DETAILS - {selectedOrder?.schoolName}</span>
               {selectedOrder && (
-                <Button variant="outline" size="sm" onClick={() => downloadPDF(selectedOrder)}>
-                  <Download className="w-4 h-4 mr-2" /> PDF
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={() => downloadPDF(selectedOrder)}>
+                    <Download className="w-4 h-4 mr-2" /> Download Summary PDF
+                  </Button>
+                </div>
               )}
             </DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="p-6 space-y-8">
-              {/* Page 1: Office Use */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-2 p-4 rounded-lg bg-slate-50">
+            <div className="p-0">
+              <div className="p-6 space-y-8">
+                {/* Status and Actions */}
+                <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <Truck className="w-4 h-4" /> Tracking Information
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                    <div className="space-y-4">
+                      <p className="text-sm">Status: 
+                        <span className={cn(
+                          "ml-2 px-2 py-1 rounded-full text-xs font-bold uppercase",
+                          selectedOrder.status === 'delivered' ? "bg-green-100 text-green-700" :
+                          selectedOrder.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                          "bg-yellow-100 text-yellow-700"
+                        )}>
+                          {selectedOrder.status || 'pending'}
+                        </span>
+                      </p>
+                      {selectedOrder.dispatchId && (
+                        <p className="text-sm">Dispatch ID: <span className="font-bold">{selectedOrder.dispatchId}</span></p>
+                      )}
+                    </div>
+                    
+                    {selectedOrder.status === 'pending' && (
+                      <div className="flex gap-2">
+                        <div className="flex-1">
+                          <Input 
+                            placeholder="Enter Dispatch ID" 
+                            value={dispatchId}
+                            onChange={(e) => setDispatchId(e.target.value)}
+                            className="bg-white"
+                          />
+                        </div>
+                        <Button 
+                          onClick={() => handleDispatch(selectedOrder.id)}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          Mark Dispatched
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Full PDF View Placeholder/Note */}
+                <Card className="border-2 border-dashed border-slate-300 bg-slate-50">
+                  <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+                    <FileText className="w-12 h-12 text-slate-400 mb-4" />
+                    <h3 className="text-lg font-bold text-slate-700">Full Order Document</h3>
+                    <p className="text-sm text-slate-500 max-w-md mb-6">
+                      Click the button above to generate and download the complete 12-page order PDF including all sections.
+                    </p>
+                    <Button variant="outline" className="border-2" onClick={() => downloadPDF(selectedOrder)}>
+                      <Download className="w-4 h-4 mr-2" /> Download Full PDF
+                    </Button>
+                  </CardContent>
+                </Card>
+
+                {/* Page 1: Office Use */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8 border-2 p-4 rounded-lg bg-slate-50">
                 <div className="space-y-2">
                   <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Office Use Only</h4>
                   <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
@@ -420,21 +481,25 @@ export default function AdminOrders() {
                 })}
               </div>
 
-              {/* Page 12: Estimated Invoice Summary */}
-              <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
-                <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Estimated Invoice Summary</h4>
-                <div className="space-y-2">
-                  <div className="flex justify-between">
-                    <span className="text-slate-400">Gross Total:</span>
-                    <span className="font-mono">INR {selectedOrder.totalAmount}</span>
-                  </div>
-                  <div className="flex justify-between text-red-400">
-                    <span>Total Discount:</span>
-                    <span className="font-mono">- INR {selectedOrder.totalDiscount}</span>
-                  </div>
-                  <div className="flex justify-between text-2xl border-t border-white/20 pt-4 font-black">
-                    <span className="text-primary">NET AMOUNT:</span>
-                    <span className="text-primary">INR {selectedOrder.netAmount}</span>
+                <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
+                  <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Estimated Invoice Summary</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Gross Total:</span>
+                      <span className="font-mono">INR {selectedOrder.totalAmount}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Discount:</span>
+                      <span className="font-mono text-yellow-400">INR {selectedOrder.discount || "0"}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Total Discount:</span>
+                      <span className="font-mono text-red-400">INR {selectedOrder.totalDiscount}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-white/20 pt-2 text-xl font-black">
+                      <span>NET AMOUNT:</span>
+                      <span className="text-green-400">INR {selectedOrder.netAmount}</span>
+                    </div>
                   </div>
                 </div>
                 <div className="grid grid-cols-3 gap-4 text-[10px] mt-4 pt-4 border-t border-white/10 uppercase tracking-tighter">

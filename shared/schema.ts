@@ -157,6 +157,7 @@ export const orders = pgTable("orders", {
   
   // Page 12: Estimated Invoice & Totals
   totalAmount: text("total_amount").default("0").notNull(),
+  discount: text("discount").default("0").notNull(),
   totalDiscount: text("total_discount").default("0").notNull(),
   netAmount: text("net_amount").default("0").notNull(),
   advancePayment: text("advance_payment"),
@@ -237,6 +238,7 @@ export const insertOrderSchema = createInsertSchema(orders, {
   deliveryDate: z.coerce.date().optional().nullable(),
   items: z.record(z.any()),
   totalAmount: z.string().optional(),
+  discount: z.string().optional(),
   totalDiscount: z.string().optional(),
   netAmount: z.string().optional(),
   dispatchId: z.string().optional().nullable(),

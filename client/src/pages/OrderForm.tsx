@@ -100,12 +100,14 @@ export default function OrderForm() {
       hasSchoolOrderCopy: false,
       hasDistributorOrderCopy: false,
       totalAmount: "0",
+      discount: "0",
       totalDiscount: "0",
       netAmount: "0",
     }
   });
 
   const items = useWatch({ control: form.control, name: "items" }) || {};
+  const manualDiscount = useWatch({ control: form.control, name: "discount" }) || "0";
 
   const getBookData = (category: string) => {
     return (BOOK_DATA as any)[category] || [];
@@ -123,12 +125,13 @@ export default function OrderForm() {
       });
     });
 
-    const overallDiscount = parseFloat(form.getValues("totalDiscount") || "0");
+    const overallDiscount = parseFloat(manualDiscount || "0");
     const net = total - overallDiscount;
     
     form.setValue("totalAmount", total.toString());
+    form.setValue("totalDiscount", overallDiscount.toString());
     form.setValue("netAmount", net.toString());
-  }, [items, form]);
+  }, [items, manualDiscount, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: InsertOrder) => {
@@ -157,11 +160,11 @@ export default function OrderForm() {
     try {
       const originalPage = page;
       
-      // We'll capture 12 pages as defined in PAGES array
+      // We'll capture all pages as defined in PAGES array
       for (let i = 0; i < PAGES.length; i++) {
         setPage(i);
         // Wait for state update and re-render
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 800));
         
         const element = document.getElementById("order-form-content");
         if (!element) continue;
@@ -170,7 +173,7 @@ export default function OrderForm() {
           scale: 2,
           useCORS: true,
           logging: false,
-          windowWidth: element.scrollWidth,
+          windowWidth: 1200, // Fixed width for consistent capture
           windowHeight: element.scrollHeight
         });
         

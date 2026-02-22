@@ -160,6 +160,7 @@ export default function OrderHistory() {
                 <TableHead>Date</TableHead>
                 <TableHead>Subject</TableHead>
                 <TableHead>Items</TableHead>
+                <TableHead>Dispatch Info</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -175,6 +176,16 @@ export default function OrderHistory() {
                     ))}
                   </TableCell>
                   <TableCell>
+                    {req.dispatchId ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[10px] font-bold text-blue-600 uppercase">Dispatch ID</span>
+                        <span className="text-sm font-mono bg-blue-50 px-2 py-1 rounded border border-blue-200">{req.dispatchId}</span>
+                      </div>
+                    ) : (
+                      <span className="text-[10px] text-muted-foreground italic">Not dispatched yet</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
                     <span className={cn(
                       "px-2 py-1 rounded-full text-xs font-medium uppercase",
                       req.status === 'delivered' ? "bg-green-100 text-green-700" :
@@ -183,12 +194,16 @@ export default function OrderHistory() {
                     )}>
                       {req.status || 'pending'}
                     </span>
-                    {req.dispatchId && <div className="text-[10px] text-blue-600">ID: {req.dispatchId}</div>}
                   </TableCell>
                   <TableCell className="text-right">
                     {req.status === 'dispatched' && (
-                      <Button size="sm" onClick={() => updateSupportStatusMutation.mutate({ id: req.id, status: 'delivered' })}>
-                        Delivered
+                      <Button 
+                        size="sm" 
+                        variant="default"
+                        className="bg-green-600 hover:bg-green-700 text-white font-bold"
+                        onClick={() => updateSupportStatusMutation.mutate({ id: req.id, status: 'delivered' })}
+                      >
+                        Click When Received
                       </Button>
                     )}
                   </TableCell>
@@ -205,14 +220,49 @@ export default function OrderHistory() {
             <DialogTitle>Order Details - {selectedOrder?.schoolName}</DialogTitle>
           </DialogHeader>
           {selectedOrder && (
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded">
-                <div>Status: {selectedOrder.status}</div>
-                {selectedOrder.status === 'dispatched' && (
-                  <Button onClick={() => updateStatusMutation.mutate({ id: selectedOrder.id, status: 'delivered' })}>
-                    Mark Delivered
-                  </Button>
-                )}
+            <div className="p-6 space-y-8">
+              {/* Status and Actions */}
+              <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/30">
+                <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                  <Truck className="w-4 h-4" /> Tracking Information
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
+                  <div className="space-y-2">
+                    <p className="text-sm">Status: 
+                      <span className={cn(
+                        "ml-2 px-2 py-1 rounded-full text-xs font-bold uppercase",
+                        selectedOrder.status === 'delivered' ? "bg-green-100 text-green-700" :
+                        selectedOrder.status === 'dispatched' ? "bg-blue-100 text-blue-700" :
+                        "bg-yellow-100 text-yellow-700"
+                      )}>
+                        {selectedOrder.status || 'pending'}
+                      </span>
+                    </p>
+                    {selectedOrder.dispatchId && (
+                      <div className="mt-2">
+                        <span className="text-[10px] font-bold text-blue-600 uppercase block">Dispatch ID</span>
+                        <span className="text-sm font-mono bg-white px-2 py-1 rounded border border-blue-200 inline-block">{selectedOrder.dispatchId}</span>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {selectedOrder.status === 'dispatched' && (
+                    <Button 
+                      className="w-full md:w-auto bg-green-600 hover:bg-green-700 text-white font-bold"
+                      onClick={() => updateStatusMutation.mutate({ id: selectedOrder.id, status: 'delivered' })}
+                      disabled={updateStatusMutation.isPending}
+                    >
+                      {updateStatusMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PackageCheck className="w-4 h-4 mr-2" />}
+                      Click When Received
+                    </Button>
+                  )}
+                </div>
+              </div>
+
+              {/* Rest of the order details... */}
+              <div className="text-center py-8 text-muted-foreground border-2 border-dashed rounded-lg">
+                <FileText className="w-12 h-12 mx-auto mb-2 opacity-20" />
+                <p>Full order details available in the generated PDF</p>
               </div>
             </div>
           )}
