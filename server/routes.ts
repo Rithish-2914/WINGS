@@ -371,15 +371,15 @@ export async function registerRoutes(
   app.patch("/api/orders/:id/status", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      const { status, dispatchId } = req.body;
+      const { status, dispatchId, courierMode } = req.body;
       const order = await storage.getOrder(Number(req.params.id));
       if (!order) return res.status(404).json({ message: "Order not found" });
 
       const user = req.user as any;
-      // Admin can update status and dispatchId
+      // Admin can update status, dispatchId, and courierMode
       // Executive can only update to 'delivered' if currently 'dispatched'
       if (user.role === 'admin') {
-        const updated = await storage.updateOrderStatus(order.id, status, dispatchId);
+        const updated = await storage.updateOrderStatus(order.id, status, dispatchId, courierMode);
         return res.json(updated);
       } else if (user.role === 'executive' && order.userId === user.id) {
         if (status === 'delivered') {

@@ -103,6 +103,8 @@ export default function OrderForm() {
       discount: "0",
       totalDiscount: "0",
       netAmount: "0",
+      executiveAddress: "",
+      executiveDispatchInfo: "",
     }
   });
 
@@ -300,6 +302,21 @@ export default function OrderForm() {
               
               {page === 0 && (
                 <div className="space-y-8">
+                  <div className="space-y-4 border-2 p-4 rounded-lg bg-blue-50/50">
+                    <h3 className="font-bold text-slate-700">Executive Dispatch Details:</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <FormField control={form.control} name="executiveAddress" render={({ field }) => (
+                        <FormItem><FormLabel>Dispatch Address:</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="border-2" /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="executiveDispatchDate" render={({ field }) => (
+                        <FormItem><FormLabel>Dispatch Date:</FormLabel><FormControl><Input type="date" {...field} value={field.value ? new Date(field.value).toISOString().split('T')[0] : ""} onChange={(e) => field.onChange(e.target.value)} className="border-2" /></FormControl></FormItem>
+                      )} />
+                      <FormField control={form.control} name="executiveDispatchInfo" render={({ field }) => (
+                        <FormItem className="md:col-span-2"><FormLabel>Dispatch Info:</FormLabel><FormControl><Input {...field} value={field.value ?? ""} className="border-2" /></FormControl></FormItem>
+                      )} />
+                    </div>
+                  </div>
+
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border-2 rounded-lg bg-slate-50">
                     <h3 className="col-span-full font-bold text-slate-700">For Office Use Only:</h3>
                     <FormField control={form.control} name="schoolCode" render={({ field }) => (

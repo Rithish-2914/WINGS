@@ -29,14 +29,15 @@ const CATEGORIES = [
 export default function AdminOrders() {
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [dispatchId, setDispatchId] = useState("");
+  const [courierMode, setCourierMode] = useState("");
   const { toast } = useToast();
   const { data: orders, isLoading } = useQuery<Order[]>({
     queryKey: ["/api/orders"],
   });
 
   const updateStatusMutation = useMutation({
-    mutationFn: async ({ id, status, dispatchId }: { id: number, status: string, dispatchId?: string }) => {
-      const res = await apiRequest("PATCH", `/api/orders/${id}/status`, { status, dispatchId });
+    mutationFn: async ({ id, status, dispatchId, courierMode }: { id: number, status: string, dispatchId?: string, courierMode?: string }) => {
+      const res = await apiRequest("PATCH", `/api/orders/${id}/status`, { status, dispatchId, courierMode });
       return res.json();
     },
     onSuccess: () => {
@@ -44,6 +45,7 @@ export default function AdminOrders() {
       toast({ title: "Success", description: "Order status updated" });
       setSelectedOrder(null);
       setDispatchId("");
+      setCourierMode("");
     },
     onError: (error: Error) => {
       toast({ variant: "destructive", title: "Error", description: error.message });
@@ -51,11 +53,11 @@ export default function AdminOrders() {
   });
 
   const handleDispatch = (orderId: number) => {
-    if (!dispatchId) {
-      toast({ variant: "destructive", title: "Required", description: "Please enter a Dispatch ID" });
+    if (!dispatchId || !courierMode) {
+      toast({ variant: "destructive", title: "Required", description: "Please enter Dispatch ID and Courier Mode" });
       return;
     }
-    updateStatusMutation.mutate({ id: orderId, status: "dispatched", dispatchId });
+    updateStatusMutation.mutate({ id: orderId, status: "dispatched", dispatchId, courierMode });
   };
 
   const downloadPDF = (order: Order) => {
@@ -306,18 +308,25 @@ export default function AdminOrders() {
                     </div>
                     
                     {selectedOrder.status === 'pending' && (
-                      <div className="flex gap-2">
-                        <div className="flex-1">
+                      <div className="flex flex-col gap-2 w-full">
+                        <div className="flex gap-2">
                           <Input 
-                            placeholder="Enter Dispatch ID" 
+                            placeholder="Dispatch ID" 
                             value={dispatchId}
                             onChange={(e) => setDispatchId(e.target.value)}
+                            className="bg-white"
+                          />
+                          <Input 
+                            placeholder="Courier Mode (e.g. DTDC)" 
+                            value={courierMode}
+                            onChange={(e) => setCourierMode(e.target.value)}
                             className="bg-white"
                           />
                         </div>
                         <Button 
                           onClick={() => handleDispatch(selectedOrder.id)}
                           disabled={updateStatusMutation.isPending}
+                          className="w-full"
                         >
                           Mark Dispatched
                         </Button>
@@ -333,7 +342,7 @@ export default function AdminOrders() {
                     <p className="text-sm">School Code: <span className="font-medium">{selectedOrder.schoolCode || "-"}</span></p>
                     <p className="text-sm">School Name: <span className="font-medium">{selectedOrder.schoolNameOffice || "-"}</span></p>
                     <p className="text-sm">Place: <span className="font-medium">{selectedOrder.placeOffice || "-"}</span></p>
-                    <p className="text-sm">Executive: <span className="font-medium">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
+                    <p className="text-sm">Executive: <span className="font-bold text-blue-600">{selectedOrder.userName || `ID: ${selectedOrder.userId}`}</span></p>
                   </div>
                   <div className="space-y-2">
                     <h4 className="font-bold text-slate-700 uppercase text-sm border-b pb-1">Order Mode</h4>
@@ -347,6 +356,18 @@ export default function AdminOrders() {
                         {selectedOrder.hasDistributorOrderCopy ? <Check className="w-3 h-3 text-green-600" /> : <div className="w-3 h-3 border" />} Distributor Copy
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Executive Dispatch Info */}
+                <div className="space-y-4 border-2 p-4 rounded-lg bg-orange-50/30">
+                  <h4 className="font-bold text-slate-800 uppercase border-b pb-2 flex items-center gap-2">
+                    <Package className="w-4 h-4" /> Executive Dispatch Request Info
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                    <p className="md:col-span-2">Dispatch Address: <span className="font-medium">{selectedOrder.executiveAddress || "-"}</span></p>
+                    <p>Dispatch Date: <span className="font-medium">{selectedOrder.executiveDispatchDate ? format(new Date(selectedOrder.executiveDispatchDate), "dd MMM yyyy") : "-"}</span></p>
+                    <p>Dispatch Info: <span className="font-medium">{selectedOrder.executiveDispatchInfo || "-"}</span></p>
                   </div>
                 </div>
 

@@ -48,7 +48,7 @@ export interface IStorage {
   createOrder(order: InsertOrder & { userId: number }): Promise<Order>;
   listOrders(filter?: { userId?: number }): Promise<(Order & { userName?: string })[]>;
   getOrder(id: number): Promise<Order | undefined>;
-  updateOrderStatus(id: number, status: string, dispatchId?: string): Promise<Order>;
+  updateOrderStatus(id: number, status: string, dispatchId?: string, courierMode?: string): Promise<Order>;
   updateOrderPublic(id: number, data: Partial<Order>): Promise<Order>;
   getOrderByToken(token: string): Promise<Order | undefined>;
 
@@ -118,10 +118,13 @@ export class DatabaseStorage implements IStorage {
     return order;
   }
 
-  async updateOrderStatus(id: number, status: string, dispatchId?: string): Promise<Order> {
+  async updateOrderStatus(id: number, status: string, dispatchId?: string, courierMode?: string): Promise<Order> {
     const updateData: any = { status };
     if (dispatchId !== undefined) {
       updateData.dispatchId = dispatchId;
+    }
+    if (courierMode !== undefined) {
+      updateData.courierMode = courierMode;
     }
     const [updatedOrder] = await db
       .update(orders)

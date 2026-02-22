@@ -126,6 +126,11 @@ export const orders = pgTable("orders", {
   hasSchoolOrderCopy: boolean("has_school_order_copy").default(false),
   hasDistributorOrderCopy: boolean("has_distributor_order_copy").default(false),
   
+  // Added Dispatch Info for Executive
+  executiveAddress: text("executive_address"),
+  executiveDispatchDate: timestamp("executive_dispatch_date"),
+  executiveDispatchInfo: text("executive_dispatch_info"),
+
   // Page 2: School Information
   schoolName: text("school_name").notNull(),
   trustName: text("trust_name"),
@@ -166,6 +171,7 @@ export const orders = pgTable("orders", {
   
   // Dispatch & Tracking
   dispatchId: text("dispatch_id"),
+  courierMode: text("courier_mode"), // Added for Admin (e.g., 'DTDC')
   status: text("status").default("pending"), // 'pending', 'dispatched', 'delivered'
   
   // Shareable Link
