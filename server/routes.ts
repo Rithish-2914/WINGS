@@ -177,13 +177,13 @@ export async function registerRoutes(
 
   app.get("/api/orders/public/:token", async (req, res) => {
     try {
-      console.log("Fetching public order for token:", req.params.token);
-      const order = await storage.getOrderByToken(req.params.token);
+      const { token } = req.params;
+      console.log("Fetching public order for token:", token);
+      const order = await storage.getOrderByToken(token);
       if (!order) {
-        console.log("Order not found for token:", req.params.token);
+        console.log("Order not found for token:", token);
         return res.status(404).json({ message: "Order link invalid or expired" });
       }
-      // Return order without requiring authentication
       res.json(order);
     } catch (err) {
       console.error("Error fetching public order:", err);
