@@ -256,8 +256,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPackingListByDispatch(dispatchId: number | string): Promise<PackingList | undefined> {
-    const id = typeof dispatchId === 'string' ? parseInt(dispatchId, 10) : dispatchId;
-    if (isNaN(id)) return undefined;
+    let id: number;
+    if (typeof dispatchId === 'object' && dispatchId !== null) {
+      // Handle case where dispatchId might be passed as an object accidentally
+      id = (dispatchId as any).dispatchId || (dispatchId as any).id;
+    } else {
+      id = typeof dispatchId === 'string' ? parseInt(dispatchId, 10) : dispatchId;
+    }
+    
+    if (isNaN(id)) {
+      console.error("Invalid dispatchId passed to getPackingListByDispatch:", dispatchId);
+      return undefined;
+    }
     const [list] = await db.select().from(packingLists).where(eq(packingLists.dispatchId, id));
     return list;
   }
