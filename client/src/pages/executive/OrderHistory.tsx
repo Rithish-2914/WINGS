@@ -453,10 +453,6 @@ export default function OrderHistory() {
                       <span className="font-mono text-blue-400">{selectedOrder.discount}%</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-slate-400">Discount:</span>
-                      <span className="font-mono text-blue-400">{selectedOrder.discount}%</span>
-                    </div>
-                    <div className="flex justify-between">
                       <span className="text-slate-400">Total Discount:</span>
                       <span className="font-mono text-red-400">INR {selectedOrder.totalDiscount}</span>
                     </div>
