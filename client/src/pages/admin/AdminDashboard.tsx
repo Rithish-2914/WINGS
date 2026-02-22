@@ -393,64 +393,10 @@ export default function AdminDashboard() {
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Dialog open={isUserDialogOpen} onOpenChange={setIsUserDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="gap-2">
-                <UserPlus className="h-4 w-4" />
-                Create User
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Create New User</DialogTitle>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Full Name</label>
-                  <Input 
-                    placeholder="Enter full name"
-                    value={newUserName} 
-                    onChange={(e) => setNewUserName(e.target.value)} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Username / Login ID</label>
-                  <Input 
-                    placeholder="Enter login ID"
-                    value={newUserUsername} 
-                    onChange={(e) => setNewUserUsername(e.target.value)} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Password</label>
-                  <Input 
-                    type="password"
-                    placeholder="Enter password"
-                    value={newUserPassword} 
-                    onChange={(e) => setNewUserPassword(e.target.value)} 
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
-                  <Select value={newUserRole} onValueChange={(val: any) => setNewUserRole(val)}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="executive">Sales Executive</SelectItem>
-                      <SelectItem value="admin">Administrator</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-              <DialogFooter>
-                <Button onClick={handleCreateUser} disabled={createUserMutation.isPending}>
-                  {createUserMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Create User
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
+          <Button onClick={() => setLocation("/admin/create-dispatch")} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Create Dispatch
+          </Button>
           <Dialog open={isTargetDialogOpen} onOpenChange={setIsTargetDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline" className="gap-2">

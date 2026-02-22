@@ -220,7 +220,7 @@ export default function CreateDispatch() {
                 <label className="text-sm font-medium">Ref</label>
                 <Input 
                   placeholder="xyz school sample/order" 
-                  value={formData.ref}
+                  value={formData.ref || ""}
                   onChange={(e) => setFormData({ ...formData, ref: e.target.value })}
                 />
               </div>
