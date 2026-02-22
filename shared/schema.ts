@@ -156,9 +156,9 @@ export const orders = pgTable("orders", {
   items: jsonb("items").notNull().default({}),
   
   // Page 12: Estimated Invoice & Totals
-  totalAmount: text("total_amount").default("0"),
-  totalDiscount: text("total_discount").default("0"),
-  netAmount: text("net_amount").default("0"),
+  totalAmount: text("total_amount").default("0").notNull(),
+  totalDiscount: text("total_discount").default("0").notNull(),
+  netAmount: text("net_amount").default("0").notNull(),
   advancePayment: text("advance_payment"),
   firstInstalment: text("first_instalment"),
   secondInstalment: text("second_instalment"),

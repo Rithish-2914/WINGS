@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { useState, useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -96,9 +97,12 @@ export default function PublicOrderForm() {
   });
 
   const form = useForm<InsertOrder>({
-    resolver: zodResolver(insertOrderSchema),
+    resolver: zodResolver(insertOrderSchema.extend({
+      schoolName: z.string().min(1, "School name is required"),
+    })),
     defaultValues: {
       schoolName: "",
+      userId: 0, // Placeholder, will be overwritten by order.userId
       items: {},
       totalAmount: "0",
       totalDiscount: "0",
@@ -112,6 +116,7 @@ export default function PublicOrderForm() {
       console.log("Order data loaded, resetting form:", order);
       form.reset({
         schoolName: order.schoolName || "",
+        userId: order.userId,
         items: (order.items as Record<string, any>) || {},
         totalAmount: order.totalAmount || "0",
         totalDiscount: order.totalDiscount || "0",
@@ -155,13 +160,18 @@ export default function PublicOrderForm() {
     const discountAmt = (total * overallDiscountPerc / 100);
     const net = total - discountAmt;
     
-    form.setValue("totalAmount", total.toFixed(2));
-    form.setValue("totalDiscount", discountAmt.toFixed(2));
-    form.setValue("netAmount", net.toFixed(2));
+    // Use a small timeout to ensure the form is ready
+    const timer = setTimeout(() => {
+      form.setValue("totalAmount", total.toFixed(2), { shouldDirty: true });
+      form.setValue("totalDiscount", discountAmt.toFixed(2), { shouldDirty: true });
+      form.setValue("netAmount", net.toFixed(2), { shouldDirty: true });
+    }, 0);
+    return () => clearTimeout(timer);
   }, [items, form]);
 
   const mutation = useMutation({
     mutationFn: async (data: InsertOrder) => {
+      console.log("Submitting order data:", data);
       const res = await apiRequest("POST", `/api/orders/public/${token}`, data);
       return res.json();
     },
@@ -169,8 +179,10 @@ export default function PublicOrderForm() {
       setSubmitted(true);
       toast({ title: "Order submitted successfully" });
     },
-    onError: (err: Error) => {
-      toast({ variant: "destructive", title: "Error", description: err.message });
+    onError: (err: any) => {
+      console.error("Submission error:", err);
+      const message = err.message || "Failed to submit order";
+      toast({ variant: "destructive", title: "Error", description: message });
     }
   });
 
@@ -316,20 +328,37 @@ export default function PublicOrderForm() {
               {page === 9 && renderBookTable("General Books", "General Books")}
 
               {page === 10 && (
-                <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
-                  <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Order Summary</h4>
-                  <p className="text-center text-slate-400">Please review your order and click submit to confirm.</p>
-                  <Button type="submit" size="lg" className="w-full bg-primary hover:bg-primary/90 text-white font-black" disabled={mutation.isPending}>
-                    {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    SUBMIT FINAL ORDER
-                  </Button>
+                <div className="space-y-6">
+                  <div className="bg-slate-900 text-white p-6 rounded-lg space-y-4 border-2">
+                    <h4 className="font-bold uppercase border-b border-white/20 pb-2 text-center tracking-widest">Order Summary</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between border-b border-white/10 pb-1">
+                        <span className="text-slate-400">Total Amount:</span>
+                        <span className="font-bold">₹{form.getValues("totalAmount")}</span>
+                      </div>
+                      <div className="flex justify-between border-b border-white/10 pb-1">
+                        <span className="text-slate-400">Total Discount:</span>
+                        <span className="font-bold text-green-400">-₹{form.getValues("totalDiscount")}</span>
+                      </div>
+                      <div className="flex justify-between pt-2 text-lg">
+                        <span className="font-black text-primary">Net Amount:</span>
+                        <span className="font-black text-primary">₹{form.getValues("netAmount")}</span>
+                      </div>
+                    </div>
+                    <p className="text-center text-slate-400 text-xs">Please review your order and click submit above to confirm.</p>
+                  </div>
                 </div>
               )}
 
               <div className="flex justify-between pt-4">
                 <Button type="button" variant="outline" onClick={() => setPage(p => p - 1)} disabled={page === 0} className="border-2 font-bold uppercase">Back</Button>
-                {page < PAGES.length - 1 && (
+                {page < PAGES.length - 1 ? (
                   <Button type="button" onClick={() => setPage(p => p + 1)} className="bg-slate-800 hover:bg-slate-700 text-white font-bold uppercase">Next</Button>
+                ) : (
+                  <Button type="submit" size="lg" className="bg-primary hover:bg-primary/90 text-white font-black" disabled={mutation.isPending}>
+                    {mutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    SUBMIT FINAL ORDER
+                  </Button>
                 )}
               </div>
             </form>
