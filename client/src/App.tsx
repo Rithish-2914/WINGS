@@ -65,7 +65,7 @@ function Router() {
             roles={['executive', 'admin']} 
           />
           <ProtectedRoute 
-            path="/admin/dispatch/new" 
+            path="/admin/create-dispatch" 
             component={CreateDispatch} 
             roles={['admin']} 
           />
