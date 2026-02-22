@@ -171,7 +171,7 @@ export default function CreateDispatch() {
                 <label className="text-sm font-medium">Dispatch Location</label>
                 <Input 
                   placeholder="e.g. Warehouse A"
-                  value={formData.dispatchLocation || ""} 
+                  value={formData.dispatchLocation ?? ""} 
                   onChange={(e) => setFormData({ ...formData, dispatchLocation: e.target.value })}
                 />
               </div>
@@ -180,7 +180,7 @@ export default function CreateDispatch() {
                 <label className="text-sm font-medium">Mode of Courier</label>
                 <Input 
                   placeholder="e.g. DTDC / Professional"
-                  value={formData.courierMode || ""} 
+                  value={formData.courierMode ?? ""} 
                   onChange={(e) => setFormData({ ...formData, courierMode: e.target.value })}
                 />
               </div>
