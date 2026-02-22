@@ -302,6 +302,17 @@ export async function registerRoutes(
     }
   });
 
+  app.patch("/api/dispatches/:id/status", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    try {
+      const { status } = req.body;
+      const updated = await storage.updateDispatchStatus(Number(req.params.id), status);
+      res.json(updated);
+    } catch (err) {
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
+
   app.get("/api/packing-lists/:dispatchId", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     const list = await storage.getPackingListByDispatch(Number(req.params.dispatchId));

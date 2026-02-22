@@ -210,7 +210,11 @@ export const packingLists = pgTable("packing_lists", {
 });
 
 export const insertSupportRequestSchema = createInsertSchema(supportRequests, {
-  items: z.array(z.any()),
+  items: z.array(z.object({
+    id: z.number(),
+    name: z.string(),
+    qty: z.number().min(1),
+  })),
 }).omit({ id: true, createdAt: true, userId: true });
 
 export const insertDispatchSchema = createInsertSchema(dispatches, {
