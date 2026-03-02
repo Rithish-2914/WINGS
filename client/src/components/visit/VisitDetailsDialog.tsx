@@ -7,7 +7,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { format } from "date-fns";
-import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen, Clock, Trash2, Send } from "lucide-react";
+import { MapPin, Phone, User, Calendar, FileText, CheckCircle2, BookOpen, Clock, Trash2, Send, X as XIcon } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -329,7 +329,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                       variant="secondary"
                       onClick={() => setZoomImage(null)}
                     >
-                      <X className="h-6 w-6" />
+                      <XIcon className="h-6 w-6" />
                     </Button>
                   </div>
                 </DialogContent>

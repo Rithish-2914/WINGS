@@ -246,7 +246,6 @@ export default function OrderForm() {
               <TableCell>
                 <Input 
                   type="number" 
-                  className="h-9 w-16 px-1 text-center font-bold"
                   value={items[`${category}-${book.product}`]?.qty || ""}
                   onChange={(e) => {
                     const newItems = { ...items };
@@ -256,6 +255,7 @@ export default function OrderForm() {
                     };
                     form.setValue("items", newItems);
                   }}
+                  className="h-10 min-w-[80px] text-base border-2 text-center font-bold"
                 />
               </TableCell>
             </TableRow>
@@ -265,7 +265,6 @@ export default function OrderForm() {
             <TableCell>
               <Input 
                 type="number" 
-                className="h-9 w-16 px-1 text-center font-bold"
                 placeholder="%"
                 value={items[`${category}-discount`]?.value || ""}
                 onChange={(e) => {
@@ -273,6 +272,7 @@ export default function OrderForm() {
                   newItems[`${category}-discount`] = { value: e.target.value };
                   form.setValue("items", newItems);
                 }}
+                className="h-10 min-w-[80px] text-base border-2 text-center"
               />
             </TableCell>
           </TableRow>

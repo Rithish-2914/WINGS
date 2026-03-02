@@ -340,11 +340,12 @@ export default function AdminDashboard() {
     const csvContent = [
       headers.join(","),
       ...filteredVisits.map(v => {
-        const exec = users?.find(u => u.id === v.userId);
-        return [
-          format(new Date(v.visitDate), "yyyy-MM-dd HH:mm"),
-          v.createdAt ? format(new Date(v.createdAt), "yyyy-MM-dd HH:mm") : "",
-          `"${exec?.name || 'Unknown'}"`,
+          const exec = users?.find(u => u.id === v.userId);
+          const execName = exec ? exec.name : 'Unknown Executive';
+          return [
+            format(new Date(v.visitDate), "yyyy-MM-dd HH:mm"),
+            v.createdAt ? format(new Date(v.createdAt), "yyyy-MM-dd HH:mm") : "",
+            `"${execName}"`,
           `"${v.schoolName}"`,
           `"${v.principalName}"`,
           `"${v.schoolPhone || v.phoneNumber}"`,
@@ -784,7 +785,7 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           <div className="flex flex-col">
-                            <span className="font-medium text-sm">{(visit as any).userName || "Missing User"}</span>
+                            <span className="font-medium text-sm">{exec?.name || "Unknown Executive"}</span>
                             <span className="text-[10px] text-muted-foreground">ID: {exec?.username}</span>
                           </div>
                         </TableCell>

@@ -217,7 +217,6 @@ export default function PublicOrderForm() {
               <TableCell>
                 <Input 
                   type="number" 
-                  className="h-9 w-16 px-1 text-center font-bold"
                   value={items[`${category}-${book.product}`]?.qty || ""}
                   onChange={(e) => {
                     const newItems = { ...items };
@@ -227,6 +226,7 @@ export default function PublicOrderForm() {
                     };
                     form.setValue("items", newItems);
                   }}
+                  className="h-10 min-w-[80px] text-base border-2 text-center font-bold"
                 />
               </TableCell>
             </TableRow>
@@ -236,7 +236,7 @@ export default function PublicOrderForm() {
             <TableCell>
               <Input 
                 type="text" 
-                className="h-9 w-16 px-1 text-center bg-slate-50 font-bold"
+                className="h-10 min-w-[80px] text-base bg-slate-50 border-2 text-center"
                 disabled
                 placeholder="-"
                 value={items[`${category}-discount`]?.value ? `${items[`${category}-discount`].value}%` : ""}
