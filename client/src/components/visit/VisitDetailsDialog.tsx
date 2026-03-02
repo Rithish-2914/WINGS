@@ -30,6 +30,7 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [followUpText, setFollowUpText] = useState("");
+  const [zoomImage, setZoomImage] = useState<string | null>(null);
 
   const followUpMutation = useMutation({
     mutationFn: async (text: string) => {
@@ -94,7 +95,10 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
             {/* Photo Preview if available */}
             {visit.photoUrl && (
               <div className="space-y-2">
-                <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted">
+                <div 
+                  className="relative aspect-video rounded-lg overflow-hidden border bg-muted cursor-zoom-in"
+                  onClick={() => setZoomImage(visit.photoUrl)}
+                >
                   <img 
                     src={visit.photoUrl} 
                     alt="Visit" 
@@ -105,6 +109,9 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                       target.src = "https://placehold.co/600x400?text=Image+Not+Found+on+Server";
                     }}
                   />
+                  <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                    <span className="bg-black/50 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity">Click to Zoom</span>
+                  </div>
                 </div>
                 {metadata && metadata.timestamp && (
                   <div className="flex flex-wrap gap-4 text-xs text-muted-foreground bg-muted/50 p-2 rounded-md">
@@ -285,7 +292,10 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                   {visit.samplePhotoUrl && (
                     <div className="mt-3">
                       <span className="text-xs font-bold text-muted-foreground block mb-2">Sample Proof Photo:</span>
-                      <div className="relative aspect-video rounded-lg overflow-hidden border bg-muted max-w-sm">
+                      <div 
+                        className="relative aspect-video rounded-lg overflow-hidden border bg-muted max-w-sm cursor-zoom-in"
+                        onClick={() => setZoomImage(visit.samplePhotoUrl)}
+                      >
                         <img 
                           src={visit.samplePhotoUrl} 
                           alt="Sample Proof" 
@@ -296,11 +306,34 @@ export function VisitDetailsDialog({ visit, open, onOpenChange, onDelete }: Visi
                             target.src = "https://placehold.co/600x400?text=Sample+Photo+Not+Found";
                           }}
                         />
+                        <div className="absolute inset-0 bg-black/0 hover:bg-black/10 transition-colors flex items-center justify-center">
+                          <span className="bg-black/50 text-white text-xs px-2 py-1 rounded opacity-0 hover:opacity-100 transition-opacity">Click to Zoom</span>
+                        </div>
                       </div>
                     </div>
                   )}
                 </div>
               )}
+
+              {/* Zoom Modal */}
+              <Dialog open={!!zoomImage} onOpenChange={() => setZoomImage(null)}>
+                <DialogContent className="max-w-4xl p-0 bg-transparent border-none">
+                  <div className="relative w-full h-[80vh]">
+                    <img 
+                      src={zoomImage || ""} 
+                      className="w-full h-full object-contain"
+                      alt="Zoomed"
+                    />
+                    <Button 
+                      className="absolute top-2 right-2 rounded-full h-10 w-10 p-0" 
+                      variant="secondary"
+                      onClick={() => setZoomImage(null)}
+                    >
+                      <X className="h-6 w-6" />
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               {/* MOM & Remarks */}
               <div className="space-y-3 pt-2">

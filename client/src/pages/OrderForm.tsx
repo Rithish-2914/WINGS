@@ -241,12 +241,12 @@ export default function OrderForm() {
           {getBookData(category).map((book: any, idx: number) => (
             <TableRow key={idx}>
               <TableCell className="font-medium">{book.class}</TableCell>
-              <TableCell>{book.product}</TableCell>
+              <TableCell className="min-w-[150px]">{book.product}</TableCell>
               <TableCell>{book.price}</TableCell>
               <TableCell>
                 <Input 
                   type="number" 
-                  className="h-8"
+                  className="h-9 w-16 px-1 text-center font-bold"
                   value={items[`${category}-${book.product}`]?.qty || ""}
                   onChange={(e) => {
                     const newItems = { ...items };
@@ -265,7 +265,7 @@ export default function OrderForm() {
             <TableCell>
               <Input 
                 type="number" 
-                className="h-8"
+                className="h-9 w-16 px-1 text-center font-bold"
                 placeholder="%"
                 value={items[`${category}-discount`]?.value || ""}
                 onChange={(e) => {
